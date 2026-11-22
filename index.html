@@ -1436,6 +1436,39 @@
         let activeMatchContext = 'lobby'; // 'lobby' | 'sandbox' | 'multiplayer'
         let activeGameMode = 'classic'; // 'classic' | 'timeattack' | 'bombpush'
         let matchElapsedSec = 0;
+        let _mpSimTick = 0;
+        let _mpSimAccum = 0;
+        let _mpTargetTick = 0;
+        let _mpRngState = 0x12345678;
+        let _mpUseDetSim = false;
+        const _nativeMathRandom = Math.random.bind(Math);
+        function _mpHashStr(str) {
+            let h = 2166136261 >>> 0;
+            const s = String(str || 'npa_mp_seed');
+            for (let i = 0; i < s.length; i++) {
+                h ^= s.charCodeAt(i);
+                h = Math.imul(h, 16777619) >>> 0;
+            }
+            return (h || 0x9e3779b9) >>> 0;
+        }
+        function _mpSeedForRound(roomId, roundNum, leftId, rightId) {
+            _mpRngState = _mpHashStr(`${roomId || 'room'}|r${roundNum || 1}|${leftId || ''}|${rightId || ''}`);
+            _mpSimTick = 0;
+            _mpSimAccum = 0;
+            _mpTargetTick = 0;
+        }
+        Math.random = function() {
+            if (_mpUseDetSim) {
+                let t = (_mpRngState += 0x6D2B79F5) >>> 0;
+                t = Math.imul(t ^ (t >>> 15), t | 1);
+                t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            }
+            return _nativeMathRandom();
+        };
+        function _simNowMs() {
+            return (activeMatchContext === 'multiplayer') ? (100000 + _mpSimTick * (1000 / 60)) : performance.now();
+        }
         let timeAttackRemaining = 60.0;
         let dmgDealtLeft = 0;
         let dmgDealtRight = 0;
@@ -2054,7 +2087,7 @@
                     const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
                     const data = buf.getChannelData(0);
                     for (let i = 0; i < bufSize; i++) {
-                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.35));
+                        data[i] = (_nativeMathRandom() * 2 - 1) * Math.exp(-i / (bufSize * 0.35));
                     }
                     const noise = this.ctx.createBufferSource();
                     noise.buffer = buf;
@@ -2778,6 +2811,11 @@
         }
 
         function playThanhGiongVoice(category, opts = {}) {
+            const _prevDetTg = _mpUseDetSim;
+            _mpUseDetSim = false;
+            try { return _playThanhGiongVoiceInner(category, opts); } finally { _mpUseDetSim = _prevDetTg; }
+        }
+        function _playThanhGiongVoiceInner(category, opts = {}) {
             if (!soundEnabled || audio.voiceVolume <= 0) return;
             const lines = THANH_GIONG_VOICE_LINES[category];
             if (!lines || !lines.length) return;
@@ -2959,6 +2997,11 @@
         }
 
         function playGodOfWarVoice(category, opts = {}) {
+            const _prevDetGow = _mpUseDetSim;
+            _mpUseDetSim = false;
+            try { return _playGodOfWarVoiceInner(category, opts); } finally { _mpUseDetSim = _prevDetGow; }
+        }
+        function _playGodOfWarVoiceInner(category, opts = {}) {
             if (!soundEnabled || audio.voiceVolume <= 0) return;
             const lines = THE_GOD_OF_WAR_VOICE_LINES[category];
             if (!lines || !lines.length) return;
@@ -3142,9 +3185,7 @@
             floatingTexts.push({
                 x, y, text: displayTxt, color, life: 0.95, vy: -28, isDecrement
             });
-            if (typeof activeMatchContext !== 'undefined' && activeMatchContext === 'multiplayer' && typeof mpMySide !== 'undefined' && mpMySide === 'left' && typeof _mpPendingTexts !== 'undefined') {
-                if (_mpPendingTexts.length < 15) _mpPendingTexts.push({ x: Math.round(x), y: Math.round(y), text: displayTxt, color, isDecrement: !!isDecrement });
-            }
+            /* Both screens generate native floating texts locally in deterministic lockstep */
         }
 
         // HÌNH ẢNH RÌU CHIẾN / HATCHET CHUẨN XÁC
@@ -6266,8 +6307,8 @@
 
             if (e2.spatialRiftActive) {
                 if (Math.random() < 0.6) {
-                    if (!e2.lastEvadeTextTimer || performance.now() - e2.lastEvadeTextTimer > 300) {
-                        e2.lastEvadeTextTimer = performance.now();
+                    if (!e2.lastEvadeTextTimer || _simNowMs() - e2.lastEvadeTextTimer > 300) {
+                        e2.lastEvadeTextTimer = _simNowMs();
                         addFloatingText(e2.x, e2.y - 15, '💨 EVADE MELEE!', '#ec4899');
                     }
                     return;
@@ -6275,8 +6316,8 @@
             }
             if (e1.spatialRiftActive) {
                 if (Math.random() < 0.6) {
-                    if (!e1.lastEvadeTextTimer || performance.now() - e1.lastEvadeTextTimer > 300) {
-                        e1.lastEvadeTextTimer = performance.now();
+                    if (!e1.lastEvadeTextTimer || _simNowMs() - e1.lastEvadeTextTimer > 300) {
+                        e1.lastEvadeTextTimer = _simNowMs();
                         addFloatingText(e1.x, e1.y - 15, '💨 EVADE MELEE!', '#ec4899');
                     }
                     return;
@@ -7664,8 +7705,9 @@
 
             updateStatusTimers(dt) {
                 if (this.isDead || this.isVanished || isRewindInProgress()) return;
-                if (this._statusFrameId === performance.now()) return;
-                this._statusFrameId = performance.now();
+                const _stClock = (activeMatchContext === 'multiplayer') ? (_mpSimTick + 1) : performance.now();
+                if (this._statusFrameId === _stClock) return;
+                this._statusFrameId = _stClock;
                 if (this.empSilenceTimer > 0) this.empSilenceTimer = Math.max(0, this.empSilenceTimer - dt);
                 if (this.panicTimer > 0) this.panicTimer = Math.max(0, this.panicTimer - dt);
                 if (this.dashLockedTimer > 0) this.dashLockedTimer = Math.max(0, this.dashLockedTimer - dt);
@@ -11318,7 +11360,7 @@
                     for (let i = this.featherTrailPieces.length - 1; i >= 0; i--) {
                         const fp = this.featherTrailPieces[i];
                         fp.x += fp.vx * dt;
-                        fp.y += fp.vy * dt + Math.sin(performance.now() * 0.008 + i) * 10 * dt;
+                        fp.y += fp.vy * dt + Math.sin(_simNowMs() * 0.008 + i) * 10 * dt;
                         fp.rot += fp.vrot * dt;
                         fp.alpha -= dt * 1.45;
                         if (fp.alpha <= 0) this.featherTrailPieces.splice(i, 1);
@@ -22035,7 +22077,7 @@
                 if (this.state === 'DORMANT') {
                     this.updatePhysics(dt);
 
-                    const tNow = performance.now() * 0.008;
+                    const tNow = _simNowMs() * 0.008;
                     for (let i = 0; i < this.eyes.length; i++) {
                         const eye = this.eyes[i];
                         if (eye.opened) {
@@ -25239,6 +25281,16 @@
         }
 
         function startMatch() {
+            const _inMpMatch = (typeof activeMatchContext !== 'undefined' && activeMatchContext === 'multiplayer');
+            if (_inMpMatch) {
+                const _lIdSeed = document.getElementById('leftBallSelect').value;
+                const _rIdSeed = document.getElementById('rightBallSelect').value;
+                _mpSeedForRound(typeof mpRoomId !== 'undefined' ? mpRoomId : 'mp', typeof mpRoundNumber !== 'undefined' ? mpRoundNumber : 1, _lIdSeed, _rIdSeed);
+            }
+            _mpUseDetSim = _inMpMatch;
+            try { return _startMatchCore(); } finally { _mpUseDetSim = false; }
+        }
+        function _startMatchCore() {
             setupFighterCards();
             projectiles = [];
             particles = [];
@@ -25278,7 +25330,7 @@
                 const getSkinKey = (b) => {
                     if (!b) return 'default';
                     if (b.isThanhGiongSkin) return 'thanhgiong';
-                    if (b.isSuccessorReaper) return 'successor_reaper';
+                    if (b.isSuccessorReaper || b.isSuccessorReaperSkin) return 'successor_reaper';
                     return b.skinId || 'default';
                 };
                 const leftSkin = getSkinKey(ballLeft);
@@ -28860,117 +28912,18 @@
 
         function updateGame(dt) {
             if (activeMatchContext === 'lobby' || gameState === 'IDLE') return;
-            const effectiveDt = dt * gameSpeed;
-
-            if (activeMatchContext === 'multiplayer' && typeof mpMySide !== 'undefined' && mpMySide === 'right') {
-                if (!fxSettings.shakeEnabled) screenShakeAmount = 0;
-                if (screenShakeAmount > 0) screenShakeAmount = Math.max(0, screenShakeAmount - effectiveDt * 30);
-                if (gameState === 'PLAYING') {
-                    matchElapsedSec += effectiveDt;
-                    if (activeGameMode === 'timeattack') {
-                        timeAttackRemaining = Math.max(0, timeAttackRemaining - effectiveDt);
-                    }
-                }
-                const nowMsMp = performance.now();
-                const frameScale = effectiveDt * 60;
-                const posBlend = Math.min(1, effectiveDt * 18);
-                const angBlend = Math.min(1, effectiveDt * 24);
-                const lerpAng = (cur, tgt, t) => {
-                    let d = (tgt - cur) % (Math.PI * 2);
-                    if (d > Math.PI) d -= Math.PI * 2;
-                    if (d < -Math.PI) d += Math.PI * 2;
-                    return cur + d * t;
-                };
-                const clampArena = (val, r) => Math.max(r, Math.min(ARENA_SIZE - r, val));
-                const stepSubEntity = (ent, r = 14) => {
-                    if (!ent || typeof ent.x !== 'number' || typeof ent.y !== 'number') return;
-                    if (typeof ent.vx === 'number' && typeof ent.vy === 'number') {
-                        ent.x = clampArena(ent.x + ent.vx * frameScale, r);
-                        ent.y = clampArena(ent.y + ent.vy * frameScale, r);
-                    }
-                    if (typeof ent._mpTx === 'number' && typeof ent._mpTy === 'number') {
-                        const dx = ent._mpTx - ent.x, dy = ent._mpTy - ent.y;
-                        if (dx * dx + dy * dy > 9025) { ent.x = ent._mpTx; ent.y = ent._mpTy; }
-                        else { ent.x += dx * posBlend; ent.y += dy * posBlend; }
-                    }
-                };
-                [ballLeft, ballRight].forEach(b => {
-                    if (!b) return;
-                    const rad = b.radius || 34;
-                    if (gameState === 'PLAYING' && !b.isDead && typeof b.vx === 'number' && typeof b.vy === 'number') {
-                        b.x = clampArena(b.x + b.vx * frameScale, rad);
-                        b.y = clampArena(b.y + b.vy * frameScale, rad);
-                    }
-                    if (typeof b._mpTx === 'number' && typeof b._mpTy === 'number') {
-                        const ageSec = b._mpRxTime ? Math.min(0.11, Math.max(0, (nowMsMp - b._mpRxTime) * 0.001)) : 0;
-                        const predX = clampArena(b._mpTx + (b._mpTvx || 0) * (ageSec * 60), rad);
-                        const predY = clampArena(b._mpTy + (b._mpTvy || 0) * (ageSec * 60), rad);
-                        const dx = predX - b.x, dy = predY - b.y;
-                        if (dx * dx + dy * dy > 9025) {
-                            b.x = b._mpTx; b.y = b._mpTy;
-                        } else {
-                            b.x += dx * posBlend;
-                            b.y += dy * posBlend;
-                        }
-                    }
-                    if (b._mpAngles) {
-                        for (const ak in b._mpAngles) {
-                            if (typeof b[ak] === 'number') b[ak] = lerpAng(b[ak], b._mpAngles[ak], angBlend);
-                        }
-                    }
-                    if (b.trail && b.isPlaying !== false && gameState === 'PLAYING' && !b.isDead) {
-                        if (Array.isArray(b.trail) && b.trail.length > 0 && b.trail.length < 18) {
-                            // keep local trail smooth without jitter
-                        }
-                    }
-                    if (b.falcon && !b.falcon.isDead) stepSubEntity(b.falcon, b.falcon.radius || 14);
-                    if (b.thrownAxe && b.thrownAxe.state !== 'STUCK_WALL') stepSubEntity(b.thrownAxe, b.thrownAxe.radius || 14);
-                    if (b.deity && !b.deity.isDead) stepSubEntity(b.deity, 22);
-                    if (Array.isArray(b.members)) {
-                        for (let mi = 0; mi < b.members.length; mi++) stepSubEntity(b.members[mi], 12);
-                    }
-                });
-                if (Array.isArray(projectiles)) {
-                    for (let pi = 0; pi < projectiles.length; pi++) {
-                        const p = projectiles[pi];
-                        if (!p || !p.active) continue;
-                        if (typeof p.vx === 'number' && typeof p.vy === 'number' && (p.vx !== 0 || p.vy !== 0)) {
-                            p.x += p.vx * frameScale;
-                            p.y += p.vy * frameScale;
-                        } else if (typeof p.angle === 'number' && typeof p.speed === 'number') {
-                            p.x += Math.cos(p.angle) * p.speed * frameScale;
-                            p.y += Math.sin(p.angle) * p.speed * frameScale;
-                        }
-                        if (typeof p.rot === 'number') p.rot += 0.22 * frameScale;
-                    }
-                }
-                if (Array.isArray(minions)) {
-                    for (let mi = 0; mi < minions.length; mi++) stepSubEntity(minions[mi], minions[mi]?.radius || 12);
-                }
-                if (Array.isArray(arenaBombs)) {
-                    for (let bi = 0; bi < arenaBombs.length; bi++) {
-                        const ab = arenaBombs[bi];
-                        if (!ab) continue;
-                        if (ab.warnTimer > 0) ab.warnTimer = Math.max(0, ab.warnTimer - effectiveDt);
-                        else {
-                            ab.fuseTimer = Math.max(0, ab.fuseTimer - effectiveDt);
-                            ab.x = clampArena(ab.x + (ab.vx || 0) * frameScale, ab.radius || 18);
-                            ab.y = clampArena(ab.y + (ab.vy || 0) * frameScale, ab.radius || 18);
-                        }
-                    }
-                }
-                for (let i = bloodStains.length - 1; i >= 0; i--) {
-                    const bs = bloodStains[i];
-                    if (!bs) continue;
-                    if (bs.timer === undefined) { bs.timer = 5.0; bs.maxTimer = 5.0; bs.baseAlpha = bs.alpha || 0.9; }
-                    bs.timer -= effectiveDt;
-                    bs.alpha = Math.max(0, (bs.baseAlpha || 0.9) * (bs.timer / (bs.maxTimer || 5.0)));
-                    if (bs.timer <= 0) bloodStains.splice(i, 1);
-                }
-                updateParticles(effectiveDt);
-                updateUIHP();
-                return;
+            const _isMpStep = (activeMatchContext === 'multiplayer');
+            const _prevDetStep = _mpUseDetSim;
+            if (_isMpStep) _mpUseDetSim = true;
+            try {
+                _updateGameCore(dt);
+            } finally {
+                _mpUseDetSim = _prevDetStep;
             }
+        }
+
+        function _updateGameCore(dt) {
+            const effectiveDt = dt * gameSpeed;
 
             if (isMatchPaused && activeMatchContext !== 'multiplayer') return;
             if (!fxSettings.shakeEnabled) screenShakeAmount = 0;
@@ -29127,7 +29080,7 @@
             }
 
             if (ballLeft && ballRight && gameState === 'PLAYING') {
-                if (timeHistoryBuffer.length === 0 || performance.now() - (timeHistoryBuffer[timeHistoryBuffer.length - 1].timestamp || 0) > 100) {
+                if (timeHistoryBuffer.length === 0 || _simNowMs() - (timeHistoryBuffer[timeHistoryBuffer.length - 1].timestamp || 0) >= 100) {
                     function captureBallSnapshot(ball) {
                         if (!ball) return null;
                         let snap = {
@@ -29440,7 +29393,7 @@
                     };
 
                     timeHistoryBuffer.push({
-                        timestamp: performance.now(),
+                        timestamp: _simNowMs(),
                         left: captureBallSnapshot(ballLeft),
                         right: captureBallSnapshot(ballRight),
                         arena: arenaSnapshot
@@ -29566,13 +29519,8 @@
             }
             if (droppedWeapons.length > 0) updateDroppedWeapons(effectiveDt);
             if (gameState === 'FINISHER') {
-                if (activeMatchContext !== 'multiplayer' || mpMySide === 'left') {
-                    handleFinisherLogic(effectiveDt);
-                }
+                handleFinisherLogic(effectiveDt);
             } else if (gameState === 'DOUBLE_KO') {
-                if (activeMatchContext === 'multiplayer' && mpMySide !== 'left') {
-                    return;
-                }
                 finisherTimer += effectiveDt;
                 if (finisherTimer >= 2.2) {
                     gameState = 'ENDED';
@@ -29601,8 +29549,12 @@
                             document.getElementById('matchResultModal').classList.remove('hidden');
                         } else if (activeMatchContext === 'multiplayer') {
                             const rr = { round: mpRoundNumber, winnerSide: 'draw', loserSide: 'both', survivingHp: null, survivingMountHp: null, ts: Date.now() };
-                            if (mpRoomId && typeof CloudMP !== 'undefined') {
+                            if (mpMySide === 'left' && mpRoomId && typeof CloudMP !== 'undefined') {
                                 CloudMP.writeRoom(mpRoomId, { roundResults: { [`r${mpRoundNumber}`]: rr } }).catch(() => {});
+                                if (_mpStateTopic && typeof RelayNet !== 'undefined') {
+                                    RelayNet.pub(_mpStateTopic, { r: mpRoundNumber, gs: 'ENDED', rr }, false, true);
+                                }
+                                if (CloudMP.bc) CloudMP.bc.postMessage({ type: 'MP_FAST_STATE', topic: _mpStateTopic, pkt: { r: mpRoundNumber, gs: 'ENDED', rr } });
                             }
                             if (typeof applyMpRoundResult === 'function') applyMpRoundResult(rr);
                         }
@@ -29790,7 +29742,38 @@
 
         let lastTime = performance.now();
         let lastWallMs = Date.now();
+        function _stepMpFixedSimulation(dtSec, muteAudio = false) {
+            const fixedStep = 1 / 60;
+            _mpSimAccum += Math.min(5.0, Math.max(0, dtSec));
+            // Gentle tick alignment if peer tick ahead/behind due to start offset
+            if (_mpTargetTick > 0) {
+                const tickDiff = _mpTargetTick - _mpSimTick;
+                if (tickDiff > 2 && tickDiff < 300) {
+                    _mpSimAccum += Math.min(fixedStep * 3, tickDiff * fixedStep * 0.35);
+                } else if (tickDiff < -3) {
+                    _mpSimAccum = Math.max(0, _mpSimAccum - fixedStep * 0.35);
+                }
+            }
+            const prevSound = soundEnabled;
+            if (muteAudio) soundEnabled = false;
+            let steps = 0;
+            while (_mpSimAccum >= fixedStep && steps < 180) {
+                _mpSimAccum -= fixedStep;
+                _mpSimTick++;
+                updateGame(fixedStep);
+                steps++;
+                if (gameState === 'ENDED' || gameState === 'IDLE') {
+                    _mpSimAccum = 0;
+                    break;
+                }
+            }
+            if (muteAudio) soundEnabled = prevSound;
+        }
         function stepSimulationRealTime(elapsedSec, muteAudio = false) {
+            if (typeof activeMatchContext !== 'undefined' && activeMatchContext === 'multiplayer') {
+                _stepMpFixedSimulation(elapsedSec, muteAudio);
+                return;
+            }
             const clamped = Math.min(30, Math.max(0, elapsedSec));
             if (clamped <= 0) return;
             const prevSound = soundEnabled;
@@ -29811,15 +29794,16 @@
                 lastWallMs = Date.now();
                 return;
             }
-            if (gameState === 'PLAYING' && (!isMatchPaused || activeMatchContext === 'multiplayer')) {
+            const mpActiveStates = (activeMatchContext === 'multiplayer' && (gameState === 'SPAWN_INTRO' || gameState === 'PLAYING' || gameState === 'FINISHER' || gameState === 'DOUBLE_KO'));
+            if (mpActiveStates || (gameState === 'PLAYING' && !isMatchPaused)) {
                 const nowMs = Date.now();
                 const wallDt = (nowMs - lastWallMs) / 1000;
                 lastWallMs = nowMs;
-                if (wallDt > 0.02) stepSimulationRealTime(wallDt, true);
+                if (wallDt > 0.015) stepSimulationRealTime(wallDt, true);
             } else {
                 lastWallMs = Date.now();
             }
-        }, 250);
+        }, 100);
         function gameLoop(now) {
             try {
                 const nowMs = Date.now();
@@ -29833,8 +29817,11 @@
                 const _codexDetOpen = !!(_codexDetModal && !_codexDetModal.classList.contains('hidden'));
                 const _codexAnyOpen = _codexDetOpen || !!(_codexModal && !_codexModal.classList.contains('hidden'));
                 if (typeof activeMatchContext === 'undefined' || activeMatchContext !== 'lobby') {
-                    if (!_codexAnyOpen || gameState === 'PLAYING') {
-                        if (wallDt > 0.08 && gameState === 'PLAYING' && (!isMatchPaused || activeMatchContext === 'multiplayer')) {
+                    if (activeMatchContext === 'multiplayer') {
+                        const stepDt = wallDt > 0.08 ? wallDt : rafDt;
+                        _stepMpFixedSimulation(stepDt, wallDt > 0.12);
+                    } else if (!_codexAnyOpen || gameState === 'PLAYING') {
+                        if (wallDt > 0.08 && gameState === 'PLAYING' && !isMatchPaused) {
                             stepSimulationRealTime(wallDt, true);
                         } else {
                             updateGame(rafDt);
@@ -32505,7 +32492,7 @@
                 if (mpMySide !== 'left' && existing && (nowMs - (existing.ts || 0) < 1200)) return;
 
                 let frameDataUrl = null;
-                if (nowMs - _lastLiveSnapTs >= 1000) {
+                if (false && nowMs - _lastLiveSnapTs >= 1000) {
                     _lastLiveSnapTs = nowMs;
                     try {
                         const srcCanvas = (typeof ctx !== 'undefined' && ctx && ctx.canvas) ? ctx.canvas : null;
@@ -33077,113 +33064,65 @@
             _mpPendingTexts = [];
             _mpLastSentGs = null;
             _mpLastSentFs = -1;
+            _mpTargetTick = 0;
             if (!mpRoomId || typeof RelayNet === 'undefined') return;
             _mpStateTopic = 'npa_v2/match/' + mpRoomId + '/state';
             _mpSyncAccum = 0;
-            if (mpMySide === 'right') {
-                _mpStateHandler = (msg) => {
-                    if (!msg || activeMatchContext !== 'multiplayer' || msg.r !== mpRoundNumber) return;
-                    if (typeof msg.t === 'number') matchElapsedSec = msg.t;
-                    if (typeof msg.ta === 'number') timeAttackRemaining = msg.ta;
-                    if (typeof msg.dl === 'number') dmgDealtLeft = msg.dl;
-                    if (typeof msg.dr === 'number') dmgDealtRight = msg.dr;
-                    if (typeof msg.cc === 'number') chronoCountdownSec = msg.cc;
-                    if (typeof msg.ft === 'number') finisherTimer = msg.ft;
-                    if (typeof msg.fs === 'number') finisherStage = msg.fs;
-                    if (msg.dk !== undefined) isDoubleKO = !!msg.dk;
-                    if (msg.cs !== undefined) cultistSlammed = !!msg.cs;
-                    if (msg.shk && fxSettings.shakeEnabled) screenShakeAmount = Math.max(screenShakeAmount, msg.shk);
-                    if (msg.gs && gameState !== 'ENDED') {
-                        if (msg.gs === 'FINISHER' && gameState !== 'FINISHER' && typeof audio !== 'undefined' && audio.playRoar) {
-                            try { audio.playRoar(); } catch (e) {}
-                        }
-                        gameState = msg.gs;
+            _mpStateHandler = (msg) => {
+                if (!msg || activeMatchContext !== 'multiplayer' || msg.r !== mpRoundNumber) return;
+                if (msg.rr && typeof applyMpRoundResult === 'function') {
+                    applyMpRoundResult(msg.rr);
+                    return;
+                }
+                if (mpMySide === 'right') {
+                    if (typeof msg.tk === 'number' && msg.tk > _mpTargetTick) {
+                        _mpTargetTick = msg.tk;
                     }
-                    if (msg.l && ballLeft) _unpackMpBall(ballLeft, msg.l);
-                    if (msg.rB && ballRight) _unpackMpBall(ballRight, msg.rB);
-                    if (msg.ws !== undefined) winnerBall = msg.ws === 'left' ? ballLeft : (msg.ws === 'right' ? ballRight : null);
-                    if (msg.ls !== undefined) loserBall = msg.ls === 'left' ? ballLeft : (msg.ls === 'right' ? ballRight : null);
-                    if (Array.isArray(msg.pr)) projectiles = msg.pr.map(_mpRestoreVal);
-                    if (Array.isArray(msg.em)) eyeMines = msg.em.map(_mpRestoreVal);
-                    if (msg.arr) {
-                        graves = _mpRestoreVal(msg.arr.gr || []);
-                        cursedIceZones = _mpRestoreVal(msg.arr.ci || []);
-                        minions = _mpRestoreVal(msg.arr.mn || []);
-                        handTraps = _mpRestoreVal(msg.arr.ht || []);
-                        candies = _mpRestoreVal(msg.arr.cd || []);
-                        droppedArmor = _mpRestoreVal(msg.arr.da || []);
-                        burnTrails = _mpRestoreVal(msg.arr.bt || []);
-                        scorchCraters = _mpRestoreVal(msg.arr.sc || []);
-                        arenaBombs = _mpRestoreVal(msg.arr.ab || []);
-                        if (Array.isArray(msg.arr.bs)) bloodStains = _mpRestoreVal(msg.arr.bs);
+                    // Only apply authoritative correction if extreme desync ever occurs (e.g. tab frozen > 5s)
+                    if (typeof msg.tk === 'number' && Math.abs(msg.tk - _mpSimTick) <= 4 && ballLeft && ballRight && msg.lx !== undefined) {
+                        const errL = Math.hypot(ballLeft.x - msg.lx, ballLeft.y - msg.ly);
+                        const errR = Math.hypot(ballRight.x - msg.rx, ballRight.y - msg.ry);
+                        if (errL > 85) { ballLeft.x = msg.lx; ballLeft.y = msg.ly; ballLeft.vx = msg.lvx || ballLeft.vx; ballLeft.vy = msg.lvy || ballLeft.vy; }
+                        if (errR > 85) { ballRight.x = msg.rx; ballRight.y = msg.ry; ballRight.vx = msg.rvx || ballRight.vx; ballRight.vy = msg.rvy || ballRight.vy; }
+                        if (typeof msg.lhp === 'number' && Math.abs(ballLeft.hp - msg.lhp) > 40 && msg.gs === 'PLAYING' && gameState === 'PLAYING') ballLeft.hp = msg.lhp;
+                        if (typeof msg.rhp === 'number' && Math.abs(ballRight.hp - msg.rhp) > 40 && msg.gs === 'PLAYING' && gameState === 'PLAYING') ballRight.hp = msg.rhp;
                     }
-                    if (Array.isArray(msg.tx)) {
-                        for (let i = 0; i < msg.tx.length; i++) {
-                            const t = msg.tx[i];
-                            if (t && t.text) floatingTexts.push({ x: t.x, y: t.y, text: t.text, color: t.color || '#fff', life: 0.95, vy: -28, isDecrement: !!t.isDecrement });
-                        }
-                    }
-                    if (Array.isArray(msg.pt)) {
-                        particles = _mpRestoreVal(msg.pt);
-                    }
-                    if (msg.rr && typeof applyMpRoundResult === 'function') {
-                        applyMpRoundResult(msg.rr);
-                    }
-                };
-                RelayNet.onMessage(_mpStateTopic, _mpStateHandler);
-            } else {
-                RelayNet.sub(_mpStateTopic);
-            }
+                }
+            };
+            RelayNet.onMessage(_mpStateTopic, _mpStateHandler);
         }
         function stopMpStateSync() {
             if (_mpStateTopic && _mpStateHandler && typeof RelayNet !== 'undefined' && RelayNet.offMessage) {
                 RelayNet.offMessage(_mpStateTopic, _mpStateHandler);
             }
             _mpStateTopic = null; _mpStateHandler = null;
+            _mpTargetTick = 0;
         }
         function syncMpMatchFrame(dt, force = false) {
             if (mpMySide !== 'left' || !mpRoomId || !_mpStateTopic) return;
             _mpSyncAccum += dt;
-            const stateChanged = (gameState !== _mpLastSentGs || finisherStage !== _mpLastSentFs);
-            if (!force && !stateChanged && _mpSyncAccum < 0.032) return;
+            const stateChanged = (gameState !== _mpLastSentGs);
+            if (!force && !stateChanged && _mpSyncAccum < 0.25) return;
             _mpSyncAccum = 0;
             _mpLastSentGs = gameState;
-            _mpLastSentFs = finisherStage;
-            const arr = {};
-            if (typeof graves !== 'undefined' && graves.length) arr.gr = _mpCleanVal(graves, 0);
-            if (typeof cursedIceZones !== 'undefined' && cursedIceZones.length) arr.ci = _mpCleanVal(cursedIceZones, 0);
-            if (typeof minions !== 'undefined' && minions.length) arr.mn = _mpCleanVal(minions, 0);
-            if (typeof handTraps !== 'undefined' && handTraps.length) arr.ht = _mpCleanVal(handTraps, 0);
-            if (typeof candies !== 'undefined' && candies.length) arr.cd = _mpCleanVal(candies, 0);
-            if (typeof droppedArmor !== 'undefined' && droppedArmor.length) arr.da = _mpCleanVal(droppedArmor, 0);
-            if (typeof burnTrails !== 'undefined' && burnTrails.length) arr.bt = _mpCleanVal(burnTrails, 0);
-            if (typeof scorchCraters !== 'undefined' && scorchCraters.length) arr.sc = _mpCleanVal(scorchCraters, 0);
-            if (typeof arenaBombs !== 'undefined' && arenaBombs.length) arr.ab = _mpCleanVal(arenaBombs, 0);
-            if (gameState === 'FINISHER' && typeof bloodStains !== 'undefined' && bloodStains.length) arr.bs = _mpCleanVal(bloodStains.slice(-20), 0);
+            _mpPendingTexts.length = 0;
             const pkt = {
                 r: mpRoundNumber,
+                tk: _mpSimTick,
                 gs: gameState,
-                t: +matchElapsedSec.toFixed(2),
-                ta: +(typeof timeAttackRemaining === 'number' ? timeAttackRemaining : 60).toFixed(2),
-                dl: Math.round(typeof dmgDealtLeft === 'number' ? dmgDealtLeft : 0),
-                dr: Math.round(typeof dmgDealtRight === 'number' ? dmgDealtRight : 0),
-                cc: typeof chronoCountdownSec === 'number' ? chronoCountdownSec : 5,
-                ft: +finisherTimer.toFixed(3),
-                fs: finisherStage,
-                ws: winnerBall ? (winnerBall === ballLeft ? 'left' : 'right') : null,
-                ls: loserBall ? (loserBall === ballLeft ? 'left' : 'right') : null,
-                dk: isDoubleKO ? 1 : 0,
-                cs: cultistSlammed ? 1 : 0,
-                shk: screenShakeAmount > 0.5 ? +screenShakeAmount.toFixed(1) : 0,
-                l: _packMpBall(ballLeft),
-                rB: _packMpBall(ballRight),
-                pr: (typeof projectiles !== 'undefined' ? projectiles.slice(0, 45) : []).map(p => _mpCleanVal(p, 0)),
-                em: (typeof eyeMines !== 'undefined' ? eyeMines.slice(0, 20) : []).map(e => _mpCleanVal(e, 0)),
-                arr
+                lx: ballLeft ? Math.round(ballLeft.x * 10) / 10 : 120,
+                ly: ballLeft ? Math.round(ballLeft.y * 10) / 10 : 250,
+                lvx: ballLeft ? Math.round((ballLeft.vx || 0) * 100) / 100 : 0,
+                lvy: ballLeft ? Math.round((ballLeft.vy || 0) * 100) / 100 : 0,
+                lhp: ballLeft ? Math.round(ballLeft.hp) : 0,
+                rx: ballRight ? Math.round(ballRight.x * 10) / 10 : 380,
+                ry: ballRight ? Math.round(ballRight.y * 10) / 10 : 250,
+                rvx: ballRight ? Math.round((ballRight.vx || 0) * 100) / 100 : 0,
+                rvy: ballRight ? Math.round((ballRight.vy || 0) * 100) / 100 : 0,
+                rhp: ballRight ? Math.round(ballRight.hp) : 0
             };
-            if (_mpPendingTexts.length) pkt.tx = _mpPendingTexts.splice(0, 15);
-            if (gameState === 'FINISHER' && typeof particles !== 'undefined' && particles.length) {
-                pkt.pt = _mpCleanVal(particles.slice(-25), 0);
+            if (typeof CloudMP !== 'undefined' && CloudMP.bc) {
+                CloudMP.bc.postMessage({ type: 'MP_FAST_STATE', topic: _mpStateTopic, pkt });
             }
             RelayNet.pub(_mpStateTopic, pkt, false, true);
         }
@@ -33292,7 +33231,7 @@
                 const cur = cache.get(topic);
                 if (topic.startsWith('npa_v2/rooms/') && typeof CloudMP !== 'undefined' && CloudMP._mergeRoom) {
                     cache.set(topic, cur ? CloudMP._mergeRoom(cur, parsed) : parsed);
-                } else if (!cur || (parsed.updatedAt || 0) >= (cur.updatedAt || 0)) {
+                } else if (!cur || parsed.updatedAt === undefined || (parsed.updatedAt || 0) >= (cur.updatedAt || 0)) {
                     cache.set(topic, parsed);
                 }
                 if (waiters.has(topic)) {
@@ -33506,8 +33445,10 @@
                 if (!isMatchAssign && q[entry.id] && q[entry.id].matchedRoomId) return q[entry.id];
                 q[entry.id] = entry;
                 this._lsSet('npa_local_mp_queue', q);
+                if (this.bc) this.bc.postMessage({ type: 'QUEUE_SYNC', entry });
                 if (isMatchAssign) {
                     this._lsSet('npa_local_match_notify_' + entry.id, entry);
+                    if (this.bc) this.bc.postMessage({ type: 'MATCH_NOTIFY', targetId: entry.id, entry });
                 }
                 RelayNet.sub('npa_v2/queue');
                 RelayNet.pub('npa_v2/queue', entry, false, isMatchAssign ? false : skipNtfy);
@@ -33685,11 +33626,21 @@
                 if (!d) return;
                 if (d.type === 'ROOM_SYNC' && d.roomId && d.room) {
                     const rooms = CloudMP._lsGet('npa_local_mp_rooms', {});
-                    rooms[d.roomId] = d.room;
+                    rooms[d.roomId] = CloudMP._mergeRoom(rooms[d.roomId], d.room);
                     CloudMP._lsSet('npa_local_mp_rooms', rooms);
                 } else if (d.type === 'PING_ROOM' && d.roomId) {
                     const rooms = CloudMP._lsGet('npa_local_mp_rooms', {});
                     if (rooms[d.roomId]) CloudMP.bc.postMessage({ type: 'ROOM_SYNC', roomId: d.roomId, room: rooms[d.roomId] });
+                } else if (d.type === 'QUEUE_SYNC' && d.entry && d.entry.id) {
+                    const q = CloudMP._lsGet('npa_local_mp_queue', {});
+                    q[d.entry.id] = d.entry;
+                    CloudMP._lsSet('npa_local_mp_queue', q);
+                } else if (d.type === 'MATCH_NOTIFY' && d.targetId && d.entry) {
+                    CloudMP._lsSet('npa_local_match_notify_' + d.targetId, d.entry);
+                } else if (d.type === 'MP_FAST_STATE' && d.topic && d.pkt) {
+                    if (_mpStateTopic === d.topic && typeof _mpStateHandler === 'function') {
+                        try { _mpStateHandler(d.pkt); } catch (e) {}
+                    }
                 }
             });
         }
@@ -33823,20 +33774,30 @@
                     document.getElementById('btnResultAddFriend').classList.add('hidden');
                     document.getElementById('matchResultModal').classList.remove('hidden');
                 } else if (activeMatchContext === 'multiplayer') {
-                    if (mpMySide !== 'left') return;
                     const leftLost = (loserBall === ballLeft);
                     const winnerSide = leftLost ? 'right' : 'left';
                     const survBall = winnerSide === 'left' ? ballLeft : ballRight;
                     const survHp = survBall ? Math.max(1, Math.round(survBall.hp)) : null;
                     const survMountHp = (survBall && survBall.mountHp !== undefined) ? Math.max(0, Math.round(survBall.mountHp)) : null;
                     const rr = { round: mpRoundNumber, winnerSide, loserSide: leftLost ? 'left' : 'right', survivingHp: survHp, survivingMountHp: survMountHp, ts: Date.now() };
-                    if (mpRoomId && typeof CloudMP !== 'undefined') {
-                        CloudMP.writeRoom(mpRoomId, { roundResults: { [`r${mpRoundNumber}`]: rr } }).catch(() => {});
-                        if (_mpStateTopic && typeof RelayNet !== 'undefined') {
-                            RelayNet.pub(_mpStateTopic, { r: mpRoundNumber, gs: 'ENDED', rr }, false, true);
+                    if (mpMySide === 'left') {
+                        if (mpRoomId && typeof CloudMP !== 'undefined') {
+                            CloudMP.writeRoom(mpRoomId, { roundResults: { [`r${mpRoundNumber}`]: rr } }).catch(() => {});
+                            if (_mpStateTopic && typeof RelayNet !== 'undefined') {
+                                RelayNet.pub(_mpStateTopic, { r: mpRoundNumber, gs: 'ENDED', rr }, false, true);
+                            }
+                            if (CloudMP.bc) CloudMP.bc.postMessage({ type: 'MP_FAST_STATE', topic: _mpStateTopic, pkt: { r: mpRoundNumber, gs: 'ENDED', rr } });
                         }
+                        applyMpRoundResult(rr);
+                    } else {
+                        const endRoundSnap = mpRoundNumber;
+                        const endSessSnap = mpSessionSeq;
+                        setTimeout(() => {
+                            if (endSessSnap === mpSessionSeq && !mpMatchEnded && activeMatchContext === 'multiplayer' && mpLastAppliedRound < endRoundSnap) {
+                                applyMpRoundResult(rr);
+                            }
+                        }, 350);
                     }
-                    applyMpRoundResult(rr);
                 }
             }
         };
@@ -35391,10 +35352,18 @@
 
                     const waitDeckAt = Date.now();
                     let oppSeenInRoom = false;
+                    let _deckResendTicks = 0;
                     if (mpPickPollTimer) clearInterval(mpPickPollTimer);
                     mpPickPollTimer = setInterval(async () => {
                         if (sess !== mpSessionSeq || mpMatchEnded || !mpInPickPhase || !mpRoomId) return;
                         try {
+                            _deckResendTicks++;
+                            if (_deckResendTicks % 4 === 0) {
+                                CloudMP.writeRoom(mpRoomId, {
+                                    decks: { [mpMySide]: [...fixedDeck] },
+                                    deckSkins: { [mpMySide]: { ...fixedSkins } }
+                                }).catch(() => {});
+                            }
                             const r = await CloudMP.readRoom(mpRoomId);
                             if (sess !== mpSessionSeq || mpMatchEnded || !mpInPickPhase || !mpRoomId) return;
                             const oppHb = r && r['hb_' + oppSide];
@@ -35648,7 +35617,7 @@
                                 clearInterval(mpPickPollTimer); mpPickPollTimer = null;
                                 const leftBall = mpMySide === 'left' ? survivingBallId : p[oppSide];
                                 const rightBall = mpMySide === 'right' ? survivingBallId : p[oppSide];
-                                showRevealAndStart(leftBall, rightBall);
+                                showRevealAndStart(leftBall, rightBall, p.startAt || null);
                                 return;
                             }
                             const oppHb = r && r['hb_' + oppSide];
@@ -35706,9 +35675,13 @@
                     grid.classList.add('hidden');
                     confirmBtn.classList.add('hidden');
                     document.getElementById('pickBanTitle').textContent = '⏳ Đang chờ đối thủ chọn xong để công bố...';
+                    const loserStartAt = (mode === 'loser_pick' && survivingBallId) ? (Date.now() + 1100) : null;
                     try {
                         const rpPatch = { [mpMySide]: chosenId };
-                        if (mode === 'loser_pick' && survivingBallId) rpPatch[oppSide] = survivingBallId;
+                        if (mode === 'loser_pick' && survivingBallId) {
+                            rpPatch[oppSide] = survivingBallId;
+                            rpPatch.startAt = loserStartAt;
+                        }
                         await CloudMP.writeRoom(mpRoomId, {
                             picks: { [`r${mpRoundNumber}`]: rpPatch }
                         });
@@ -35717,7 +35690,7 @@
                     if (mode === 'loser_pick' && survivingBallId) {
                         const leftBall = mpMySide === 'left' ? chosenId : survivingBallId;
                         const rightBall = mpMySide === 'right' ? chosenId : survivingBallId;
-                        showRevealAndStart(leftBall, rightBall);
+                        showRevealAndStart(leftBall, rightBall, loserStartAt);
                         return;
                     }
 
@@ -35735,8 +35708,13 @@
                             }
                             const rp = r && r.picks && r.picks[`r${mpRoundNumber}`];
                             if (rp && rp.left && rp.right) {
+                                if (!rp.startAt && mpMySide === 'left') {
+                                    const sAt = Date.now() + 1100;
+                                    rp.startAt = sAt;
+                                    CloudMP.writeRoom(mpRoomId, { picks: { [`r${mpRoundNumber}`]: { startAt: sAt } } }).catch(() => {});
+                                }
                                 clearInterval(mpPickPollTimer); mpPickPollTimer = null;
-                                showRevealAndStart(rp.left, rp.right);
+                                showRevealAndStart(rp.left, rp.right, rp.startAt || null);
                                 return;
                             }
                             const oppHb = r && r['hb_' + oppSide];
@@ -35747,7 +35725,7 @@
                     }, 500);
                 };
 
-                function showRevealAndStart(leftId, rightId) {
+                function showRevealAndStart(leftId, rightId, syncStartAt = null) {
                     mpInPickPhase = false;
                     if (mpPickHbTimer) { clearInterval(mpPickHbTimer); mpPickHbTimer = null; }
                     const lSkin = (mpDeckSkinsLeft && mpDeckSkinsLeft[leftId]) || 'default';
@@ -35761,6 +35739,7 @@
                     revealText.textContent = `${(lMeta ? lMeta.name : leftId) + lSkTxt}  ⚡ VS ⚡  ${(rMeta ? rMeta.name : rightId) + rSkTxt}`;
                     revealBox.classList.remove('hidden');
                     const revSess = mpSessionSeq;
+                    const delayMs = syncStartAt ? Math.max(200, Math.min(1400, syncStartAt - Date.now())) : 1000;
                     if (mpRevealTimeout) clearTimeout(mpRevealTimeout);
                     mpRevealTimeout = setTimeout(() => {
                         mpRevealTimeout = null;
@@ -35779,7 +35758,7 @@
                         startMpStateSync();
                         showScreen('arena');
                         startMatch();
-                    }, 1100);
+                    }, delayMs);
                 }
 
                 pickBanInterval = setInterval(() => {
@@ -39563,5 +39542,5 @@
             document.addEventListener('DOMContentLoaded', bootArenaPlatform);
         }
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5e4b1023db6dba0',t:'MTc5NTMxNjUwNQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5e4b1023db6dba0',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
