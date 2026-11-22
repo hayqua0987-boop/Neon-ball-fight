@@ -179,7 +179,7 @@
         <!-- Top Bar -->
         <div class="flex flex-wrap items-center justify-between gap-3 bg-[#12071f]/90 border border-orange-500/45 rounded-2xl p-3 shadow-[0_0_24px_rgba(249,115,22,0.18)]">
             <div class="flex flex-wrap items-center gap-2.5">
-                <button id="btnOpenProfile" type="button" class="flex items-center gap-3 text-left px-2 py-1 -my-1 -ml-1 rounded-xl border border-transparent hover:border-cyan-500/50 hover:bg-slate-900/80 transition cursor-pointer group" title="Hồ sơ người chơi">
+                <button id="btnOpenProfile" type="button" class="flex items-center gap-3 text-left px-2 py-1 -my-1 -ml-1 rounded-xl border border-transparent hover:border-cyan-500/50 hover:bg-slate-900/80 transition cursor-pointer group" data-i18n-title="profileTitle" title="Hồ sơ người chơi">
                     <div class="relative w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-cyan-500 flex items-center justify-center font-black text-sm border border-white/40 group-hover:border-cyan-300 transition">
                         <span id="lobbyAvatarTxt">N</span>
                         <span id="presenceDot" class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-slate-950" title="Online"></span>
@@ -194,7 +194,7 @@
                         <div class="text-[10px] text-amber-300 font-bold">ELO: <span id="lobbyElo">1000</span> | <span id="lobbySeasonBanner" class="text-purple-300">S1</span></div>
                     </div>
                 </button>
-                <button id="btnSettings" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-600/60 text-slate-200 hover:bg-slate-800 hover:border-cyan-400/50 cursor-pointer flex items-center gap-1.5 text-xs font-bold transition" title="Cài Đặt"><span>⚙️</span> <span data-i18n="settings">Cài Đặt</span></button>
+                <button id="btnSettings" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-600/60 text-slate-200 hover:bg-slate-800 hover:border-cyan-400/50 cursor-pointer flex items-center gap-1.5 text-xs font-bold transition" data-i18n-title="settingsTitle" title="Cài Đặt"><span>⚙️</span> <span data-i18n="settings">Cài Đặt</span></button>
                 <button id="openChatBtn" class="px-3 py-1.5 rounded-xl bg-cyan-950/80 border border-cyan-500/50 text-cyan-300 hover:bg-cyan-900 cursor-pointer flex items-center gap-1.5 text-xs font-bold transition">💬 <span data-i18n="chat">Chat</span></button>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs font-bold">
@@ -272,7 +272,7 @@
         <div class="w-full max-w-md bg-[#080d1a] border border-cyan-500/40 rounded-3xl p-5 neon-box flex flex-col gap-3 text-center">
             <div class="text-4xl">🎮</div>
             <h2 data-i18n="chooseCtrlBall" class="text-base font-black text-cyan-300">CHỌN BÓNG BẠN ĐIỀU KHIỂN</h2>
-            <p data-i18n="chooseCtrlBallSub" class="text-[11px] text-slate-400 leading-relaxed">Cả hai bóng đều là bóng kỹ năng (không điều khiển được). Hãy chọn 1 trong 2 để điều khiển.</p>
+            <p data-i18n="chooseCtrlBallSub" class="text-[11px] text-slate-400 leading-relaxed">Cả hai bóng đều là bóng kỹ năng. Chỉ được chọn 1 trong 2 để điều khiển — hãy bấm vào bóng bạn muốn dùng.</p>
             <div class="flex flex-col gap-2 pt-1">
                 <button id="btnCtrlPickLeft" type="button" class="py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs cursor-pointer">◀ <span id="ctrlPickLeftName">LEFT</span></button>
                 <button id="btnCtrlPickRight" type="button" class="py-3 rounded-2xl bg-rose-500 hover:bg-rose-400 text-slate-950 font-black text-xs cursor-pointer">▶ <span id="ctrlPickRightName">RIGHT</span></button>
@@ -307,17 +307,16 @@
                     #controlSkillBar .sk-key{position:absolute;bottom:calc(var(--sk)*-.34);left:50%;transform:translateX(-50%);font:900 10px/1 ui-sans-serif,system-ui,sans-serif;color:#a5f3fc;letter-spacing:.06em;background:rgba(2,6,23,.85);border:1px solid rgba(34,211,238,.45);border-radius:6px;padding:2px 5px;pointer-events:none;white-space:nowrap;opacity:0;transition:opacity .2s ease;}
                     #controlSkillBar.keys-on .sk-key{opacity:1;}
                     @media (hover:none) and (pointer:coarse){
-                        #controlSkillBar{left:auto;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:none;flex-direction:column-reverse;align-items:flex-end;gap:10px;padding:8px 10px;background:none;}
-                        #controlSkillBar .sk-slot:nth-child(1){--sk:clamp(60px,15.5vmin,88px);margin-right:4px;}
-                        #controlSkillBar .sk-slot:nth-child(2){--sk:clamp(52px,13.5vmin,74px);margin-right:26px;}
-                        #controlSkillBar .sk-slot:nth-child(3){--sk:clamp(52px,13.5vmin,74px);margin-right:46px;}
+                        #controlSkillBar{left:auto;right:calc(10px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:none;flex-direction:row-reverse;flex-wrap:wrap-reverse;align-items:flex-end;justify-content:flex-start;gap:9px;padding:8px;background:rgba(2,6,23,.30);border-radius:24px;max-width:calc(clamp(50px,12vmin,66px) * 2 + 26px);}
+                        #controlSkillBar .sk-slot{--sk:clamp(50px,12vmin,66px) !important;margin:0 !important;}
+                        #controlSkillBar .sk-slot:nth-child(5){--sk:clamp(56px,13.5vmin,72px) !important;}
                         #controlSkillBar .sk-key{display:none;}
                         #controlJoystick{position:fixed !important;left:14px !important;bottom:calc(14px + env(safe-area-inset-bottom,0px)) !important;top:auto !important;right:auto !important;width:108px !important;height:108px !important;z-index:70 !important;}
                     }
                 </style>
                 <!-- skill bar is mounted at the end of <body> (fixed overlay) -->
                 <!-- 🎮 CONTROL BADGE -->
-                <div id="controlBadge" class="hidden absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-slate-950/85 border border-cyan-400/60 text-[10px] font-black text-cyan-300 z-20 pointer-events-none">🎮 <span id="controlBadgeName">—</span></div>
+                <div id="controlBadge" class="hidden absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-slate-950/85 border border-cyan-400/60 text-[10px] font-black text-cyan-300 z-20 pointer-events-none">🎮 <span id="controlBadgeName">—</span><span id="buildStamp" class="ml-1 opacity-60" style="font-weight:700;pointer-events:auto;cursor:pointer">v25.17</span></div>
 
                 <!-- Intro Countdown Overlay -->
                 <div id="introOverlay" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300 opacity-0 rounded-3xl">
@@ -331,8 +330,9 @@
             <div id="controlBar" class="hidden flex-wrap items-center justify-center gap-2 mt-3 w-full">
                 <span class="px-2.5 py-1 rounded-lg bg-slate-900 border border-cyan-500/50 text-[10px] font-black text-cyan-300">🎮 <span id="controlBarName">—</span></span>
                 <button id="btnControlSwitch" type="button" class="hidden px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-[10px] font-black text-slate-200 cursor-pointer" data-i18n="ctrlSwitch">🔄 Đổi bóng</button>
-                <button id="btnControlZoom" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-[10px] font-black text-slate-200 cursor-pointer">🔍 <span id="controlZoomLabel">1.4x</span></button>
-                <span class="px-2.5 py-1 rounded-lg bg-slate-950/70 border border-slate-700 text-[9px] font-bold text-slate-400" data-i18n="ctrlHint">WASD / mũi tên • Q/E/R (1/2/3) tung chiêu theo con trỏ • 📱 chạm = tự nhắm, giữ &amp; kéo = tự chọn hướng, kéo vào ✕ HỦY để thu hồi</span>
+                <button id="btnGowSeq" type="button" class="hidden px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-amber-500/60 text-[10px] font-black text-amber-200 cursor-pointer">🔁 LẦN LƯỢT</button>
+                <button id="btnControlZoom" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-[10px] font-black text-slate-200 cursor-pointer">🔍 <span id="controlZoomLabel">1.2x</span></button>
+                <span class="px-2.5 py-1 rounded-lg bg-slate-950/70 border border-slate-700 text-[9px] font-bold text-slate-400" data-i18n="ctrlHint">WASD / mũi tên • Q/E/R/F (1/2/3/4) tung chiêu theo con trỏ • 📱 chạm = tự nhắm, giữ &amp; kéo = tự chọn hướng (🦅 kéo để chỉ điểm lướt), kéo vào ✕ HỦY để thu hồi</span>
             </div>
 
             <!-- Controls Panel Under Arena -->
@@ -504,13 +504,6 @@
                         </div>
                         <p data-i18n="modeTimeDesc" class="text-[10px] text-slate-400">60s không thể chết, tích lũy sát thương.</p>
                     </button>
-                    <button data-submode="bombpush" class="sandbox-submode-btn p-3 rounded-xl bg-slate-900 border border-slate-700 text-left cursor-pointer">
-                        <div class="flex items-center gap-2 mb-1">
-                            <svg class="w-5 h-5 text-rose-400" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="12" r="5"/><circle cx="16" cy="12" r="5" opacity="0.75"/></svg>
-                            <span data-i18n="modeBomb" class="text-xs font-black text-white">Đẩy Boom</span>
-                        </div>
-                        <p data-i18n="modeBombDesc" class="text-[10px] text-slate-400">Miễn sát thương trực tiếp, đánh bom đẩy vào địch.</p>
-                    </button>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     <div class="bg-slate-950/80 border border-purple-500/40 rounded-2xl p-3 flex flex-col gap-2">
@@ -648,7 +641,7 @@
         <div class="w-full max-w-xs bg-slate-950 border-2 border-amber-500/50 rounded-3xl p-5 space-y-3 text-center">
             <h3 data-i18n="joinRoomCodeBtn" class="text-sm font-black text-amber-300">🔑 Nhập Mã</h3>
             <p data-i18n="enterRoomCodePrompt" class="text-[11px] text-slate-400">Nhập mã phòng do bạn bè gửi để tham gia:</p>
-            <input id="joinRoomCodeInput" type="text" maxlength="12" placeholder="VD: A1B2C3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-center text-sm font-black tracking-widest uppercase text-white focus:outline-none focus:border-amber-400" />
+            <input id="joinRoomCodeInput" data-i18n-placeholder="joinRoomPlaceholder" type="text" maxlength="12" placeholder="VD: A1B2C3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-center text-sm font-black tracking-widest uppercase text-white focus:outline-none focus:border-amber-400" />
             <p id="joinRoomErrorText" class="text-[11px] font-bold text-rose-400 hidden"></p>
             <div class="flex gap-2">
                 <button id="btnCancelJoinCode" type="button" data-i18n="cancelQueueBtn" class="flex-1 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-300 cursor-pointer">Hủy</button>
@@ -826,7 +819,7 @@
                     <div class="px-3 py-1 rounded-xl bg-slate-900/90 border border-amber-500/40 text-amber-300">🪙 <span id="bmCoins">0</span></div>
                     <div class="px-3 py-1 rounded-xl bg-slate-900/90 border border-purple-500/40 text-purple-300">🎟️ <span id="bmCharTickets">0</span></div>
                     <div class="px-3 py-1 rounded-xl bg-slate-900/90 border border-pink-500/40 text-pink-300">🎨 <span id="bmSkinTickets">0</span></div>
-                    <button id="btnBmQuickRate" class="w-7 h-7 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center cursor-pointer shadow-[0_0_10px_rgba(16,185,129,0.5)]" title="Tỉ lệ rơi">?</button>
+                    <button id="btnBmQuickRate" class="w-7 h-7 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center cursor-pointer shadow-[0_0_10px_rgba(16,185,129,0.5)]" data-i18n-title="dropRateTitle" title="Tỉ lệ rơi">?</button>
                     <button class="close-modal-btn w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-xs cursor-pointer" data-target="gachaModal">✕</button>
                 </div>
             </div>
@@ -852,7 +845,7 @@
                 <!-- Chest View (Rương Bóng / Rương Skin) -->
                 <div id="bmChestSection" class="md:col-span-9 grid grid-cols-1 md:grid-cols-9 gap-4 items-center">
                     <div class="md:col-span-5 flex flex-col items-center justify-center">
-                        <div class="relative group cursor-pointer" id="bmChestClickArea" title="Nhấn vào rương để xem phần thưởng">
+                        <div class="relative group cursor-pointer" id="bmChestClickArea" data-i18n-title="chestClickTitle" title="Nhấn vào rương để xem phần thưởng">
                             <canvas id="bmChestCanvas" width="280" height="230" class="w-[260px] h-[215px] rounded-2xl"></canvas>
                             <div id="bmChestHint" data-i18n="bmClickChestHint" class="text-center text-[10px] font-bold text-cyan-300/90 -mt-2 group-hover:text-amber-300 transition">🔍 Nhấn vào rương để xem bóng có thể nhận</div>
                         </div>
@@ -900,7 +893,7 @@
             <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
                 <div class="flex items-center gap-2.5">
                     <h2 id="bmDetailTitle" class="text-base sm:text-lg font-black text-white">Rương Bóng</h2>
-                    <button id="btnOpenDropRates" class="w-6 h-6 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center cursor-pointer shadow-[0_0_10px_rgba(16,185,129,0.6)]" title="Xem tỉ lệ">?</button>
+                    <button id="btnOpenDropRates" class="w-6 h-6 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center cursor-pointer shadow-[0_0_10px_rgba(16,185,129,0.6)]" data-i18n-title="viewRatesTitle" title="Xem tỉ lệ">?</button>
                 </div>
                 <div class="flex items-center gap-2 text-xs font-black">
                     <span id="bmDetailTicketBadge" class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-amber-300">🎟️ 0</span>
@@ -1003,8 +996,8 @@
                 </div>
                 <div id="inlineChatMessages" class="flex-1 overflow-y-auto bg-slate-900/60 border border-slate-800 rounded-2xl p-3 space-y-1.5 text-xs min-h-[170px] max-h-[38vh]"></div>
                 <div class="flex items-center gap-2">
-                    <input id="inlineChatInput" type="text" placeholder="Nhập tin nhắn..." class="flex-1 bg-slate-900 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-                    <button id="btnSendInlineChat" type="button" title="Gửi" class="w-10 h-9 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-sm flex items-center justify-center cursor-pointer shrink-0 transition">➤</button>
+                    <input id="inlineChatInput" data-i18n-placeholder="chatPlaceholder" type="text" placeholder="Nhập tin nhắn..." class="flex-1 bg-slate-900 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                    <button id="btnSendInlineChat" type="button" data-i18n-title="sendTitle" title="Gửi" class="w-10 h-9 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-sm flex items-center justify-center cursor-pointer shrink-0 transition">➤</button>
                 </div>
             </div>
         </div>
@@ -1096,9 +1089,9 @@
                 <button id="tabAccRegister" type="button" data-i18n="accTabRegister" class="py-1.5 rounded-lg text-xs font-black cursor-pointer transition text-slate-300 hover:bg-slate-800">Tạo Tài Khoản</button>
             </div>
             <div class="space-y-2.5">
-                <input id="accUsernameInput" type="text" maxlength="48" autocomplete="username" placeholder="Tên đăng nhập..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
+                <input id="accUsernameInput" data-i18n-placeholder="accUserPlaceholder" type="text" maxlength="48" autocomplete="username" placeholder="Tên đăng nhập..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
                 <div class="relative">
-                    <input id="accPasswordInput" type="password" maxlength="32" autocomplete="current-password" placeholder="Mật khẩu (từ 4 ký tự)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-3 pr-10 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
+                    <input id="accPasswordInput" data-i18n-placeholder="accPassPlaceholder" type="password" maxlength="32" autocomplete="current-password" placeholder="Mật khẩu (từ 4 ký tự)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-3 pr-10 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
                     <button id="btnToggleAccPass" type="button" aria-label="Toggle password visibility" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-300 transition cursor-pointer p-1">
                         <svg id="accEyeOpenIcon" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         <svg id="accEyeClosedIcon" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
@@ -1166,7 +1159,7 @@
             <!-- Top Header Bar -->
             <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950/60 border-b border-slate-800">
                 <div class="flex items-center gap-3">
-                    <button id="btnCloseProfile" type="button" class="w-9 h-9 rounded-xl bg-slate-800/90 hover:bg-cyan-500 hover:text-slate-950 border border-slate-700 text-white font-black text-base flex items-center justify-center transition cursor-pointer" title="Quay lại">‹</button>
+                    <button id="btnCloseProfile" type="button" class="w-9 h-9 rounded-xl bg-slate-800/90 hover:bg-cyan-500 hover:text-slate-950 border border-slate-700 text-white font-black text-base flex items-center justify-center transition cursor-pointer" data-i18n-title="backTitle" title="Quay lại">‹</button>
                     <h2 data-i18n="profileModalTitle" class="text-base sm:text-lg font-black tracking-wide text-cyan-300 flex items-center gap-2">👤 HỒ SƠ NGƯỜI CHƠI</h2>
                 </div>
                 <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 px-3 py-1 rounded-full">
@@ -1206,7 +1199,7 @@
                                     <span id="profileAdminBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 text-slate-950 font-black tracking-wider shadow-[0_0_12px_rgba(245,158,11,0.6)]">AM</span>
                                     <span id="profileNameDisplay" class="text-lg font-black text-white tracking-wide">NeonFighter</span>
                                     <span id="profileAuthBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/40 text-cyan-300 font-bold">GUEST</span>
-                                    <button id="btnEditProfileName" type="button" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-cyan-300 text-xs font-bold transition cursor-pointer" title="Đổi tên">✏️</button>
+                                    <button id="btnEditProfileName" type="button" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-cyan-300 text-xs font-bold transition cursor-pointer" data-i18n-title="renameTitle" title="Đổi tên">✏️</button>
                                 </div>
 
                                 <!-- Name Edit Mode -->
@@ -1231,7 +1224,7 @@
                             <div class="relative bg-slate-950/85 border border-slate-800 rounded-2xl p-3.5 min-h-[96px] flex flex-col justify-between">
                                 <div class="flex items-center justify-between mb-1.5">
                                     <span data-i18n="profileBioLabel" class="text-[10px] font-black uppercase tracking-wider text-cyan-400">📝 Mô tả bản thân</span>
-                                    <button id="btnEditProfileBio" data-i18n="profileEditBtn" type="button" class="px-2 py-0.5 rounded-lg bg-slate-800/90 hover:bg-cyan-500 hover:text-slate-950 text-cyan-300 text-[11px] font-bold transition cursor-pointer" title="Chỉnh sửa mô tả">✏️ Sửa</button>
+                                    <button id="btnEditProfileBio" data-i18n="profileEditBtn" type="button" class="px-2 py-0.5 rounded-lg bg-slate-800/90 hover:bg-cyan-500 hover:text-slate-950 text-cyan-300 text-[11px] font-bold transition cursor-pointer" data-i18n-title="editBioTitle" title="Chỉnh sửa mô tả">✏️ Sửa</button>
                                 </div>
                                 <p id="profileBioDisplay" class="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap break-words">Người chơi này vẫn chưa viết lời giới thiệu...</p>
                                 <div id="profileBioEditBox" class="hidden space-y-2 mt-1">
@@ -1403,7 +1396,7 @@
                 <div id="chatMessagesBox" class="flex-1 overflow-y-auto bg-slate-900/60 border border-slate-800 rounded-2xl p-3 space-y-1.5 text-xs min-h-[170px] max-h-[40vh]"></div>
                 <div class="flex items-center gap-2 shrink-0">
                     <input id="chatInput" data-i18n-placeholder="chatPlaceholder" type="text" placeholder="Nhập tin nhắn..." class="flex-1 bg-slate-900 border border-slate-700 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-                    <button id="btnSendChat" type="button" title="Gửi" class="w-10 h-9 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-sm flex items-center justify-center cursor-pointer shrink-0 transition">➤</button>
+                    <button id="btnSendChat" type="button" data-i18n-title="sendTitle" title="Gửi" class="w-10 h-9 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-sm flex items-center justify-center cursor-pointer shrink-0 transition">➤</button>
                 </div>
             </div>
         </div>
@@ -1437,7 +1430,7 @@
 
         const ctx = canvas.getContext('2d');
         try { Object.defineProperty(ctx, 'shadowBlur', { get: () => 0, set: () => {}, configurable: true }); } catch(e) {}
-        const ARENA_SIZE = 790;   // 2.5x area (500 * sqrt(2.5))
+        const ARENA_SIZE = 719;   // 553 * 1.3 (sàn đấu tăng 30%)
         // Codex / lobby / sandbox portrait canvases frame a single ball: keep their own
         // reference frame so a bigger arena never shrinks the previews.
         const PREVIEW_FRAME = 450;
@@ -1520,13 +1513,13 @@
         // =====================================================================
         //  🎮 CONTROL MODE — you steer your own ball, the camera follows it
         // =====================================================================
-        const CONTROLLABLE_BALL_IDS = ['phantomfan', 'axehunter', 'plasmaricochet'];
+        const CONTROLLABLE_BALL_IDS = ['phantomfan', 'axehunter', 'plasmaricochet', 'sirmalakor', 'godofwar'];
         function isControllableBallId(id) { return CONTROLLABLE_BALL_IDS.indexOf(id) >= 0; }
 
         // Seconds the player is locked out after the ball is pushed out of a wall (0.05 = quick tap lock).
         // 0 -> control returns instantly, 0.15 -> longer freeze.
         const CONTROL_WALL_LOCK_SEC = 0.05;
-        const CONTROL_ZOOM_STEPS = [1, 1.4, 1.9, 2.6];
+        const CONTROL_ZOOM_STEPS = [1, 1.2, 1.6, 2.1, 2.6];
         const controlState = {
             zoomIdx: 1,
             active: false,
@@ -1536,16 +1529,24 @@
             mouse: { active: false, x: 0, y: 0, t: 0 },
             inputMode: 'kbm',        // 'kbm' = bàn phím/chuột (PC) · 'touch' = cảm ứng (điện thoại)
             skillDrag: { active: false, moved: false, cancel: false, slot: -1, cx: 0, cy: 0, x: 0, y: 0, aim: null },
+            // 🦅 falcon stick: circle under the finger + a line from the falcon to the target point
+            falconStick: { active: false, cx: 0, cy: 0, x: 0, y: 0, target: null, cancel: false },
             mpRemote: { x: 0, y: 0, t: 0 },
             overrideSide: null
         };
         const controlCam = { x: ARENA_SIZE / 2, y: ARENA_SIZE / 2, zoom: 1, init: false };
 
-        function controlZoomValue() { return CONTROL_ZOOM_STEPS[controlState.zoomIdx] || 1.4; }
+        function controlZoomValue() { return CONTROL_ZOOM_STEPS[controlState.zoomIdx] || 1.2; }
 
         // 🖥️ PC (keyboard/mouse) → hide the joystick, show skill hotkeys on key press
         function setControlInputMode(m) {
             const mode = (m === 'touch') ? 'touch' : 'kbm';
+            // ⌨️ keyboard/mouse → the hotkey badges are permanently visible on the slots
+            const _barNow = document.getElementById('controlSkillBar');
+            if (_barNow) {
+                if (mode === 'kbm') _barNow.classList.add('keys-on');
+                else _barNow.classList.remove('keys-on');
+            }
             if (controlState.inputMode === mode) return;
             controlState.inputMode = mode;
             const joy = document.getElementById('controlJoystick');
@@ -1559,7 +1560,8 @@
             if (_skKeysTimer) clearTimeout(_skKeysTimer);
             _skKeysTimer = setTimeout(() => {
                 const b2 = document.getElementById('controlSkillBar');
-                if (b2) b2.classList.remove('keys-on');
+                // ⌨️ desktop/keyboard-mouse: the hotkey badges never disappear again
+                if (b2 && controlState.inputMode !== 'kbm') b2.classList.remove('keys-on');
             }, ms || 3200);
         }
         function isTouchDevice() {
@@ -1760,21 +1762,53 @@
         function controlAimPoint() {
             // 🎯 while drag-aiming a skill the weapon follows the finger
             const sd = controlState.skillDrag;
-            if (sd && sd.active && sd.moved && sd.aim) return { x: sd.aim.x, y: sd.aim.y };
+            if (sd && sd.active && sd.moved && sd.aim) {
+                controlState.lastAim = { x: sd.aim.x, y: sd.aim.y, t: Date.now() };
+                return { x: sd.aim.x, y: sd.aim.y };
+            }
             const m = controlState.mouse;
             if (m && m.t && m.src === 'skill') {
-                if (Date.now() - m.t <= 1500) return { x: m.x, y: m.y };
+                if (Date.now() - m.t <= 1500) {
+                    controlState.lastAim = { x: m.x, y: m.y, t: Date.now() };
+                    return { x: m.x, y: m.y };
+                }
             }
-            if (m && m.t && (Date.now() - m.t) <= 6000) return { x: m.x, y: m.y };
+            if (m && m.t && (Date.now() - m.t) <= 6000) {
+                controlState.lastAim = { x: m.x, y: m.y, t: Date.now() };
+                return { x: m.x, y: m.y };
+            }
             // 📱 touch: aim where the joystick is pushed (no cursor on a phone)
             const jv = controlState.joy;
             if (jv && jv.active) {
                 const jd = Math.hypot(jv.x, jv.y);
                 if (jd > 0.22) {
                     const b = (typeof controlFocusBall === 'function') ? controlFocusBall() : null;
-                    if (b) return { x: b.x + (jv.x / jd) * 420, y: b.y + (jv.y / jd) * 420 };
+                    if (b) {
+                        const _p = { x: b.x + (jv.x / jd) * 420, y: b.y + (jv.y / jd) * 420 };
+                        controlState.lastAim = { x: _p.x, y: _p.y, t: Date.now() };
+                        return _p;
+                    }
                 }
             }
+            // 🧭 nothing moved lately: keep firing where the player last pointed,
+            //    NEVER at "whatever entity happens to be closest"
+            const la = controlState.lastAim;
+            if (la && (Date.now() - la.t) <= 120000) return { x: la.x, y: la.y };
+            return null;
+        }
+
+        // 🖱️ the aim point for a HUMAN-driven ball: cursor -> last designated point -> enemy ball.
+        //    Deliberately never returns a minion / falcon / cultist / pawn.
+        function _humanAimPoint(b) {
+            const p = (typeof controlAimPointFor === 'function') ? controlAimPointFor(b) : null;
+            if (p && isFinite(p.x) && isFinite(p.y)) {
+                if (b) b._lastAimPoint = { x: p.x, y: p.y, t: Date.now() };
+                return p;
+            }
+            if (b && b._lastAimPoint) return { x: b._lastAimPoint.x, y: b._lastAimPoint.y };
+            const foe = (typeof controlEnemyBall === 'function') ? controlEnemyBall() : null;
+            if (b && foe && !foe.isDead) return { x: foe.x, y: foe.y };
+            if (b) return { x: b.x + ((b.horseFacing < 0) ? -160 : 160), y: b.y };
             return null;
         }
 
@@ -1819,79 +1853,388 @@
             return true;
         }
 
+        // ---- Axe Hunter skill descriptors (slot 1 morphs axe -> bow) ----
+        const _SK_AXE_THROW = {
+            id: 'axe', icon: '🪓', name: 'NÉM RÌU', en: 'AXE THROW', max: 2.0,
+            cd: b => Math.max(0, b.throwCooldown || 0),
+            ready: b => !!b.hasAxe && !b.isWindingUp,
+            cast: b => {
+                if (!b.hasAxe || b.isWindingUp || (b.throwCooldown || 0) > 0) return false;
+                b.isWindingUp = true;
+                b.throwWindup = 0.12;
+                return true;
+            }
+        };
+        const _SK_AXE_BOW = {
+            id: 'bow', icon: '🏹', name: 'CUNG THỦ', en: 'HUNTER BOW', max: 1.1,
+            cd: b => b._manualBowAt ? Math.max(0, 1.1 - (Date.now() - b._manualBowAt) / 1000) : 0,
+            ready: b => true,
+            cast: b => {
+                if (b._manualBowAt && (Date.now() - b._manualBowAt) < 1100) return false;
+                b._manualBowAt = Date.now();
+                b._manualBowRequest = true;
+                setTimeout(() => { b._manualBowRequest = false; }, 250);
+                return true;
+            }
+        };
+        const _SK_AXE_FALCON = {
+            id: 'falcon', icon: '🦅', name: 'ĐẠI BÀNG', en: 'FALCON', max: 5.0, stick: true,
+            cd: b => (b.falcon && b.falcon.dashCooldown > 0) ? b.falcon.dashCooldown : 0,
+            ready: b => !!(b.falcon && !b.falcon.isDead && (b.falcon.dashCooldown || 0) <= 0),
+            cast: b => {
+                if (!b.falcon || b.falcon.isDead || (b.falcon.dashCooldown || 0) > 0) return false;
+                b.falcon.dashCooldown = 0;
+                b.falcon._manualDashRequest = true;
+                setTimeout(() => { if (b.falcon) b.falcon._manualDashRequest = false; }, 400);
+                return true;
+            }
+        };
+        // the axe slot turns into the bow the moment the axe leaves the hand
+        function axeHunterSkillSetFor(b) {
+            return [b && b.thrownAxe ? _SK_AXE_BOW : _SK_AXE_THROW, _SK_AXE_FALCON];
+        }
+
+        // ---- aim helper used by the boss skill sets ----
+        function _ctrlAimOr(b, fallbackDist) {
+            let ap = null;
+            try { ap = (typeof _humanAimPoint === 'function') ? _humanAimPoint(b) : ((typeof controlAimPointFor === 'function') ? controlAimPointFor(b) : null); } catch (e) { ap = null; }
+            if (ap && isFinite(ap.x) && isFinite(ap.y)) return ap;
+            const dx = (b && b.horseFacing < 0) ? -(fallbackDist || 160) : (fallbackDist || 160);
+            return { x: (b ? b.x : 0) + dx, y: (b ? b.y : 0) };
+        }
+
+        // ---- Sir Malakor: 🌀 Halberd Sweep + (mounted) 🐎 Wild Charge / (dismounted) 🌙 Wind Blade ----
+        const _SK_MAL_SWEEP = {
+            id: 'sweep', icon: '🌀', name: 'QUÉT KÍCH', en: 'HALBERD SWEEP', max: 4.0,
+            cd: b => Math.max(0, b.sweepCooldown || 0),
+            ready: b => !b.isSweeping && (b.empSilenceTimer || 0) <= 0,
+            cast: b => {
+                if (b.isSweeping || (b.sweepCooldown || 0) > 0) return false;
+                const ap = _ctrlAimOr(b, 120);
+                b.isSweeping = true;
+                b.sweepProgress = 0;
+                b.sweepFadeTimer = 0;
+                b.hasDealtSweepDmg = false;
+                b.sweepCooldown = 4.0;
+                const centerAngle = Math.atan2(ap.y - b.y, ap.x - b.x);
+                const arcHalf = Math.PI * 0.42;
+                b.sweepStartAngle = centerAngle + (b.halberdSide * arcHalf);
+                b.sweepEndAngle = centerAngle - (b.halberdSide * arcHalf);
+                b.prevSweepAngle = b.sweepStartAngle;
+                b.halberdAngle = b.sweepStartAngle;
+                try { audio.playShot(); } catch (e) {}
+                return true;
+            }
+        };
+        const _SK_MAL_CHARGE = {
+            id: 'charge', icon: '🐎', name: 'LAO DỮ', en: 'WILD CHARGE', max: 18.0,
+            cd: b => Math.max(0, b.chargeCooldown || 0),
+            // 🐎 the 1.5 s horse wind-up is shown on the slot (it is not "cooldown")
+            active: b => (b.chargeState || 'NONE') !== 'NONE',
+            activeTxt: b => Math.max(0, b.chargeStateTimer || 0),
+            ready: b => !!b.mountAlive && b.chargeState === 'NONE' && !b.isSweeping,
+            cast: b => {
+                if (!b.mountAlive || b.chargeState !== 'NONE' || (b.chargeCooldown || 0) > 0) return false;
+                const ap = _ctrlAimOr(b, 220);
+                b.chargeState = 'WINDUP';
+                b.chargeStateTimer = 1.5;
+                b.lockedHalberdAngle = Math.atan2(ap.y - b.y, ap.x - b.x);
+                b.halberdAngle = b.lockedHalberdAngle;
+                b.horseFacing = Math.cos(b.lockedHalberdAngle) >= 0 ? 1 : -1;
+                b.vx = 0; b.vy = 0;
+                try { audio.playHorseWhinny(); } catch (e) {}
+                try { addFloatingText(b.x, b.y - 38, '🐎 WILD CHARGE WIND-UP (1.5s)!', '#f59e0b'); } catch (e) {}
+                return true;
+            }
+        };
+        const _SK_MAL_WIND = {
+            id: 'windblade', icon: '🌙', name: 'LƯỠI GIÓ', en: 'WIND BLADE', max: 4.0,
+            cd: b => b._manualWindAt ? Math.max(0, 4.0 - (Date.now() - b._manualWindAt) / 1000) : 0,
+            ready: b => !b.mountAlive,
+            cast: b => {
+                if (b.mountAlive) return false;
+                if (b._manualWindAt && (Date.now() - b._manualWindAt) < 4000) return false;
+                b._manualWindAt = Date.now();
+                const ap = _ctrlAimOr(b, 180);
+                const ang = Math.atan2(ap.y - b.y, ap.x - b.x);
+                projectiles.push(new CrescentWindBlade(b.x, b.y, ang, b));
+                b.windBladeTimer = 0;
+                try { audio.playShot(); } catch (e) {}
+                try { addFloatingText(b.x, b.y - 35, '🌙 CRESCENT WIND BLADE!', '#f59e0b'); } catch (e) {}
+                return true;
+            }
+        };
+        function malakorSkillSetFor(b) {
+            if (!b) return [];
+            return b.mountAlive ? [_SK_MAL_SWEEP, _SK_MAL_CHARGE] : [_SK_MAL_SWEEP, _SK_MAL_WIND];
+        }
+
+        // ---- Wrath of Abyss: 4 divine weapons ----
+        const _SK_GOW_BLADES = {
+            id: 'blades', icon: '⛓️', name: 'XÍCH HỖN MANG', en: 'CHAOS CHAINS', max: 2.8,
+            aim: { shape: 'circle', r: 156 },
+            active: b => (b.spinActiveTimer || 0) > 0,
+            activeTxt: b => Math.max(0, b.spinActiveTimer || 0),
+            cd: b => Math.max(0, b.spinCd || 0),
+            ready: b => (b.spinActiveTimer || 0) <= 0,
+            cast: b => {
+                if ((b.spinCd || 0) > 0 || (b.spinActiveTimer || 0) > 0) return false;
+                b.spinCd = 0;
+                b.triggerBladesSpin(controlEnemyBall());
+                return true;
+            }
+        };
+        const _SK_GOW_AXE = {
+            id: 'lvaxe', icon: '🪓', name: 'RÌU LEVIATHAN', en: 'LEVIATHAN AXE', max: 3.6,
+            aim: { shape: 'line', len: 240, width: 26, endCircle: true },
+            cd: b => Math.max(0, b.axeCd || 0),
+            active: b => (b.axeWindupTimer || 0) > 0 || (b.leviathanAxes || []).length > 0,
+            activeTxt: b => Math.max(0, (b.axeWindupTimer || 0) > 0 ? b.axeWindupTimer : 0),
+            ready: b => (b.axeWindupTimer || 0) <= 0 && (b.leviathanAxes || []).length === 0,
+            cast: b => {
+                if ((b.axeCd || 0) > 0) return false;
+                b.triggerLeviathanAxe(_ctrlAimOr(b, 200));
+                return true;
+            }
+        };
+        const _SK_GOW_SHIELD = {
+            id: 'shield', icon: '🛡️', name: 'KHIÊN HỘ VỆ', en: 'BULWARK OF GODS', max: 3.2,
+            aim: { shape: 'none' },
+            cd: b => Math.max(0, b.shieldCd || 0),
+            active: b => (b.shieldActiveTimer || 0) > 0.5,
+            activeTxt: b => Math.max(0, (b.shieldActiveTimer || 0) - 0.5),
+            ready: b => (b.shieldActiveTimer || 0) <= 0.5,
+            cast: b => {
+                if ((b.shieldCd || 0) > 0) return false;
+                b.triggerGuardianShield();
+                return true;
+            }
+        };
+        const _SK_GOW_SPEAR = {
+            id: 'spear', icon: '🔱', name: 'GIÁO DRAUPNIR', en: 'DRAUPNIR SPEAR', max: 4.0,
+            aim: { shape: 'circle', r: 115 },
+            aimWhileActive: true,
+            active: b => (b.draupnirSlamState || 'IDLE') !== 'IDLE',
+            activeTxt: b => {
+                const st = b.draupnirSlamState || 'IDLE';
+                if (st === 'FIRING') return Math.max(0, (b.spearBurstRemaining || 0) * 0.5 + 0.25 + 0.55);
+                if (st === 'SUMMON_SLAM') return Math.max(0, b.draupnirSlamTimer || 0);
+                return 0;
+            },
+            cd: b => Math.max(0, b.spearCd || 0),
+            ready: b => (b.draupnirSpears || []).length === 0 && (b.draupnirSlamState || 'IDLE') === 'IDLE',
+            cast: b => {
+                if ((b.spearCd || 0) > 0) return false;
+                b.triggerDraupnirBarrage(_ctrlAimOr(b, 220));
+                return true;
+            }
+        };
+        const _SK_GOW_STOMP = {
+            id: 'stomp', icon: '💥', name: 'ĐẠP TRỜI', en: 'WRATH STOMP', max: 4.2,
+            aim: { shape: 'toWall', width: 64 },
+            cd: b => Math.max(0, b.chargeCd || 0),
+            active: b => (b.chargeState || 'IDLE') !== 'IDLE',
+            activeTxt: b => Math.max(0, b.chargeTimer || 0),
+            ready: b => (b.chargeState || 'IDLE') === 'IDLE',
+            cast: b => {
+                if ((b.chargeCd || 0) > 0) return false;
+                if ((b.chargeState || 'IDLE') !== 'IDLE') return false;
+                b.triggerSpartanCharge(_ctrlAimOr(b, 280));
+                return true;
+            }
+        };
+        // 5 weapons, each on its own cooldown: using one never locks the others
+        const _SK_GOW_SET = [_SK_GOW_BLADES, _SK_GOW_AXE, _SK_GOW_STOMP, _SK_GOW_SHIELD, _SK_GOW_SPEAR];
+
+        // 🔁 Wrath of Abyss: "one divine weapon at a time" (default) or fully independent weapons.
+        //    The player can flip this any time with the 🔁 LẦN LƯỢT / ⚡ ĐỘC LẬP button.
+        function gowSequentialOn() {
+            try { if (typeof playerData !== 'undefined' && playerData && playerData.gowSequential === false) return false; } catch (e) {}
+            return true;
+        }
+        function setGowSequential(v) {
+            try { if (typeof playerData !== 'undefined' && playerData) { playerData.gowSequential = !!v; if (typeof savePlayerData === 'function') savePlayerData(); } } catch (e) {}
+            try {
+                if (typeof showGameToast === 'function') {
+                    showGameToast(v ? tUI('🔁 Dùng lần lượt: chiêu xong mới dùng chiêu khác', '🔁 One at a time: the next skill waits')
+                                    : tUI('⚡ Độc lập: các chiêu dùng chồng được', '⚡ Independent: skills can overlap'), 'info');
+                }
+            } catch (e) {}
+            try { _lastSkillUiKey = '__seq__'; } catch (e) {}
+        }
+        // which divine weapon is being performed right now (and on which slot)
+        function _gowBusyInfo(b) {
+            if (!b) return null;
+            if ((b.spinActiveTimer || 0) > 0) return { slot: 0, name: tUI('XÍCH HỖN MANG', 'CHAOS CHAINS') };
+            if ((b.axeWindupTimer || 0) > 0 || (b.leviathanAxes || []).length > 0) return { slot: 1, name: tUI('RÌU LEVIATHAN', 'LEVIATHAN AXE') };
+            if ((b.chargeState || 'IDLE') !== 'IDLE') return { slot: 2, name: tUI('ĐẠP TRỜI', 'WRATH STOMP') };
+            // the bulwark is a 3 s buff: only its 0.5 s activation holds the other weapons back
+            if ((b.shieldActiveTimer || 0) > 2.5) return { slot: 3, name: tUI('KHIÊN HỘ VỆ', 'BULWARK OF GODS') };
+            if ((b.draupnirSpears || []).length > 0 || (b.draupnirSlamState || 'IDLE') !== 'IDLE') return { slot: 4, name: tUI('GIÁO DRAUPNIR', 'DRAUPNIR SPEAR') };
+            return null;
+        }
+
+        // 🕒 Every character: a skill's cooldown only starts counting once that skill's
+        //    animation/duration is over. (snapshot before update -> restore after, per field)
+        const _SK_CD_RULES = {
+            spinCd:           b => (b.spinActiveTimer || 0) > 0,
+            axeCd:            b => (b.axeWindupTimer || 0) > 0 || (b.leviathanAxes || []).length > 0,
+            chargeCd:         b => (b.chargeState || 'IDLE') !== 'IDLE',
+            shieldCd:         b => (b.shieldActiveTimer || 0) > 0,
+            spearCd:          b => (b.draupnirSlamState || 'IDLE') !== 'IDLE' || (b.draupnirSpears || []).length > 0,
+            sweepCooldown:    b => !!b.isSweeping,
+            chargeCooldown:   b => (b.chargeState || 'NONE') !== 'NONE',
+            throwCooldown:    b => !!b.isWindingUp || b.hasAxe === false,
+            fanThrowCooldown: b => !!b.isBoomerangThrown,
+            sniperCd:         b => !!b.isChargingSniper,
+            dashCooldown:     b => !!b.isDashing,
+            meleeFanCd:       b => (b.meleeFanTimer || 0) > 0
+        };
+        function cdFreezeSnapshot(b) {
+            if (!b) return;
+            let snap = null;
+            for (const k in _SK_CD_RULES) {
+                const v = b[k];
+                if (typeof v !== 'number') continue;
+                try { if (!_SK_CD_RULES[k](b)) continue; } catch (e) { continue; }
+                if (!snap) snap = {};
+                snap[k] = v;
+            }
+            b._cdFreeze = snap;
+        }
+        function cdFreezeRestore(b) {
+            if (!b) return;
+            const snap = b._cdFreeze;
+            b._cdFreeze = null;
+            if (!snap) return;
+            for (const k in snap) {
+                if (typeof b[k] === 'number' && b[k] < snap[k]) b[k] = snap[k];
+            }
+        }
+
         const CONTROL_SKILL_SETS = {
+            // 🪭 Phantom Fan · 3 active skills (passives are not shown)
             phantomfan: [
                 {
-                    id: 'throw', icon: '🌀', name: 'QUẠT BAY', max: 4.5,
+                    id: 'throw', icon: '🌀', name: 'QUẠT BAY', en: 'FAN THROW', max: 4.5,
                     cd: b => Math.max(0, b.fanThrowCooldown || 0),
-                    ready: b => !b.isBoomerangThrown && (b.stunTimer || 0) <= 0 && (b.empSilenceTimer || 0) <= 0,
+                    ready: b => !b.isBoomerangThrown && (b.empSilenceTimer || 0) <= 0,
                     cast: b => { b._manualThrowRequest = true; setTimeout(() => { b._manualThrowRequest = false; }, 300); return true; }
                 },
                 {
-                    id: 'blast', icon: '💥', name: 'XUNG KÍCH', max: 5.5,
+                    id: 'blast', icon: '💥', name: 'XUNG KÍCH', en: 'GUST BLAST', max: 5.5,
                     cd: b => Math.max(0, b.fanPushCooldown || 0),
-                    ready: b => (b.stunTimer || 0) <= 0,
+                    ready: b => true,
                     cast: b => { b._manualPushRequest = true; setTimeout(() => { b._manualPushRequest = false; }, 300); return true; }
                 },
-                { id: 'dash', icon: '💨', name: 'LƯỚT', max: 3.0, cd: b => b._manualDashAt ? Math.max(0, 3.0 - (Date.now() - b._manualDashAt) / 1000) : 0, ready: () => true, cast: _castManualDash }
-            ],
-            axehunter: [
                 {
-                    id: 'axe', icon: '🪓', name: 'NÉM RÌU', max: 2.0,
-                    cd: b => Math.max(0, b.throwCooldown || 0),
-                    ready: b => !!b.hasAxe && !b.isWindingUp && (b.stunTimer || 0) <= 0,
-                    cast: b => { b.isWindingUp = true; b.throwWindup = 0.12; return true; }
-                },
-                {
-                    id: 'falcon', icon: '🦅', name: 'ĐẠI BÀNG', max: 8.0,
-                    cd: b => (b.falcon && b.falcon.dashCooldown > 0) ? b.falcon.dashCooldown : 0,
-                    ready: b => !!(b.falcon && !b.falcon.isDead && (b.falcon.dashCooldown || 0) <= 0),
-                    cast: b => { if (!b.falcon || b.falcon.isDead) return false; b.falcon.dashCooldown = 0; b.falcon._manualDashRequest = true; setTimeout(() => { if (b.falcon) b.falcon._manualDashRequest = false; }, 300); return true; }
-                },
-                { id: 'dash', icon: '💨', name: 'LƯỚT', max: 3.0, cd: b => b._manualDashAt ? Math.max(0, 3.0 - (Date.now() - b._manualDashAt) / 1000) : 0, ready: () => true, cast: _castManualDash }
+                    id: 'tornado', icon: '🌪', name: 'LỐC XOÁY', en: 'TORNADO', max: 0,
+                    // needs 4 points (stackCount) → grey until it is charged
+                    requires: b => (b.stackCount || 0) >= 4,
+                    chargeMax: 4,
+                    charge: b => (b.stackCount || 0),
+                    cd: () => 0,
+                    ready: b => (b.stackCount || 0) >= 4 && !b.isChantingTornado && !b.isBoomerangThrown,
+                    cast: b => {
+                        if ((b.stackCount || 0) < 4 || b.isChantingTornado || b.isBoomerangThrown) return false;
+                        b.stackCount = 0;
+                        b.pendingTornado = true;
+                        return true;
+                    }
+                }
             ],
+            // 🪓 Axe Hunter · 2 active skills
+            //   slot 1 morphs: 🪓 NÉM RÌU while the axe is in hand -> 🏹 CUNG THỦ while the axe is flying
+            //   slot 2 is 🦅 ĐẠI BÀNG, aimed with a stick (press on the phone, drag, release)
+            axehunter: [_SK_AXE_THROW, _SK_AXE_FALCON],
+            // ⚡ Plasma Ricochet · 3 active skills
             plasmaricochet: [
                 {
-                    id: 'sniper', icon: '🎯', name: 'BẮN TỈA', max: 10.0,
-                    cd: b => Math.max(0, b.sniperCd || 0),
-                    ready: b => !b.isChargingSniper && (b.empSilenceTimer || 0) <= 0 && (b.stunTimer || 0) <= 0,
-                    cast: b => { b._manualCastRequest = true; setTimeout(() => { b._manualCastRequest = false; }, 300); return true; }
-                },
-                {
-                    id: 'cluster', icon: '⚡', name: 'CHÙM ĐẠN', max: 5.0,
+                    id: 'cluster', icon: '⚡', name: 'CHÙM ĐẠN', en: 'BURST SHOT', max: 5.0,
                     cd: b => Math.max(0, b.clusterCd || 0),
-                    ready: b => (b.stunTimer || 0) <= 0 && (b.empSilenceTimer || 0) <= 0,
+                    ready: b => (b.empSilenceTimer || 0) <= 0,
                     cast: b => { b._manualClusterRequest = true; setTimeout(() => { b._manualClusterRequest = false; }, 300); return true; }
                 },
                 {
-                    id: 'mine', icon: '💣', name: 'MÌN + LƯỚT', max: 5.0,
+                    id: 'sniper', icon: '🎯', name: 'BẮN TỈA', en: 'SNIPE', max: 10.0,
+                    cd: b => Math.max(0, b.sniperCd || 0),
+                    ready: b => !b.isChargingSniper && (b.empSilenceTimer || 0) <= 0,
+                    cast: b => { b._manualCastRequest = true; setTimeout(() => { b._manualCastRequest = false; }, 300); return true; }
+                },
+                {
+                    id: 'mine', icon: '💣', name: 'MÌN', en: 'MINE', max: 5.0,
                     cd: b => Math.max(0, b.escapeDashCd || 0),
-                    ready: b => (b.stunTimer || 0) <= 0,
+                    ready: b => true,
                     cast: b => { b._manualEscapeRequest = true; setTimeout(() => { b._manualEscapeRequest = false; }, 300); return true; }
                 }
             ]
         };
 
+        function skName(sk) {
+            if (!sk) return '';
+            return (typeof tUI === 'function') ? tUI(sk.name, sk.en || sk.name) : sk.name;
+        }
+
         function controlSkillSetFor(ball) {
             if (!ball) return null;
             if (ball.isPhantomFan) return CONTROL_SKILL_SETS.phantomfan;
-            if (ball.isAxeHunter) return CONTROL_SKILL_SETS.axehunter;
+            if (ball.isAxeHunter) return axeHunterSkillSetFor(ball);
             if (ball.isPlasmaRicochet) return CONTROL_SKILL_SETS.plasmaricochet;
-            return [{ id: 'dash', icon: '💨', name: 'LƯỚT', max: 3.0, cd: b => b._manualDashAt ? Math.max(0, 3.0 - (Date.now() - b._manualDashAt) / 1000) : 0, ready: () => true, cast: _castManualDash }];
+            if (ball.isSirMalakor) return malakorSkillSetFor(ball);
+            if (ball.isGodOfWar) return _SK_GOW_SET;
+            return [];
         }
 
         function controlCastSkillSlot(index) {
             if (!controlState.active) return false;
-            if (typeof gameState === 'undefined' || gameState !== 'PLAYING') return false;
+            if (typeof gameState === 'undefined' || gameState !== 'PLAYING') { try { _castLogAdd('#' + (index + 1) + ' refuse: gameState=' + gameState); } catch (e) {} return false; }
             const b = controlFocusBall();
             if (!b || b.isDead || b.isVanished) return false;
             const set = controlSkillSetFor(b);
             if (!set || !set[index]) return false;
             const sk = set[index];
-            if ((b.stunTimer || 0) > 0 || (b.frozenTimer || 0) > 0) return false;
-            if (sk.cd(b) > 0.05) return false;
-            if (!sk.ready(b)) return false;
+            if ((b.stunTimer || 0) > 0 || (b.frozenTimer || 0) > 0) {
+                try { _castLogAdd('#' + (index + 1) + ' ' + sk.id + ' refuse: cc stun=' + (+(b.stunTimer || 0)).toFixed(2)); } catch (e) {}
+                try { if (typeof showGameToast === 'function') showGameToast(tUI('⏳ Đang bị khống chế', '⏳ Crowd-controlled'), 'info'); } catch (e) {}
+                return false;
+            }
+            const _cdLeft = sk.cd(b);
+            if (_cdLeft > 0.05) {
+                try { _castLogAdd('#' + (index + 1) + ' ' + sk.id + ' refuse: cd=' + _cdLeft.toFixed(2)); } catch (e) {}
+                // 🔎 tell the player it is a cooldown, not a lock: the OTHER skills keep working
+                try {
+                    if (typeof showGameToast === 'function' && (Date.now() - (b._lastCdToastAt || 0)) > 700) {
+                        b._lastCdToastAt = Date.now();
+                        showGameToast(tUI(`⏳ ${skName(sk)} còn ${_cdLeft.toFixed(1)}s — các chiêu khác vẫn dùng được`,
+                                          `⏳ ${skName(sk)} ${_cdLeft.toFixed(1)}s left — the other skills still work`), 'info');
+                    }
+                } catch (e) {}
+                return false;
+            }
+            // 🔁 sequential mode: a divine weapon in progress holds the others back
+            if (b.isGodOfWar && gowSequentialOn()) {
+                const _busy = _gowBusyInfo(b);
+                if (_busy && _busy.slot !== index) {
+                    try { _castLogAdd('#' + (index + 1) + ' ' + sk.id + ' refuse: busy(' + _busy.name + ')'); } catch (e) {}
+                    try {
+                        if (typeof showGameToast === 'function' && (Date.now() - (b._lastBusyToastAt || 0)) > 700) {
+                            b._lastBusyToastAt = Date.now();
+                            showGameToast(tUI(`⏳ Đang thi triển ${_busy.name} — chờ chiêu xong`, `⏳ ${_busy.name} in progress — wait for it`), 'info');
+                        }
+                    } catch (e) {}
+                    return false;
+                }
+            }
+            if (!sk.ready(b)) { try { _castLogAdd('#' + (index + 1) + ' ' + sk.id + ' refuse: own-state'); } catch (e) {} return false; }
+            // 🦅 stick skills cast from a keyboard/mouse press aim exactly at the cursor
+            if (sk.stick && b.falcon) {
+                try {
+                    const _ap = (typeof controlAimPoint === 'function') ? controlAimPoint() : null;
+                    if (_ap) b.falcon._stickTarget = { x: _ap.x, y: _ap.y };
+                } catch (e) {}
+            }
             const ok = sk.cast(b) !== false;
+            try { _castLogAdd('#' + (index + 1) + ' ' + sk.id + (ok ? ' CAST' : ' refuse: cast()')); } catch (e) {}
             if (ok) {
                 try { if (typeof audio !== 'undefined' && audio.playClick) audio.playClick(); } catch (e) {}
                 // 📡 multiplayer: both sims must cast, otherwise the peer never sees the damage
@@ -1992,12 +2335,50 @@
 
         let _lastSkillUiKey = '';
         const _skSlotCache = [];
+        // 🩺 diagnostics: triple-tap the 🎮 badge (or Alt+D) to see WHY a slot refuses a press
+        let _skDebugOn = false;
+        const _castLog = [];
+        function _castLogAdd(txt) {
+            _castLog.push({ t: new Date().toLocaleTimeString(), m: txt });
+            while (_castLog.length > 6) _castLog.shift();
+        }
+        function toggleSkillDebug() {
+            _skDebugOn = !_skDebugOn;
+            const el = document.getElementById('skDebug');
+            if (el) el.classList.toggle('show', _skDebugOn);
+            _skSlotCache.length = 0;
+            try { if (typeof showGameToast === 'function') showGameToast(_skDebugOn ? '🩺 DEBUG ON' : '🩺 DEBUG OFF', 'info'); } catch (e) {}
+        }
+        function renderSkillDebug(b, set) {
+            const el = document.getElementById('skDebug');
+            if (!el || !b) return;
+            const rows = [];
+            rows.push('state=' + (typeof gameState !== 'undefined' ? gameState : '?') +
+                      ' mode=' + controlState.inputMode +
+                      ' stun=' + (+(b.stunTimer || 0)).toFixed(2) +
+                      ' fz=' + (+(b.frozenTimer || 0)).toFixed(2) +
+                      ' dead=' + (!!b.isDead) + ' van=' + (!!b.isVanished));
+            for (let i = 0; i < set.length; i++) {
+                const sk = set[i];
+                if (!sk) continue;
+                let rd = 'ERR';
+                try { rd = sk.ready(b) ? 'Y' : 'N'; } catch (e) { rd = 'ERR:' + e.message; }
+                rows.push(i + ' ' + sk.id + ' ' + sk.icon + ' cd=' + (+(sk.cd(b) || 0)).toFixed(2) + '/' + (sk.max || 0) + ' own=' + rd);
+            }
+            if (_castLog.length) {
+                rows.push('--- last presses ---');
+                for (const r of _castLog) rows.push(r.t + ' ' + r.m);
+            }
+            el.textContent = rows.join('\n');
+        }
         function updateSkillButtonUI() {
             const bar = document.getElementById('controlSkillBar');
             if (!bar) return;
             if (!controlState.active) { bar.style.display = 'none'; return; }
             bar.classList.remove('hidden');
             bar.style.display = 'flex';
+            // ⌨️ PC: keep the Q/E/R/F/G badges on the slots at all times
+            if (controlState.inputMode === 'kbm') bar.classList.add('keys-on');
             const _joy = document.getElementById('controlJoystick');
             if (_joy) {
                 if (_joy.classList.contains('hidden')) _joy.classList.remove('hidden');
@@ -2015,7 +2396,14 @@
             const live = (typeof gameState !== 'undefined' && gameState === 'PLAYING');
             bar.style.opacity = live ? '1' : '0.38';
             bar.style.pointerEvents = live ? '' : 'none';
-            const stun = !live || ((b.stunTimer || 0) > 0) || ((b.frozenTimer || 0) > 0) || b.isDead || b.isVanished;
+            // ⚠️ only the match state / death dims every slot. Being stunned no longer greys the bar:
+            //    a skill in use must never make the OTHER skills look unavailable.
+            const dead = !live || b.isDead || b.isVanished;
+            const stunned = !dead && (((b.stunTimer || 0) > 0) || ((b.frozenTimer || 0) > 0));
+            bar.classList.toggle('stunned', !!stunned);
+            // 🚫 stun / freeze / EMP silence: every slot gets a red diagonal bar = "cannot be used"
+            const _silenced = !dead && ((b.empSilenceTimer || 0) > 0);
+            const _blockedAll = !dead && (stunned || _silenced);
             const slots = bar.querySelectorAll('.sk-slot');
             for (let i = 0; i < slots.length; i++) {
                 const el = slots[i];
@@ -2025,53 +2413,126 @@
                 const cd = Math.max(0, sk.cd(b) || 0);
                 const max = Math.max(0.001, sk.max || 1);
                 const pct = Math.min(1, cd / max);
+                let locked = false;
+                try { locked = !!(sk.requires && !sk.requires(b)); } catch (e) { locked = false; }
                 let ready = false;
-                try { ready = sk.ready(b) && cd <= 0.05 && !stun; } catch (e) { ready = false; }
-                const key = sk.icon + '|' + Math.round(pct * 30) + '|' + (ready ? 1 : 0);
+                try { ready = !locked && sk.ready(b) && cd <= 0.05 && !dead; } catch (e) { ready = false; }
+                // 🔁 one-at-a-time mode: everything but the weapon in progress waits
+                let _waiting = false;
+                if (b.isGodOfWar && gowSequentialOn()) {
+                    const _bs = _gowBusyInfo(b);
+                    _waiting = !!(_bs && _bs.slot !== i);
+                    if (_waiting) ready = false;
+                }
+                const _chargeTxt = locked && sk.charge ? (Math.min(sk.chargeMax || 4, sk.charge(b)) + '/' + (sk.chargeMax || 4)) : '';
+                // ⏳ skills that stay active (Chaos Chains spin, Draupnir countdown) show their remaining time
+                let _actTxt = '';
+                try {
+                    if (sk.active && sk.activeTxt && sk.active(b)) {
+                        const _at = Math.max(0, sk.activeTxt(b) || 0);
+                        _actTxt = (_at >= 10 ? Math.ceil(_at).toString() : _at.toFixed(1)) + 's';
+                    }
+                } catch (e) { _actTxt = ''; }
+                const key = sk.icon + '|' + Math.round(pct * 30) + '|' + (ready ? 1 : 0) + '|' + (locked ? 1 : 0) + '|' + _chargeTxt + '|' + _actTxt + '|' + (_blockedAll ? 1 : 0) + '|' + (_waiting ? 1 : 0);
                 if (_skSlotCache[i] === key) continue;
                 _skSlotCache[i] = key;
                 const ic = el.querySelector('.sk-icon');
                 if (ic) ic.textContent = sk.icon;
+                try { el.setAttribute('aria-label', skName(sk)); } catch (e) {}
                 const sw = el.querySelector('.sk-sweep');
                 if (sw) {
-                    sw.style.background = pct > 0.004
-                        ? `conic-gradient(rgba(2,6,23,0.86) ${(pct * 360).toFixed(1)}deg, rgba(0,0,0,0) 0deg)`
-                        : 'none';
+                    // ⏱ full-circular sweep: a thin ring that starts at 12 o'clock and runs one
+                    //    complete turn, emptying continuously (never a pie/cut wedge over the icon)
+                    if (pct > 0.004 && !_actTxt) {
+                        sw.style.background = `conic-gradient(from -90deg, rgba(2,6,23,0.92) ${(pct * 360).toFixed(1)}deg, rgba(0,0,0,0) 0deg)`;
+                        const _ringMask = 'radial-gradient(closest-side, transparent 72%, black 78%)';
+                        sw.style.setProperty('-webkit-mask-image', _ringMask);
+                        sw.style.setProperty('mask-image', _ringMask);
+                    } else {
+                        sw.style.background = 'none';
+                        sw.style.setProperty('-webkit-mask-image', 'none');
+                        sw.style.setProperty('mask-image', 'none');
+                    }
                 }
                 const cdEl = el.querySelector('.sk-cd');
-                if (cdEl) cdEl.textContent = (cd > 0.05) ? (cd >= 10 ? Math.ceil(cd).toString() : cd.toFixed(1)) : '';
+                if (cdEl) {
+                    cdEl.textContent = _actTxt
+                        ? _actTxt
+                        : (_chargeTxt
+                            ? _chargeTxt
+                            : ((cd > 0.05) ? (cd >= 10 ? Math.ceil(cd).toString() : cd.toFixed(1)) : ''));
+                }
                 el.classList.toggle('ready', ready);
-                el.classList.toggle('cooling', !ready);
-                el.title = sk.name + (ready ? ' — sẵn sàng' : '');
+                el.classList.toggle('cooling', !ready && !locked && !_actTxt && !_waiting);
+                el.classList.toggle('locked', locked);
+                el.classList.toggle('waiting', _waiting);
+                el.classList.toggle('blocked', !!_blockedAll);
+                el.classList.toggle('acting', !!_actTxt);
+                el.title = skName(sk) + (locked ? tUI(' — chưa đủ điểm', ' — not charged') : (ready ? tUI(' — sẵn sàng', ' — ready') : ''));
             }
+            const _seqBtn = document.getElementById('btnGowSeq');
+            if (_seqBtn) {
+                const _isGow = !!b.isGodOfWar;
+                if (_seqBtn._gowShown !== _isGow) { _seqBtn._gowShown = _isGow; _seqBtn.classList.toggle('hidden', !_isGow); }
+                if (_isGow) {
+                    const _on = gowSequentialOn();
+                    if (_seqBtn._gowOn !== _on) {
+                        _seqBtn._gowOn = _on;
+                        _seqBtn.textContent = _on ? tUI('🔁 LẦN LƯỢT', '🔁 ONE AT A TIME') : tUI('⚡ ĐỘC LẬP', '⚡ INDEPENDENT');
+                        _seqBtn.title = _on
+                            ? tUI('Chiêu đang thi triển thì các chiêu khác chờ — bấm để cho phép dùng chồng', 'The other weapons wait for the active skill — tap to allow overlapping')
+                            : tUI('Mỗi chiêu hồi riêng, dùng chồng được — bấm để chuyển sang lần lượt', 'Every weapon recharges alone — tap for one-at-a-time');
+                        _seqBtn.style.opacity = _on ? '1' : '0.8';
+                    }
+                }
+            }
+            try { if (_skDebugOn) renderSkillDebug(b, set); } catch (e) {}
         }
 
         // 🎯 skill reach used for the drag-aim indicator / auto-aim search
-        const CONTROL_SKILL_RANGE = { throw: 430, blast: 160, dash: 170, axe: 520, falcon: 440, sniper: 720, cluster: 340, mine: 180 };
+        const CONTROL_SKILL_RANGE = { throw: 430, blast: 160, tornado: 260, axe: 520, bow: 620, falcon: 520, sniper: 720, cluster: 340, mine: 180, sweep: 150, charge: 340, windblade: 600, blades: 240, shield: 160, spear: 620, stomp: 420, lvaxe: 300 };
         function controlSkillRange(sk) { return (sk && CONTROL_SKILL_RANGE[sk.id]) || 400; }
 
         // 👆 tap: auto-aim at the priority (nearest) target within reach
         function controlAutoAimPoint(ball, range) {
             if (!ball) return null;
             const foe = (ball === ballLeft) ? ballRight : ballLeft;
-            const cands = [];
-            if (foe && !foe.isDead && !foe.isVanished) {
-                cands.push(foe);
-                if (foe.isAxeHunter && foe.falcon && !foe.falcon.isDead) cands.push(foe.falcon);
-                if (foe.isCultists && Array.isArray(foe.members)) {
-                    for (const m of foe.members) if (m && m.hp > 0) cands.push(m);
-                }
-            }
-            if (foe && !foe.isDead && !foe.isVanished && Math.hypot(foe.x - ball.x, foe.y - ball.y) <= (range || 420)) {
-                return { x: foe.x, y: foe.y };          // 🎯 priority #1: the enemy ball
-            }
-            let best = null, bestD = range || 420;
-            for (const c of cands) {
-                if (!c || c === foe || c.isDead || c.isVanished) continue;
-                const d = Math.hypot(c.x - ball.x, c.y - ball.y);
-                if (d <= bestD) { bestD = d; best = c; }
-            }
-            return best ? { x: best.x, y: best.y } : null;
+            // 🎯 tap auto-aim snaps to the enemy BALL only — never to its falcon, cultist
+            //    minions, pawns, deity or any other entity. Anything else is player-aimed.
+            if (!foe || foe.isDead || foe.isVanished) return null;
+            if (Math.hypot(foe.x - ball.x, foe.y - ball.y) > (range || 420)) return null;
+            return { x: foe.x, y: foe.y };
+        }
+
+        // 🎯 where a skill's effect would land right now (used by the touch hold-preview)
+        function _skillPreviewPoint(slot) {
+            const b = (typeof controlFocusBall === 'function') ? controlFocusBall() : null;
+            if (!b) return null;
+            const set = controlSkillSetFor(b);
+            const sk = set ? set[slot] : null;
+            if (!sk || !sk.aim) return null;
+            const sd = controlState.skillDrag;
+            if (sd && sd.active && sd.slot === slot && sd.moved && sd.aim) return sd.aim;
+            const rng = controlSkillRange(sk);
+            const auto = controlAutoAimPoint(b, rng);
+            if (auto) return auto;
+            const inp = _controlInputVector();
+            if (inp && inp.active) return { x: b.x + inp.x * rng, y: b.y + inp.y * rng };
+            const foe = (typeof controlEnemyBall === 'function') ? controlEnemyBall() : null;
+            if (foe && !foe.isDead) return { x: foe.x, y: foe.y };
+            return { x: b.x + 140, y: b.y };
+        }
+
+        // where a ray from (x,y) leaves the arena
+        function _rayToArenaEdge(x, y, ang) {
+            const dx = Math.cos(ang), dy = Math.sin(ang);
+            let t = 1e9;
+            if (dx > 1e-6) t = Math.min(t, (ARENA_SIZE - x) / dx);
+            if (dx < -1e-6) t = Math.min(t, (0 - x) / dx);
+            if (dy > 1e-6) t = Math.min(t, (ARENA_SIZE - y) / dy);
+            if (dy < -1e-6) t = Math.min(t, (0 - y) / dy);
+            if (!isFinite(t) || t < 0) t = 0;
+            return { x: x + dx * t, y: y + dy * t, dist: t };
         }
 
         // ✋ drag & aim: direction = from the button centre to the finger
@@ -2087,12 +2548,150 @@
             return { x: b.x + (dx / d) * rng, y: b.y + (dy / d) * rng };
         }
 
+        // 🦅 FALCON STICK — a circle under the finger; the target is measured from the FALCON's position,
+        // 1:1 with what the player sees on screen. Release -> the falcon glides to that circle.
+        function _falconWorldPerPx() {
+            try {
+                const cv = document.getElementById('gameCanvas');
+                const cw = (cv && (cv.clientWidth || cv.width)) || 0;
+                if (cw > 0 && controlCam && controlCam.viewW) return controlCam.viewW / cw;
+            } catch (e) {}
+            return 1.35;
+        }
+
+        function _falconStickTarget(fs, ball) {
+            const f = ball && ball.falcon;
+            if (!f || !fs || !fs.active) return null;
+            const dx = fs.x - fs.cx, dy = fs.y - fs.cy;
+            const d = Math.hypot(dx, dy);
+            if (d < 8) return null;
+            const worldDist = Math.max(40, Math.min(540, d * _falconWorldPerPx() * 1.15));
+            const pad = 26;
+            return {
+                x: Math.max(pad, Math.min(ARENA_SIZE - pad, f.x + (dx / d) * worldDist)),
+                y: Math.max(pad, Math.min(ARENA_SIZE - pad, f.y + (dy / d) * worldDist))
+            };
+        }
+
+        function hideFalconStick() {
+            const fs = controlState.falconStick;
+            fs.active = false; fs.target = null; fs.cancel = false;
+            const el = document.getElementById('falconStick');
+            if (el) el.classList.remove('on');
+        }
+
+        function startFalconStick(e, btn, slot) {
+            const fs = controlState.falconStick;
+            const el = document.getElementById('falconStick');
+            const knob = el ? el.querySelector('.fs-knob') : null;
+            const tip = el ? el.querySelector('.fs-tip') : null;
+            const cz = document.getElementById('skillCancelZone');
+            const pid = e.pointerId;
+            fs.active = true; fs.cancel = false; fs.target = null;
+            fs.cx = e.clientX; fs.cy = e.clientY; fs.x = e.clientX; fs.y = e.clientY;
+            btn.classList.add('held');
+            if (el) {
+                el.style.left = fs.cx + 'px';
+                el.style.top = fs.cy + 'px';
+                el.classList.add('on');
+            }
+            if (knob) knob.style.transform = 'translate(0px,0px)';
+            if (tip) { tip.style.left = '0px'; tip.style.top = '0px'; tip.textContent = tUI('🦅 KÉO RỒI THẢ', '🦅 DRAG & RELEASE'); tip.classList.remove('cancel'); }
+            if (cz) { cz.classList.remove('hidden'); cz.classList.remove('hot'); }
+            const safetyHide = () => { if (cz) { cz.classList.add('hidden'); cz.classList.remove('hot'); } };
+
+            const onMove = (ev2) => {
+                if (ev2.pointerId !== pid) return;
+                ev2.preventDefault();
+                fs.x = ev2.clientX; fs.y = ev2.clientY;
+                let dx = fs.x - fs.cx, dy = fs.y - fs.cy;
+                const d = Math.hypot(dx, dy);
+                const maxR = 52;
+                if (d > maxR) { dx = (dx / d) * maxR; dy = (dy / d) * maxR; }
+                if (knob) knob.style.transform = `translate(${dx.toFixed(1)}px,${dy.toFixed(1)}px)`;
+                const b = controlFocusBall();
+                fs.target = _falconStickTarget(fs, b);
+                if (tip) {
+                    tip.textContent = fs.target ? tUI('🦅 THẢ ĐỂ LƯỚT', '🦅 RELEASE TO GLIDE') : tUI('🦅 KÉO RỒI THẢ', '🦅 DRAG & RELEASE');
+                    tip.style.left = dx.toFixed(0) + 'px';
+                    tip.style.top = (dy - 40).toFixed(0) + 'px';
+                }
+                if (cz) {
+                    const r = cz.getBoundingClientRect();
+                    const hot = ev2.clientX >= r.left - 16 && ev2.clientX <= r.right + 16
+                             && ev2.clientY >= r.top - 16 && ev2.clientY <= r.bottom + 16;
+                    fs.cancel = hot;
+                    cz.classList.toggle('hot', hot);
+                    if (tip) tip.classList.toggle('cancel', hot);
+                }
+            };
+            const onUp = (ev2, cancelled) => {
+                if (ev2.pointerId !== pid) return;
+                window.removeEventListener('pointermove', onMove, true);
+                window.removeEventListener('pointerup', onUpW, true);
+                window.removeEventListener('pointercancel', onCancelW, true);
+                btn.classList.remove('held');
+                safetyHide();
+                const target = fs.target;
+                const cancelledNow = !!(cancelled || fs.cancel);
+                hideFalconStick();
+                if (cancelledNow) {
+                    try { if (typeof showGameToast === 'function') showGameToast(tUI('✕ Đã huỷ chiêu', '✕ Skill cancelled'), 'info'); } catch (err) {}
+                    return;
+                }
+                const b = controlFocusBall();
+                if (!target) {
+                    // 👆 tap: auto-aim at the nearest enemy instead
+                    const auto = controlAutoAimPoint(b, controlSkillRange(_SK_AXE_FALCON));
+                    if (auto && b && b.falcon) {
+                        b.falcon._stickTarget = { x: auto.x, y: auto.y };
+                        controlState.mouse.x = auto.x; controlState.mouse.y = auto.y;
+                        controlState.mouse.t = Date.now(); controlState.mouse.src = 'skill';
+                        controlState.mouse.hideMarker = true;
+                    }
+                    controlCastSkillSlot(slot);
+                    return;
+                }
+                if (b && b.falcon) b.falcon._stickTarget = { x: target.x, y: target.y };
+                controlState.mouse.x = target.x;
+                controlState.mouse.y = target.y;
+                controlState.mouse.t = Date.now();
+                controlState.mouse.src = 'skill';
+                controlState.mouse.hideMarker = true;
+                const _okStickCast = controlCastSkillSlot(slot);
+                if (!_okStickCast && b && b.falcon) b.falcon._stickTarget = null;
+            };
+            const onUpW = (ev2) => onUp(ev2, false);
+            const onCancelW = (ev2) => onUp(ev2, true);
+            window.addEventListener('pointermove', onMove, true);
+            window.addEventListener('pointerup', onUpW, true);
+            window.addEventListener('pointercancel', onCancelW, true);
+        }
+
         function initControlSkillBar() {
             const bar = document.getElementById('controlSkillBar');
             if (!bar || bar._bound) return;
             bar._bound = true;
             const cz = document.getElementById('skillCancelZone');
             let dragPid = null, dragBtn = null;
+            try {
+                const sb = document.getElementById('btnGowSeq');
+                if (sb && !sb._seqBound) { sb._seqBound = true; sb.addEventListener('click', (e) => { e.preventDefault(); setGowSequential(!gowSequentialOn()); _lastSkillUiKey = '__seq__'; }); }
+            } catch (e) {}
+            // 🩺 triple-tap the version stamp (top-left) to toggle the diagnostics overlay
+            try {
+                const st = document.getElementById('buildStamp');
+                if (st && !st._dbgBound) {
+                    st._dbgBound = true;
+                    let _n = 0, _t = 0;
+                    st.addEventListener('click', () => {
+                        const now = Date.now();
+                        if (now - _t > 900) _n = 0;
+                        _t = now;
+                        if (++_n >= 3) { _n = 0; toggleSkillDebug(); }
+                    });
+                }
+            } catch (e) {}
 
             const hideCancelZone = () => {
                 if (!cz) return;
@@ -2112,6 +2711,10 @@
                         return;
                     }
                     setControlInputMode('touch');
+                    // 🦅 stick-aimed skills (falcon): circle under the finger + target line
+                    const _setNow = controlSkillSetFor(controlFocusBall());
+                    const _skNow = _setNow ? _setNow[slot] : null;
+                    if (_skNow && _skNow.stick) { startFalconStick(e, btn, slot); return; }
                     const r = btn.getBoundingClientRect();
                     const sd = controlState.skillDrag;
                     dragPid = e.pointerId; dragBtn = btn;
@@ -2119,8 +2722,25 @@
                     sd.active = true; sd.moved = false; sd.cancel = false; sd.slot = slot;
                     sd.cx = r.left + r.width / 2; sd.cy = r.top + r.height / 2;
                     sd.x = e.clientX; sd.y = e.clientY; sd.aim = null;
+                    sd.previewPt = _skillPreviewPoint(slot);   // 🎯 area shows up on touch, before any drag
                     btn.classList.add('held');
                     if (cz) { cz.classList.remove('hidden'); cz.classList.remove('hot'); }
+                    // safety net: the drag always ends (and the AoE marker always clears),
+                    // even if the finger is released outside the button / capture is unavailable
+                    const onUp = (ev2) => {
+                        if (ev2.pointerId !== dragPid) return;
+                        window.removeEventListener('pointerup', onUp, true);
+                        window.removeEventListener('pointercancel', onCancel, true);
+                        finish(ev2, false);
+                    };
+                    const onCancel = (ev2) => {
+                        if (ev2.pointerId !== dragPid) return;
+                        window.removeEventListener('pointerup', onUp, true);
+                        window.removeEventListener('pointercancel', onCancel, true);
+                        finish(ev2, true);
+                    };
+                    window.addEventListener('pointerup', onUp, true);
+                    window.addEventListener('pointercancel', onCancel, true);
                 }, { passive: false });
 
                 // ---- drag ----
@@ -2131,6 +2751,7 @@
                     sd.x = e.clientX; sd.y = e.clientY;
                     if (Math.hypot(sd.x - sd.cx, sd.y - sd.cy) > 10) sd.moved = true;
                     sd.aim = _skillDragAimPoint(slot);
+                    sd.previewPt = _skillPreviewPoint(slot);
                     if (cz) {
                         const r = cz.getBoundingClientRect();
                         const hot = e.clientX >= r.left - 16 && e.clientX <= r.right + 16
@@ -2151,12 +2772,12 @@
                     dragPid = null;
                     if (dragBtn) dragBtn.classList.remove('held');
                     dragBtn = null;
-                    sd.active = false; sd.moved = false; sd.cancel = false; sd.aim = null;
+                    sd.active = false; sd.moved = false; sd.cancel = false; sd.aim = null; sd.previewPt = null;
                     hideCancelZone();
 
                     // 🚫 cancel: nothing is cast, no cooldown, no resource spent
                     if (wasCancel) {
-                        try { if (typeof showGameToast === 'function') showGameToast('✕ Đã huỷ chiêu', 'info'); } catch (err) {}
+                        try { if (typeof showGameToast === 'function') showGameToast(tUI('✕ Đã huỷ chiêu', '✕ Skill cancelled'), 'info'); } catch (err) {}
                         return;
                     }
 
@@ -2167,6 +2788,7 @@
                         pt = aim;                                            // 🎯 drag & aim
                     } else if (b) {
                         pt = controlAutoAimPoint(b, controlSkillRange(set && set[slot]));   // 👆 tap auto-aim
+                        if (!pt) pt = _skillPreviewPoint(slot);
                         if (!pt) {
                             const inp = _controlInputVector();
                             if (inp.active) pt = { x: b.x + inp.x * 320, y: b.y + inp.y * 320 };
@@ -2177,8 +2799,11 @@
                         controlState.mouse.y = pt.y;
                         controlState.mouse.t = Date.now();
                         controlState.mouse.src = 'skill';
+                        controlState.mouse.hideMarker = true;      // 📱 no residual AoE marker
                     }
                     controlCastSkillSlot(slot);
+                    sd.aim = null;
+                    if (cz) { cz.classList.add('hidden'); cz.classList.remove('hot'); }
                 };
                 btn.addEventListener('pointerup', (e) => finish(e, false), { passive: false });
                 btn.addEventListener('pointercancel', (e) => finish(e, true), { passive: false });
@@ -2202,9 +2827,29 @@
             });
         }
 
+        // 🎮 the moment a ball becomes player-driven its whole kit is ready (no AI leftovers)
+        function _armPlayerKit(b) {
+            if (!b) return;
+            try {
+                if (b.isGodOfWar) { b.spinCd = 0; b.axeCd = 0; b.chargeCd = 0; b.shieldCd = 0; b.spearCd = 0; b.skillRecoveryTimer = 0; }
+                if (b.isSirMalakor) {
+                    b.sweepCooldown = 0; b.chargeCooldown = 0; b.windBladeTimer = 0;
+                    if (typeof b._manualWindAt !== 'undefined') b._manualWindAt = 0;
+                }
+                if (b.isPhantomFan) { b.fanThrowCooldown = 0; b.fanPushCooldown = 0; }
+                if (b.isAxeHunter) { b.throwCooldown = 0; if (b.falcon) b.falcon.dashCooldown = 0; }
+                if (b.isPlasmaRicochet) { b.clusterCd = 0; b.sniperCd = 0; b.escapeDashCd = 0; }
+            } catch (e) {}
+        }
+
         function startControlMode(side) {
             controlState.side = (side === 'right') ? 'right' : 'left';
             controlState.active = true;
+            // 🎮 the player's kit starts fully charged (the AI staggers its own opening rotation)
+            try {
+                const _cb = controlBallForSide(controlState.side);
+                if (_cb) { _cb._kitArmed = true; _armPlayerKit(_cb); }
+            } catch (e) {}
             controlCam.init = false;
             const js = document.getElementById('controlJoystick');
             if (js) {
@@ -2218,6 +2863,10 @@
             const skillBar = document.getElementById('controlSkillBar');
             if (skillBar) skillBar.classList.remove('hidden');
             if (typeof initControlSkillBar === 'function') initControlSkillBar();
+            try {
+                const czEm = document.querySelector('#skillCancelZone em');
+                if (czEm) czEm.textContent = tUI('HỦY', 'CANCEL');
+            } catch (e) {}
             const bar = document.getElementById('controlBar');
             if (bar) { bar.classList.remove('hidden'); bar.classList.add('flex'); }
             const sw = document.getElementById('btnControlSwitch');
@@ -2229,15 +2878,25 @@
                     localStorage.setItem('npa_ctrl_hint_v1', '1');
                     const _hb = controlBallForSide(controlState.side);
                     const _how = isTouchDevice()
-                        ? 'kéo JOYSTICK để đi · chạm nút chiêu = tự nhắm · giữ & kéo = tự chọn hướng · kéo vào ✕ HỦY để thu hồi'
-                        : 'WASD / phím mũi tên (hoặc giữ chuột) để đi · Q/E/R tung chiêu theo con trỏ';
-                    showGameToast(`🎮 Bạn điều khiển ${_hb ? _hb.name : 'bóng của bạn'} — ${_how}!`, 'info');
+                        ? tUI('kéo JOYSTICK để đi · chạm nút chiêu = tự nhắm · giữ = xem vùng ảnh hưởng · kéo vào ✕ HỦY để thu hồi',
+                              'drag the JOYSTICK to move · tap a skill = auto-aim · hold = show the effect area · drag onto ✕ CANCEL to abort')
+                        : tUI('WASD / phím mũi tên (hoặc giữ chuột) để đi · Q/E/R/F/G tung chiêu theo con trỏ',
+                              'WASD / arrows (or hold the mouse) to move · Q/E/R/F/G casts at the cursor');
+                    showGameToast(tUI(`🎮 Bạn điều khiển ${_hb ? _hb.name : 'bóng của bạn'} — ${_how}!`,
+                                      `🎮 You control ${_hb ? _hb.name : 'your ball'} — ${_how}!`), 'info');
                 }
             } catch (e) {}
         }
 
         function stopControlMode() {
             controlState.active = false;
+            controlState.skillDrag.active = false;
+            controlState.skillDrag.moved = false;
+            controlState.skillDrag.cancel = false;
+            controlState.skillDrag.aim = null;
+            const _cz0 = document.getElementById('skillCancelZone');
+            if (_cz0) { _cz0.classList.add('hidden'); _cz0.classList.remove('hot'); }
+            try { if (typeof hideFalconStick === 'function') hideFalconStick(); } catch (e) {}
             controlState.joy.active = false; controlState.joy.x = 0; controlState.joy.y = 0;
             controlState.mouse.active = false;
             controlState.keys.up = controlState.keys.down = controlState.keys.left = controlState.keys.right = false;
@@ -2286,6 +2945,46 @@
             return controlBallForSide(controlState.side);
         }
 
+        // 🤖 true when the ball carries the player skill kit (one of the five playable balls)
+        function isSkillBallEntity(b) {
+            return !!(b && (b.isPhantomFan || b.isAxeHunter || b.isPlasmaRicochet || b.isSirMalakor || b.isGodOfWar));
+        }
+
+        // 📷 big bobbing arrow above the ball the camera follows (sandbox with two plain balls)
+        function drawCameraFollowArrow(c, ball) {
+            if (!c || !ball || ball.isDead) return;
+            const t = (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000;
+            const bob = Math.sin(t * 3.2) * 5;
+            const r = ball.radius || 34;
+            const baseY = ball.y - r - 34 + bob;
+            c.save();
+            c.translate(ball.x, baseY);
+            c.globalAlpha = 0.95;
+            c.shadowColor = '#22d3ee';
+            c.shadowBlur = 16;
+            c.fillStyle = '#22d3ee';
+            c.beginPath();
+            c.moveTo(0, 16);
+            c.lineTo(-14, -6);
+            c.lineTo(-6, -6);
+            c.lineTo(-6, -20);
+            c.lineTo(6, -20);
+            c.lineTo(6, -6);
+            c.lineTo(14, -6);
+            c.closePath();
+            c.fill();
+            c.shadowBlur = 0;
+            c.font = '900 12px Orbitron, sans-serif';
+            c.textAlign = 'center';
+            c.lineWidth = 3.4;
+            c.strokeStyle = 'rgba(2,6,23,0.92)';
+            const camLbl = (typeof tWord === 'function') ? tWord('📷 CAM', '📷 CAM') : '📷 CAM';
+            c.strokeText(camLbl, 0, -28);
+            c.fillStyle = '#e0f2fe';
+            c.fillText(camLbl, 0, -28);
+            c.restore();
+        }
+
         function controlEnemyBall() {
             const me = controlFocusBall();
             if (!me) return null;
@@ -2300,10 +2999,14 @@
 
         function updateControlCamera() {
             if (!controlState.active) {
-                controlCam.x = 0; controlCam.y = 0;
-                controlCam.viewW = ARENA_SIZE; controlCam.viewH = ARENA_SIZE;
-                controlCam.zoom = 1; controlCam.init = true;
-                return null;
+                // 📷 sandbox without a player-driven ball (2 plain balls): keep a follow camera so the
+                //    on-canvas arrow can always tell the player which ball is being followed.
+                if (!(typeof activeMatchContext !== 'undefined' && activeMatchContext === 'sandbox')) {
+                    controlCam.x = 0; controlCam.y = 0;
+                    controlCam.viewW = ARENA_SIZE; controlCam.viewH = ARENA_SIZE;
+                    controlCam.zoom = 1; controlCam.init = true;
+                    return null;
+                }
             }
 
             const ended = isMatchEndedState();
@@ -2425,7 +3128,9 @@
             // 🖱️ AIM: weapon line from YOUR ball to the mouse (skills fire toward it)
             try {
                 const _am = (typeof controlFocusBall === 'function') ? controlFocusBall() : null;
-                const _ap = (gameState === 'PLAYING' && _am && !_am.isDead && !_am.isVanished && typeof controlAimPoint === 'function')
+                // 📱 a phone has no cursor: never leave a lingering aim line after a cast
+                const _ap = (gameState === 'PLAYING' && _am && !_am.isDead && !_am.isVanished
+                    && controlState.inputMode === 'kbm' && typeof controlAimPoint === 'function')
                     ? controlAimPoint() : null;
                 if (_ap) {
                     const _sx = (_am.x - (cam.x || 0)) * ps;
@@ -2506,6 +3211,181 @@
                     c.lineWidth = Math.max(2, S * 0.005);
                     c.stroke();
                     c.restore();
+                }
+            } catch (e) {}
+
+            // 🦅 falcon stick: line from the falcon to the target circle it will glide to
+            try {
+                const _fs = controlState.falconStick;
+                const _me3 = (typeof controlFocusBall === 'function') ? controlFocusBall() : null;
+                if (_fs && _fs.active && _fs.target && _me3 && _me3.falcon && !_me3.falcon.isDead) {
+                    const _fx = (_me3.falcon.x - (cam.x || 0)) * ps;
+                    const _fy = (_me3.falcon.y - (cam.y || 0)) * ps;
+                    const _gx = (_fs.target.x - (cam.x || 0)) * ps;
+                    const _gy = (_fs.target.y - (cam.y || 0)) * ps;
+                    const _ga = Math.atan2(_gy - _fy, _gx - _fx);
+                    const _hot = !!_fs.cancel;
+                    const _col = _hot ? 'rgba(248,113,113,' : 'rgba(251,191,36,';
+                    c.save();
+                    // flight line
+                    c.setLineDash([Math.max(6, S * 0.014), Math.max(7, S * 0.016)]);
+                    c.lineDashOffset = -((performance.now() * 0.06) % 400);
+                    c.strokeStyle = _col + '0.9)';
+                    c.shadowColor = _hot ? '#ef4444' : '#fbbf24';
+                    c.shadowBlur = S * 0.018;
+                    c.lineWidth = Math.max(2.2, S * 0.0042);
+                    c.beginPath();
+                    c.moveTo(_fx, _fy);
+                    c.lineTo(_gx, _gy);
+                    c.stroke();
+                    c.setLineDash([]);
+                    // landing circle
+                    const _gr = Math.max(14, S * 0.032);
+                    c.beginPath();
+                    c.arc(_gx, _gy, _gr, 0, Math.PI * 2);
+                    c.fillStyle = _col + '0.16)';
+                    c.fill();
+                    c.strokeStyle = _col + '0.95)';
+                    c.lineWidth = Math.max(2, S * 0.004);
+                    c.stroke();
+                    c.beginPath();
+                    c.arc(_gx, _gy, _gr * 0.45, 0, Math.PI * 2);
+                    c.stroke();
+                    // arrow head along the flight line
+                    const _hh = Math.max(10, S * 0.02);
+                    c.beginPath();
+                    c.moveTo(_gx, _gy);
+                    c.lineTo(_gx - Math.cos(_ga - 0.45) * _hh, _gy - Math.sin(_ga - 0.45) * _hh);
+                    c.moveTo(_gx, _gy);
+                    c.lineTo(_gx - Math.cos(_ga + 0.45) * _hh, _gy - Math.sin(_ga + 0.45) * _hh);
+                    c.strokeStyle = _col + '0.95)';
+                    c.lineWidth = Math.max(2, S * 0.005);
+                    c.stroke();
+                    c.restore();
+                }
+            } catch (e) {}
+
+            // 🎯 skill effect preview — hold a skill on the phone and its real area shows up:
+            //    circle = blast radius · line = straight zone (+ circle at the far end) · toWall = line to the arena edge
+            try {
+                const _me5 = (typeof controlFocusBall === 'function') ? controlFocusBall() : null;
+                const _sd5 = controlState.skillDrag;
+                if (_me5 && controlState.active && _sd5 && _sd5.active) {
+                    const _set5 = controlSkillSetFor(_me5);
+                    const _sk5 = _set5 ? _set5[_sd5.slot] : null;
+                    const _pt5 = _sd5.previewPt || _sd5.aim;
+                    const _aim5 = _sk5 && _sk5.aim;
+                    if (_aim5 && _aim5.shape !== 'none' && _pt5) {
+                        const _bx = (_me5.x - (cam.x || 0)) * ps;
+                        const _by = (_me5.y - (cam.y || 0)) * ps;
+                        const _px = (_pt5.x - (cam.x || 0)) * ps;
+                        const _py = (_pt5.y - (cam.y || 0)) * ps;
+                        const _ang5 = Math.atan2(_py - _by, _px - _bx);
+                        const _hot5 = !!_sd5.cancel;
+                        const _c5 = _hot5 ? 'rgba(248,113,113,' : 'rgba(251,191,36,';
+                        const _f5 = _hot5 ? 'rgba(127,29,29,' : 'rgba(251,191,36,';
+                        c.save();
+                        // aim line from the ball
+                        c.beginPath();
+                        c.moveTo(_bx, _by);
+                        c.lineTo(_px, _py);
+                        c.setLineDash([Math.max(6, S * 0.014), Math.max(7, S * 0.016)]);
+                        c.strokeStyle = _c5 + '0.42)';
+                        c.lineWidth = Math.max(1.4, S * 0.003);
+                        c.stroke();
+                        c.setLineDash([]);
+
+                        if (_aim5.shape === 'circle') {
+                            const _rr5 = Math.max(8, (_aim5.r || 120) * ps);
+                            c.beginPath(); c.arc(_px, _py, _rr5, 0, Math.PI * 2);
+                            c.fillStyle = _f5 + '0.18)'; c.fill();
+                            c.strokeStyle = _c5 + '0.92)'; c.lineWidth = Math.max(2, S * 0.004); c.stroke();
+                            c.beginPath(); c.arc(_px, _py, _rr5 * 0.42, 0, Math.PI * 2);
+                            c.setLineDash([Math.max(5, S * 0.012), Math.max(5, S * 0.012)]);
+                            c.strokeStyle = _c5 + '0.55)';
+                            c.lineWidth = Math.max(1.4, S * 0.003);
+                            c.stroke();
+                            c.setLineDash([]);
+                        } else if (_aim5.shape === 'line' || _aim5.shape === 'toWall') {
+                            let _endWX, _endWY;
+                            if (_aim5.shape === 'toWall') {
+                                const _hit5 = _rayToArenaEdge(_me5.x, _me5.y, _ang5);
+                                _endWX = _hit5.x; _endWY = _hit5.y;
+                            } else {
+                                const _want = _aim5.len || 220;
+                                const _have = Math.hypot(_pt5.x - _me5.x, _pt5.y - _me5.y) || _want;
+                                const _len5 = Math.min(_want, _have);
+                                _endWX = _me5.x + Math.cos(_ang5) * _len5;
+                                _endWY = _me5.y + Math.sin(_ang5) * _len5;
+                            }
+                            const _ex5 = (_endWX - (cam.x || 0)) * ps;
+                            const _ey5 = (_endWY - (cam.y || 0)) * ps;
+                            const _w5 = Math.max(4, (_aim5.width || 40) * ps);
+                            const _nx5 = -Math.sin(_ang5) * (_w5 / 2);
+                            const _ny5 = Math.cos(_ang5) * (_w5 / 2);
+                            c.beginPath();
+                            c.moveTo(_bx + _nx5, _by + _ny5);
+                            c.lineTo(_ex5 + _nx5, _ey5 + _ny5);
+                            c.lineTo(_ex5 - _nx5, _ey5 - _ny5);
+                            c.lineTo(_bx - _nx5, _by - _ny5);
+                            c.closePath();
+                            c.fillStyle = _f5 + '0.20)';
+                            c.fill();
+                            c.strokeStyle = _c5 + '0.85)';
+                            c.lineWidth = Math.max(1.8, S * 0.0035);
+                            c.stroke();
+                            if (_aim5.endCircle) {
+                                const _cr5 = Math.max(12, (28) * ps);
+                                c.beginPath(); c.arc(_ex5, _ey5, _cr5, 0, Math.PI * 2);
+                                c.fillStyle = _f5 + '0.16)'; c.fill();
+                                c.strokeStyle = _c5 + '0.95)';
+                                c.lineWidth = Math.max(2, S * 0.0045);
+                                c.stroke();
+                            } else {
+                                const _ah5 = Math.max(9, S * 0.018);
+                                c.beginPath();
+                                c.moveTo(_ex5, _ey5);
+                                c.lineTo(_ex5 - Math.cos(_ang5 - 0.45) * _ah5, _ey5 - Math.sin(_ang5 - 0.45) * _ah5);
+                                c.moveTo(_ex5, _ey5);
+                                c.lineTo(_ex5 - Math.cos(_ang5 + 0.45) * _ah5, _ey5 - Math.sin(_ang5 + 0.45) * _ah5);
+                                c.strokeStyle = _c5 + '0.95)';
+                                c.lineWidth = Math.max(2, S * 0.005);
+                                c.stroke();
+                            }
+                        }
+                        c.restore();
+                    }
+                }
+            } catch (e) {}
+
+            // 🎯 skills that keep aiming while active (Draupnir): show their blast radius continuously
+            try {
+                const _me6 = (typeof controlFocusBall === 'function') ? controlFocusBall() : null;
+                if (_me6 && controlState.active && !(controlState.skillDrag && controlState.skillDrag.active)) {
+                    const _set6 = controlSkillSetFor(_me6);
+                    if (_set6 && _set6.length) {
+                        for (const _s6 of _set6) {
+                            if (!_s6 || !_s6.aimWhileActive || !_s6.aim || !_s6.active) continue;
+                            if (!_s6.active(_me6)) continue;
+                            const _ap6 = (typeof controlAimPointFor === 'function') ? controlAimPointFor(_me6) : null;
+                            if (!_ap6) break;
+                            const _gx6 = (_ap6.x - (cam.x || 0)) * ps;
+                            const _gy6 = (_ap6.y - (cam.y || 0)) * ps;
+                            const _rr6 = Math.max(8, (_s6.aim.r || 110) * ps);
+                            c.save();
+                            c.beginPath(); c.arc(_gx6, _gy6, _rr6, 0, Math.PI * 2);
+                            c.fillStyle = 'rgba(250,204,21,0.14)'; c.fill();
+                            c.strokeStyle = 'rgba(250,204,21,0.85)';
+                            c.lineWidth = Math.max(2, S * 0.004);
+                            c.stroke();
+                            c.beginPath(); c.arc(_gx6, _gy6, _rr6 * 0.42, 0, Math.PI * 2);
+                            c.setLineDash([Math.max(5, S * 0.012), Math.max(5, S * 0.012)]);
+                            c.strokeStyle = 'rgba(250,204,21,0.5)';
+                            c.stroke();
+                            c.restore();
+                            break;
+                        }
+                    }
                 }
             } catch (e) {}
 
@@ -2623,8 +3503,26 @@
                 }
 
                 // 2) compass pill at the top centre: arrow + distance
+                //    the label is localised and the pill auto-fits / clips, so the number can never spill out
+                const _cmpTxt = `${(typeof tUI === 'function') ? tUI('ĐỊCH', 'ENEMY') : 'ENEMY'} · ${dist}`;
                 const pillH = S * 0.062;
-                const pillW = S * 0.235;
+                const _cmpTxtOff = pillH * 1.05;
+                const _cmpPadR = pillH * 0.55;
+                const _cmpMaxW = S * 0.40;
+                let _cmpFs = Math.round(S * 0.030);
+                let pillW = Math.max(S * 0.235, _cmpTxtOff + _cmpPadR + 10);
+                try {
+                    c.save();
+                    c.font = `900 ${_cmpFs}px Orbitron, sans-serif`;
+                    let _tw = c.measureText(_cmpTxt).width || 0;
+                    pillW = Math.max(S * 0.235, _tw + _cmpTxtOff + _cmpPadR);
+                    if (pillW > _cmpMaxW) {
+                        const _avail = Math.max(24, _cmpMaxW - _cmpTxtOff - _cmpPadR);
+                        _cmpFs = Math.max(9, Math.floor(_cmpFs * (_avail / Math.max(1, _tw))));
+                        pillW = _cmpMaxW;
+                    }
+                    c.restore();
+                } catch (e) { c.restore && c.restore(); }
                 const pillX = W / 2 - pillW / 2;
                 const pillY = S * 0.022;
                 c.save();
@@ -2651,13 +3549,16 @@
                 c.fill();
                 c.restore();
 
+                // text is clipped inside the pill: long distances shrink instead of overflowing
                 c.save();
+                rrect(pillX + pillH * 0.92, pillY, Math.max(4, pillW - pillH * 0.92), pillH, pillH * 0.5);
+                c.clip();
                 c.shadowBlur = 0;
-                c.font = `900 ${Math.round(S * 0.030)}px Orbitron, sans-serif`;
+                c.font = `900 ${_cmpFs}px Orbitron, sans-serif`;
                 c.textAlign = 'left';
                 c.textBaseline = 'middle';
                 c.fillStyle = '#fecdd3';
-                c.fillText(`ĐỊCH · ${dist}`, pillX + pillH * 1.05, pillY + pillH / 2 + 1);
+                c.fillText(_cmpTxt, pillX + _cmpTxtOff, pillY + pillH / 2 + 1);
                 c.restore();
             }
 
@@ -2836,6 +3737,7 @@
             if (typeof initControlSkillBar === 'function') initControlSkillBar();
             document.addEventListener('keydown', (e) => {
                 if (_isTypingTarget(e.target)) return;
+                if ((e.altKey || e.metaKey) && (e.key === 'd' || e.key === 'D')) { e.preventDefault(); toggleSkillDebug(); return; }
                 if ((e.key === 'Escape' || e.code === 'Escape') && controlState.active) {
                     const pb = document.getElementById('pauseMatchBtn');
                     if (pb) pb.click();
@@ -2847,6 +3749,8 @@
                 if (k === 'q' || k === 'Q' || e.code === 'KeyQ' || k === '1') slot = 0;
                 else if (k === 'e' || k === 'E' || e.code === 'KeyE' || k === '2') slot = 1;
                 else if (k === 'r' || k === 'R' || e.code === 'KeyR' || k === '3') slot = 2;
+                else if (k === 'f' || k === 'F' || e.code === 'KeyF' || k === '4') slot = 3;
+                else if (k === 'g' || k === 'G' || e.code === 'KeyG' || k === '5') slot = 4;
                 else if (e.code === 'Space' || k === ' ' || k === 'j' || k === 'J' || k === 'k' || k === 'K') slot = 0;
                 else return;
                 e.preventDefault();
@@ -4621,6 +5525,13 @@
         function tWord(key, fallback) {
             const d = (typeof I18N !== 'undefined' && typeof playerData !== 'undefined') ? (I18N[playerData.lang] || I18N.en) : null;
             return (d && d.stTags && d.stTags[key]) || fallback || key;
+        }
+        // 🌐 tiny localiser for HUD strings that used to exist only in Vietnamese or only in English
+        function tUI(vi, en) {
+            let lang = 'vi';
+            try { lang = (typeof playerData !== 'undefined' && playerData && playerData.lang) ? playerData.lang : 'vi'; } catch (e) {}
+            if (lang === 'vi') return vi;
+            return (en === undefined || en === null) ? vi : en;
         }
         function tTag(key) {
             return ' [' + tWord(key, key) + ']';
@@ -7840,12 +8751,19 @@
             applyPhysicsPush(b1, b2, 1.0);
         }
 
+        // 🎯 Every entity is hit as a plain circle exactly as big as its drawn body.
+        //    Bosses (Thần Minh / deity, Abyssal One-Eyed, Pentas, Chrono Void, …) use the very
+        //    same rule as a normal ball — no size inflation, no swapped-in radius.
+        function entityHitRadius(entity) {
+            if (!entity) return 20;
+            const r = entity.radius;
+            if (typeof r === 'number' && r > 0) return r;
+            // a composite ball (The Cultists) has no body of its own: it borrows its avatar's circle
+            if (entity.deity) return entity.deity.radius || 34;
+            return 20;
+        }
         function getEntityRadius(entity) {
-            if (entity.deity) {
-                const d = entity.deity;
-                return (d.radius || 34) * ((d.stage === 3 && !d.isStone) ? 1.25 : 1.0);
-            }
-            return entity.radius || 20;
+            return entityHitRadius(entity);
         }
 
         function applyPhysicsPush(e1, e2, minDistanceScale = 1.0) {
@@ -11340,6 +12258,7 @@
                     if (isRewindInProgress()) continue;
 
                     for (let m of minions) {
+                        if (m.owner === this) continue;               // 🚫 own minions are immune
                         if (m.hp > 0 && Math.hypot(trail.x - m.x, trail.y - m.y) < m.radius + 10) {
                             m.plagueExposureTimer = Math.min(30.0, (m.plagueExposureTimer || 0) + dt * 1.75);
                             const mMult = 1.0 + (m.plagueExposureTimer / 30.0) * 10.0;
@@ -12017,7 +12936,8 @@
                             }
                         }
 
-                        const _falconMouseAim = (_falconOwnerControlled && typeof controlAimPointFor === 'function') ? controlAimPointFor(this) : null;
+                        const _stickT = f._stickTarget || null;
+                        const _falconMouseAim = (!_stickT && _falconOwnerControlled && typeof controlAimPointFor === 'function') ? controlAimPointFor(this) : null;
                         if (_falconMouseAim) {
                             aimX = _falconMouseAim.x; aimY = _falconMouseAim.y;
                             aimVx = 0; aimVy = 0;
@@ -12029,23 +12949,42 @@
                             aimY = Math.random() * (maxBound - minBound) + minBound;
                             aimVx = 0; aimVy = 0;
                         }
+                        // 🦅 the stick target is exact: the falcon lands on the circle the player picked
+                        if (_stickT) {
+                            f.x = Math.max(minBound, Math.min(maxBound, f.x));
+                            f.y = Math.max(minBound, Math.min(maxBound, f.y));
+                            const sdx = _stickT.x - f.x, sdy = _stickT.y - f.y;
+                            const sd = Math.hypot(sdx, sdy) || 1;
+                            f._exactDash = true;
+                            f.dashTargetX = Math.max(minBound, Math.min(maxBound, f.x + (sdx / sd) * Math.min(sd, 620)));
+                            f.dashTargetY = Math.max(minBound, Math.min(maxBound, f.y + (sdy / sd) * Math.min(sd, 620)));
+                            f.dashStartX = f.x; f.dashStartY = f.y;
+                            f.dashCooldown = 5.0;
+                            f.angle = Math.atan2(f.dashTargetY - f.y, f.dashTargetX - f.x);
+                            f.hitEnemiesThisDash.clear();
+                            f._stickTarget = null;
+                            audio.playBirdChirp();
+                            addFloatingText(f.x, f.y - 15, '🦅 FALCON GLIDE!', this.color);
+                        }
                         // Dự đoán điểm đón đầu vừa phải, giữ chắc chắn trong sân
                         const predX = Math.max(minBound, Math.min(maxBound, aimX + aimVx * 0.2 * 30));
                         const predY = Math.max(minBound, Math.min(maxBound, aimY + aimVy * 0.2 * 30));
 
-                        const dashAngle = Math.atan2(predY - f.y, predX - f.x);
-                        const estDist = Math.hypot(predX - f.x, predY - f.y);
-                        // Lướt xuyên qua hẳn phía sau kẻ thù (xuyên thấu không bị cản)
-                        const dashDist = estDist + 150;
+                        if (!f._exactDash) {
+                            const dashAngle = Math.atan2(predY - f.y, predX - f.x);
+                            const estDist = Math.hypot(predX - f.x, predY - f.y);
+                            // Lướt xuyên qua hẳn phía sau kẻ thù (xuyên thấu không bị cản)
+                            const dashDist = estDist + 150;
 
-                        // Điểm kết thúc lướt luôn được giới hạn chặt chẽ bên trong sân
-                        f.dashTargetX = Math.max(minBound, Math.min(maxBound, f.x + Math.cos(dashAngle) * dashDist));
-                        f.dashTargetY = Math.max(minBound, Math.min(maxBound, f.y + Math.sin(dashAngle) * dashDist));
-                        f.dashCooldown = 5.0;
-                        f.angle = Math.atan2(f.dashTargetY - f.dashStartY, f.dashTargetX - f.dashStartX);
-                        f.hitEnemiesThisDash.clear();
-                        audio.playBirdChirp();
-                        addFloatingText(f.x, f.y - 15, '🦅 FALCON PIERCE!', this.color);
+                            // Điểm kết thúc lướt luôn được giới hạn chặt chẽ bên trong sân
+                            f.dashTargetX = Math.max(minBound, Math.min(maxBound, f.x + Math.cos(dashAngle) * dashDist));
+                            f.dashTargetY = Math.max(minBound, Math.min(maxBound, f.y + Math.sin(dashAngle) * dashDist));
+                            f.dashCooldown = 5.0;
+                            f.angle = Math.atan2(f.dashTargetY - f.dashStartY, f.dashTargetX - f.dashStartX);
+                            f.hitEnemiesThisDash.clear();
+                            audio.playBirdChirp();
+                            addFloatingText(f.x, f.y - 15, '🦅 FALCON PIERCE!', this.color);
+                        }
                     }
                 }
 
@@ -12061,7 +13000,8 @@
                     if (f.dashProgress < 0.6) {
                         let curAimX = target ? target.x : f.dashTargetX;
                         let curAimY = target ? target.y : f.dashTargetY;
-                        if (target && target.isCultists) {
+                        if (f._exactDash) { curAimX = f.dashTargetX; curAimY = f.dashTargetY; }
+                        else if (target && target.isCultists) {
                             const near = target.getNearestMemberOrDeity(f.x, f.y);
                             if (near) { curAimX = near.x; curAimY = near.y; }
                         }
@@ -12145,9 +13085,22 @@
                     if (f.dashProgress >= 1.0) {
                         f.isDashing = false;
                         f.dashProgress = 0;
-                        f.patrolTargetX = Math.random() * (maxBound - minBound) + minBound;
-                        f.patrolTargetY = Math.random() * (maxBound - minBound) + minBound;
-                        f.patrolTimer = 2.0;
+                        if (f._exactDash) {
+                            // 🦅 the glide ends at the picked circle, then the falcon keeps flying normally
+                            f.x = f.dashTargetX;
+                            f.y = f.dashTargetY;
+                            f.patrolTargetX = f.dashTargetX;
+                            f.patrolTargetY = f.dashTargetY;
+                            f.patrolTimer = 0.9;
+                            f._holdX = f.dashTargetX;
+                            f._holdY = f.dashTargetY;
+                            f._holdTimer = 0;          // no hover freeze: normal flight resumes at once
+                            f._exactDash = false;
+                        } else {
+                            f.patrolTargetX = Math.random() * (maxBound - minBound) + minBound;
+                            f.patrolTargetY = Math.random() * (maxBound - minBound) + minBound;
+                            f.patrolTimer = 2.0;
+                        }
                     }
                 } else if (!isImmobilized) {
                     let evadeVx = 0;
@@ -12178,8 +13131,13 @@
 
                     // Chim bay trên không nên có thể bay xuyên thẳng qua thân kẻ địch (không bị chặn lại hay đẩy dạt ra)
                     f.patrolTimer -= dt;
+                    if ((f._holdTimer || 0) > 0) {
+                        f._holdTimer -= dt;
+                        if (f._holdX !== undefined) { f.patrolTargetX = f._holdX; f.patrolTargetY = f._holdY; }
+                        f.patrolTimer = Math.max(f.patrolTimer, 0.5);
+                    }
                     const distToWaypoint = Math.hypot(f.patrolTargetX - f.x, f.patrolTargetY - f.y);
-                    if (distToWaypoint < 30 || f.patrolTimer <= 0) {
+                    if (!((f._holdTimer || 0) > 0) && (distToWaypoint < 30 || f.patrolTimer <= 0)) {
                         f.patrolTargetX = Math.random() * (maxBound - minBound) + minBound;
                         f.patrolTargetY = Math.random() * (maxBound - minBound) + minBound;
                         f.patrolTimer = 2.5 + Math.random() * 2.0;
@@ -12194,6 +13152,15 @@
                     let flightSpeed = 3.8;
                     if (f.freezeTimer > 0) flightSpeed *= 0.4;
                     else if (f.slowTimer > 0) flightSpeed *= 0.5;
+                    // 🦅 just landed on the player's circle: hover there instead of drifting on
+                    if ((f._holdTimer || 0) > 0 && distToWaypoint < 12) {
+                        f._holdTimer = Math.max(f._holdTimer, 1.6);
+                        f.x = f.patrolTargetX;
+                        f.y = f.patrolTargetY;
+                        f.vx = 0; f.vy = 0;
+                        flightSpeed = 0;
+                        evadeVx = 0; evadeVy = 0;
+                    }
 
                     f.vx = Math.cos(f.angle) * flightSpeed + evadeVx;
                     f.vy = Math.sin(f.angle) * flightSpeed + evadeVy;
@@ -12286,7 +13253,7 @@
                         const accuracyPenaltyOffset = (typeof isHumanControlledBall === 'function' && isHumanControlledBall(this))
                             ? 0 : (Math.random() - 0.5) * 2 * (Math.PI * 0.10);
                         const throwAngle = baseThrowAngle + accuracyPenaltyOffset;
-                        const throwSpeed = 7.5;
+                        const throwSpeed = 11.5;          // 🪓 faster throw
 
                         this.thrownAxe = {
                             x: this.x,
@@ -12333,7 +13300,7 @@
                                     audio.playHit();
                                     spawnBloodSplatter(p.x, p.y, 5, 0, 0, 0.8);
                                     addFloatingText(p.x, p.y, 'AXE DESTROYED WEAPON!', this.color);
-                                } else if (p.type === 'axe' || p.type === 'fan' || p.type === 'shockwave') {
+                                } else if (p.type === 'axe' || p.type === 'shockwave') {
                                     let nx = (p.x - axe.x) / (pDist || 1);
                                     let ny = (p.y - axe.y) / (pDist || 1);
 
@@ -12372,8 +13339,8 @@
                                 addBladeLine(target.x, target.y, target.scytheAngle || 0, target.radius + 12, target.radius + 48, 18);
                             } else if (target.isCursed) {
                                 addBladeLine(target.x, target.y, target.staffAngle || 0, target.radius + 10, target.radius + 42, 16);
-                            } else if (target.isPhantomFan && !target.isBoomerangThrown) {
-                                addBladeLine(target.x, target.y, target.fanAngle || 0, target.radius + 8, target.radius + 32, 16);
+                            } else if (target.isPhantomFan) {
+                                // 🪭 a Phantom Fan can NOT alter the axe path unless it uses the melee gust skill
                             } else if (target.isAxeHunter && !target.thrownAxe) {
                                 addBladeLine(target.x, target.y, target.axeAngle || 0, target.radius + 10, target.radius + 38, 17);
                             } else if (target.isCultists) {
@@ -12553,20 +13520,34 @@
                     }
                 }
 
-                if (!this.hasAxe && this.stunTimer <= 0) {
+                const _bowPlayerDriven = (typeof isHumanControlledBall === 'function' && isHumanControlledBall(this));
+                // 🏹 the bow volley fires by itself after a short delay, straight along the
+                //    designated aim direction (mouse / joystick / drag) — no button press needed.
+                const _bowAutoHuman = _bowPlayerDriven && !this.hasAxe;
+                if (this.stunTimer <= 0 && (this._manualBowRequest || (!this.hasAxe && (!_bowPlayerDriven || _bowAutoHuman)))) {
                     this.bowShotTimer += dt;
-                    if (this.bowShotTimer >= 0.75) {
+                    const _bowInterval = _bowPlayerDriven ? 1.6 : 0.75;
+                    if (this._manualBowRequest || this.bowShotTimer >= _bowInterval) {
                         this.bowShotTimer = 0;
-                        if (isTargetable(target)) {
-                            let aimX = target.x, aimY = target.y;
+                        const _manualBow = !!this._manualBowRequest;
+                        this._manualBowRequest = false;
+
+                        let aimX = null, aimY = null;
+                        if (_manualBow || _bowPlayerDriven) {
+                            const _ap = (typeof _humanAimPoint === 'function') ? _humanAimPoint(this)
+                                : ((typeof controlAimPointFor === 'function') ? controlAimPointFor(this) : null);
+                            if (_ap) { aimX = _ap.x; aimY = _ap.y; }
+                        }
+                        if (aimX === null && isTargetable(target)) {
+                            aimX = target.x; aimY = target.y;
                             if (target.isCultists) {
                                 const near = target.getNearestMemberOrDeity(this.x, this.y);
                                 if (near) { aimX = near.x; aimY = near.y; }
                             }
-                            const _bowMouseAim = (typeof controlAimPointFor === 'function' && typeof isHumanControlledBall === 'function' && isHumanControlledBall(this))
-                                ? controlAimPointFor(this) : null;
+                            const _bowMouseAim = (_bowPlayerDriven && typeof controlAimPointFor === 'function') ? controlAimPointFor(this) : null;
                             if (_bowMouseAim) { aimX = _bowMouseAim.x; aimY = _bowMouseAim.y; }
-
+                        }
+                        if (aimX !== null) {
                             const arrowAngle = Math.atan2(aimY - this.y, aimX - this.x);
                             const hunterArrow = new Arrow(this.x, this.y, arrowAngle, 70, this);
                             hunterArrow.speed = 7.0;
@@ -12574,6 +13555,7 @@
                             hunterArrow.isRoyalGuardArrow = isAxeRoyalGuard(this);
                             projectiles.push(hunterArrow);
                             audio.playShot();
+                            if (_manualBow) addFloatingText(this.x, this.y - 26, '🏹 HUNTER BOW!', this.color);
                         }
                     }
                 }
@@ -12640,6 +13622,12 @@
                             if (near) { aimX = near.x; aimY = near.y; }
                         }
                         targetAngle = Math.atan2(aimY - this.y, aimX - this.x);
+                    }
+                    // 🎯 player-driven hunter: the bow always points down the designated aim line
+                    if (typeof isHumanControlledBall === 'function' && isHumanControlledBall(this)
+                        && typeof _humanAimPoint === 'function') {
+                        const _bowAim = _humanAimPoint(this);
+                        if (_bowAim) targetAngle = Math.atan2(_bowAim.y - this.y, _bowAim.x - this.x);
                     }
 
                     ctx.save();
@@ -16129,6 +17117,7 @@
                     }
 
                     for (let m of minions) {
+                        if (m.owner === this) continue;               // 🚫 own minions are immune
                         if (m.hp > 0 && Math.hypot(s.x - m.x, s.y - m.y) < m.radius + 8) {
                             m.hp = Math.max(0, m.hp - 140);
                             spawnBloodSplatter(m.x, m.y, 4);
@@ -16239,6 +17228,7 @@
                     }
 
                     for (let m of minions) {
+                        if (m.owner === this) continue;               // 🚫 own minions are immune
                         if (m.hp > 0 && distToSegment(m.x, m.y, x1, y1, x2, y2) < 42 + m.radius) {
                             const dDealt = 800 * dt;
                             m.hp = Math.max(0, m.hp - dDealt);
@@ -17912,6 +18902,12 @@
             registerHitOrPush() {
                 if (this.isChantingTornado) return;
                 this.stackCount++;
+                const _playerDriven = (typeof isHumanControlledBall === 'function' && isHumanControlledBall(this));
+                if (_playerDriven) {
+                    // 🎮 the player fires the tornado from the skill bar: keep the charge until they tap it
+                    if (this.stackCount > 4) this.stackCount = 4;
+                    return;
+                }
                 if (this.stackCount >= 4) {
                     this.stackCount = 0;
                     this.pendingTornado = true;
@@ -18007,10 +19003,12 @@
                     this.growingTornado = {
                         type: 'phantomTornado',
                         isDeathCyclone: isDeathCyclone(this),
-                        x: Math.max(40, Math.min(ARENA_SIZE - 40, this.x)),
-                        y: Math.max(40, Math.min(ARENA_SIZE - 40, this.y)),
-                        vx: Math.cos(this.fanAngle) * 1.8,
-                        vy: Math.sin(this.fanAngle) * 1.8,
+                        x: Math.max(40, Math.min(ARENA_SIZE - 40, this.x + Math.cos(this.fanAngle) * 70)),
+                        y: Math.max(40, Math.min(ARENA_SIZE - 40, this.y + Math.sin(this.fanAngle) * 70)),
+                        spawnX: Math.max(40, Math.min(ARENA_SIZE - 40, this.x + Math.cos(this.fanAngle) * 70)),
+                        spawnY: Math.max(40, Math.min(ARENA_SIZE - 40, this.y + Math.sin(this.fanAngle) * 70)),
+                        vx: Math.cos(this.fanAngle) * 2.4,
+                        vy: Math.sin(this.fanAngle) * 2.4,
                         timer: 5.0 + Math.random() * 2.0,
                         isGrowing: true,
                         growElapsed: 0,
@@ -18027,10 +19025,13 @@
                 }
 
                 if (this.isChantingTornado) {
-                    this.vx = 0;
-                    this.vy = 0;
-                    if (this.chantAnchorX !== undefined && this.chantAnchorX !== null) this.x = this.chantAnchorX;
-                    if (this.chantAnchorY !== undefined && this.chantAnchorY !== null) this.y = this.chantAnchorY;
+                    const _chantDriven = (typeof isHumanControlledBall === 'function' && isHumanControlledBall(this));
+                    if (!_chantDriven) {
+                        this.vx = 0;
+                        this.vy = 0;
+                        if (this.chantAnchorX !== undefined && this.chantAnchorX !== null) this.x = this.chantAnchorX;
+                        if (this.chantAnchorY !== undefined && this.chantAnchorY !== null) this.y = this.chantAnchorY;
+                    }
                     this.chantTimer += dt;
                     // Smooth rhythmic fan-waving animation (no body shake/jitter)
                     this.fanWaveOffset = Math.sin(this.chantTimer * 10.0) * 0.65;
@@ -18041,10 +19042,12 @@
                         this.growingTornado = {
                             type: 'phantomTornado',
                             isDeathCyclone: isDeathCyclone(this),
-                            x: Math.max(40, Math.min(ARENA_SIZE - 40, this.x)),
-                            y: Math.max(40, Math.min(ARENA_SIZE - 40, this.y)),
-                            vx: Math.cos(this.fanAngle) * 1.8,
-                            vy: Math.sin(this.fanAngle) * 1.8,
+                            x: Math.max(40, Math.min(ARENA_SIZE - 40, this.x + Math.cos(this.fanAngle) * 70)),
+                            y: Math.max(40, Math.min(ARENA_SIZE - 40, this.y + Math.sin(this.fanAngle) * 70)),
+                            spawnX: Math.max(40, Math.min(ARENA_SIZE - 40, this.x + Math.cos(this.fanAngle) * 70)),
+                            spawnY: Math.max(40, Math.min(ARENA_SIZE - 40, this.y + Math.sin(this.fanAngle) * 70)),
+                            vx: Math.cos(this.fanAngle) * 2.4,
+                            vy: Math.sin(this.fanAngle) * 2.4,
                             timer: 5.0 + Math.random() * 2.0,
                             isGrowing: true,
                             growElapsed: this.chantTimer,
@@ -18063,8 +19066,10 @@
                         this.growingTornado.scale = 0.2 + 0.8 * tProg;
                         this.growingTornado.radius = this.growingTornado.baseRadius * this.growingTornado.scale;
                         this.growingTornado.pullRadius = this.growingTornado.basePullRadius * this.growingTornado.scale;
-                        this.growingTornado.x = Math.max(40, Math.min(ARENA_SIZE - 40, this.x));
-                        this.growingTornado.y = Math.max(40, Math.min(ARENA_SIZE - 40, this.y));
+                        const _spx = (this.growingTornado.spawnX !== undefined) ? this.growingTornado.spawnX : this.x;
+                        const _spy = (this.growingTornado.spawnY !== undefined) ? this.growingTornado.spawnY : this.y;
+                        this.growingTornado.x = Math.max(40, Math.min(ARENA_SIZE - 40, _spx));
+                        this.growingTornado.y = Math.max(40, Math.min(ARENA_SIZE - 40, _spy));
                     }
 
                     if (this.chantTimer >= 3.0) {
@@ -18079,8 +19084,8 @@
                             this.growingTornado.scale = 1.0;
                             this.growingTornado.radius = 65;
                             this.growingTornado.pullRadius = 120;
-                            this.growingTornado.vx = Math.cos(this.fanAngle) * 1.8;
-                            this.growingTornado.vy = Math.sin(this.fanAngle) * 1.8;
+                            this.growingTornado.vx = Math.cos(this.fanAngle) * 2.4;
+                            this.growingTornado.vy = Math.sin(this.fanAngle) * 2.4;
                             this.growingTornado = null;
                         }
                         addFloatingText(this.x, this.y - 35, 'TORNADO RELEASED!', this.color);
@@ -18102,7 +19107,16 @@
                     this.meleeFanTimer = 0.4;
                     this.fanPushCooldown = 5.5;
 
-                    const pushAngle = this.fanAngle;
+                    // 🖱️ a player-cast gust blows toward the point the player picked
+                    let pushAngle = this.fanAngle;
+                    if (_manualPush) {
+                        const _pap = (typeof controlAimPointFor === 'function') ? controlAimPointFor(this) : null;
+                        if (_pap && isFinite(_pap.x) && isFinite(_pap.y) && Math.hypot(_pap.x - this.x, _pap.y - this.y) > 4) {
+                            pushAngle = Math.atan2(_pap.y - this.y, _pap.x - this.x);
+                            this.fanAngle = pushAngle;
+                            this.aimAngle = pushAngle;
+                        }
+                    }
                     let hasHitEntity = false;
 
                     if (target) {
@@ -18135,6 +19149,7 @@
                     }
 
                     for (let m of minions) {
+                        if (m.owner === this || m.hp <= 0) continue;   // 🚫 never hit your own minions
                         if (Math.hypot(m.x - this.x, m.y - this.y) < _pushReach) {
                             m.vx = Math.cos(pushAngle) * 4.5;
                             m.vy = Math.sin(pushAngle) * 4.5;
@@ -18160,6 +19175,21 @@
                         this.vx = -Math.cos(pushAngle) * 6.5;
                         this.vy = -Math.sin(pushAngle) * 6.5;
                         this.clashWallRecoilTimer = Math.max(this.clashWallRecoilTimer || 0, 0.25);
+                    }
+
+                    // 🪭 MELEE GUST is the only thing that can push a thrown axe
+                    if (target && target.isAxeHunter && target.thrownAxe && target.thrownAxe.state === 'FLYING') {
+                        const _ax = target.thrownAxe;
+                        if (Math.hypot(_ax.x - this.x, _ax.y - this.y) < (_manualPush ? 165 : 140)) {
+                            const _ba = Math.atan2(_ax.y - this.y, _ax.x - this.x);
+                            _ax.vx = Math.cos(_ba) * 9.5;
+                            _ax.vy = Math.sin(_ba) * 9.5;
+                            _ax.rot += 1.2;
+                            spawnBloodSplatter(_ax.x, _ax.y, 5);
+                            addFloatingText(_ax.x, _ax.y, 'AXE BLOWN AWAY!', this.color);
+                            audio.playBounce();
+                            hasHitEntity = true;
+                        }
                     }
 
                     for (let p of projectiles) {
@@ -18320,10 +19350,7 @@
                         if (!p || !p.active || p.owner === this) continue;
                         if (Math.hypot(p.x - b.x, p.y - b.y) < 30 + (p.radius || 10)) {
                             if (p.type === 'axe') {
-                                b.active = false;
-                                addFloatingText(b.x, b.y, 'FAN BROKEN BY AXE!', '#ef4444');
-                                audio.playHit();
-                                break;
+                                // 🪭 the flying fan can NOT push the axe (only the melee gust can)
                             } else if (p.type === 'fan') {
                                 const nx = (b.x - p.x) || 1;
                                 const ny = (b.y - p.y) || 0;
@@ -18357,13 +19384,7 @@
                             audio.playBounce();
                         }
                     }
-                    if (b.active && target && target.isAxeHunter && target.thrownAxe && target.thrownAxe.state !== 'STUCK_WALL') {
-                        if (Math.hypot(target.thrownAxe.x - b.x, target.thrownAxe.y - b.y) < 38) {
-                            b.active = false;
-                            addFloatingText(b.x, b.y, 'FAN BROKEN BY AXE!', '#ef4444');
-                            audio.playHit();
-                        }
-                    }
+                    // (no fan-vs-axe interaction: the axe only gets pushed by the melee gust skill)
                     if (b.active && target && target.isGodOfWar && Array.isArray(target.leviathanAxes)) {
                         for (const la of target.leviathanAxes) {
                             if (Math.hypot(la.x - b.x, la.y - b.y) < 36) {
@@ -19032,11 +20053,11 @@
                 this.roamAngle = (side === 'left') ? 0.35 : (Math.PI - 0.35);
                 this.roamTimer = 1.8;
 
-                // Rider HP (1000) + Armor (150 durability, blocks 90% -> 30%, regens over 10s out of combat)
+                // Rider HP (1000) + Armor (300 durability, blocks 90% -> 30%, regens over 10s out of combat)
                 this.maxHp = 1000;
                 this.hp = 1000;
-                this.maxArmorHp = 150;
-                this.armorHp = 150;
+                this.maxArmorHp = 300;
+                this.armorHp = 300;
                 this.noDamageTimer = 0;
 
                 // Warhorse Mount HP (1000, separate HP bar below)
@@ -19309,9 +20330,9 @@
                     const blockPct = Math.round(this.getArmorBlockRatio() * 100);
                     const capHtml = `<span class="precip-indicator" title="Armor cap: 90%">${blockPct}%</span>`;
                     if (this.mountAlive) {
-                        ptsElem.innerHTML = `🛡️ ${Math.round(this.armorHp)}/150 (${capHtml}) | 🐎 ${Math.round(this.mountHp)} HP | CHARGE: ${Math.max(0, this.chargeCooldown).toFixed(1)}s`;
+                        ptsElem.innerHTML = `🛡️ ${Math.round(this.armorHp)}/300 (${capHtml}) | 🐎 ${Math.round(this.mountHp)} HP | CHARGE: ${Math.max(0, this.chargeCooldown).toFixed(1)}s`;
                     } else {
-                        ptsElem.innerHTML = `🛡️ ${Math.round(this.armorHp)}/150 (${capHtml}) | 🌙 WIND BLADE: ${Math.max(0, 4.0 - this.windBladeTimer).toFixed(1)}s`;
+                        ptsElem.innerHTML = `🛡️ ${Math.round(this.armorHp)}/300 (${capHtml}) | 🌙 WIND BLADE: ${Math.max(0, 4.0 - this.windBladeTimer).toFixed(1)}s`;
                     }
                 }
                 const barElem = document.getElementById(`${this.side}PointBar`);
@@ -19585,8 +20606,18 @@
                 const targetHip = this.isSweeping ? 0 : (this.halberdSide * (this.isThanhGiongSkin ? 32 : 20));
                 this.halberdHipOffset += (targetHip - this.halberdHipOffset) * Math.min(1, dt * 16);
 
-                if (this.sweepCooldown > 0) this.sweepCooldown -= dt;
+                // 🕒 cooldowns only tick once the halberd/horse animation is finished
+                if (!this.isSweeping && this.sweepCooldown > 0) this.sweepCooldown -= dt;
                 if (this.chargeCooldown > 0 && this.chargeState === 'NONE') this.chargeCooldown -= dt;
+                {
+                    const _ctrlNowM = (typeof isHumanControlledBall === 'function' && isHumanControlledBall(this));
+                    if (_ctrlNowM && !this._ctrlKitInit) {
+                        this._ctrlKitInit = true;
+                        this.sweepCooldown = 0; this.chargeCooldown = 0; this.windBladeTimer = 0;
+                    } else if (!_ctrlNowM) {
+                        this._ctrlKitInit = false;
+                    }
+                }
 
                 // ==========================================
                 //  MOUNTED vs DISMOUNTED MOVEMENT & SKILLS
@@ -19625,13 +20656,30 @@
                     // Handle Skill 2: Wild Charge state machine
                     if (this.chargeState === 'NONE') {
                         // 🎮 Player-driven warhorse: no AI roaming / auto-charge while human-controlled
-                        if (typeof applyHumanControlMotion === 'function'
-                            && applyHumanControlMotion(this, dt, { baseSpeed: 6.0, pad: this.radius })) {
+                        // (we keep the rest of the update alive so manual sweeps still animate)
+                        const _humanMoved = !!(typeof applyHumanControlMotion === 'function'
+                            && applyHumanControlMotion(this, dt, { baseSpeed: 6.0, pad: this.radius }));
+                        if (_humanMoved) {
                             if (Math.abs(this.vx) > 0.1) this.horseFacing = this.vx > 0 ? 1 : -1;
                             this.legAnimPhase += dt * (Math.hypot(this.vx, this.vy) > 0.5 ? 14 : 4);
-                            if (this.updateCardUI) this.updateCardUI();
-                            return;
+                            if (!this.isSweeping) {
+                                try {
+                                    const _hap = (typeof controlAimPointFor === 'function') ? controlAimPointFor(this) : null;
+                                    if (_hap) {
+                                        const _ha = Math.atan2(_hap.y - this.y, _hap.x - this.x);
+                                        const _hd = Math.atan2(Math.sin(_ha - this.halberdAngle), Math.cos(_ha - this.halberdAngle));
+                                        this.halberdAngle += _hd * Math.min(1, dt * 16);
+                                        this.horseFacing = Math.cos(_ha) >= 0 ? 1 : -1;
+                                    }
+                                } catch (e) {}
+                            }
+                            this.hoofAudioTimer = (this.hoofAudioTimer || 0) - dt;
+                            if (this.hoofAudioTimer <= 0 && gameState === 'PLAYING') {
+                                this.hoofAudioTimer = 0.42;
+                                audio.playHorseHoof();
+                            }
                         }
+                        if (!_humanMoved) {
                         // Aim Halberd toward enemy when not sweeping
                         if (!this.isSweeping) {
                             this.halberdAngle = Math.atan2(aimY - this.y, aimX - this.x);
@@ -19826,6 +20874,7 @@
                             if (Math.abs(this.vx) > 0.1) {
                                 this.horseFacing = this.vx > 0 ? 1 : -1;
                             }
+                        }
                         }
                     } else if (this.chargeState === 'WINDUP') {
                         // Halberd is locked during 1.5s wind-up
@@ -20082,7 +21131,7 @@
                     }
 
                     // Replacement Skill 2: Crescent Wind Blade every 4s (40 true dmg + 0.8s stun)
-                    if (!isImmobilized) {
+                    if (!isImmobilized && !(typeof isHumanControlledBall === 'function' && isHumanControlledBall(this))) {
                         this.windBladeTimer += dt;
                         if (this.windBladeTimer >= 4.0) {
                             this.windBladeTimer = 0;
@@ -20211,7 +21260,8 @@
                         this.halberdSide *= -1;
                         this.halberdFlip *= -1;
                     }
-                } else if (this.chargeState === 'NONE' && this.sweepCooldown <= 0 && !isImmobilized && (this.empSilenceTimer || 0) <= 0) {
+                } else if (this.chargeState === 'NONE' && this.sweepCooldown <= 0 && !isImmobilized && (this.empSilenceTimer || 0) <= 0
+                           && !(typeof isHumanControlledBall === 'function' && isHumanControlledBall(this))) {
                     const distToTarget = Math.hypot(aimX - this.x, aimY - this.y);
                     if (distToTarget <= 135 && target && !target.isDead) {
                         this.isSweeping = true;
@@ -22559,7 +23609,14 @@
                 if (this.isChargingSniper) {
                     this.vx = 0;
                     this.vy = 0;
-                    this.sniperLockedAngle = Math.atan2(aimY - this.y, aimX - this.x);
+                    // 🖱️ a human keeps steering the beam until it fires (no lock onto an entity)
+                    let _snAimX = aimX, _snAimY = aimY;
+                    if (typeof isHumanControlledBall === 'function' && isHumanControlledBall(this)
+                        && typeof controlAimPointFor === 'function') {
+                        const _snP = controlAimPointFor(this);
+                        if (_snP && isFinite(_snP.x) && isFinite(_snP.y)) { _snAimX = _snP.x; _snAimY = _snP.y; }
+                    }
+                    this.sniperLockedAngle = Math.atan2(_snAimY - this.y, _snAimX - this.x);
                     this.aimAngle = this.sniperLockedAngle;
                     this.sniperChargeTimer -= dt;
 
@@ -22621,10 +23678,26 @@
                         radius: 18,
                         timer: 8.0
                     });
-                    // Smart Wall-Evasion: flank laterally if wall is behind, otherwise dash away
-                    const flankDash = computeSmartFlankAngle(this, aimX, aimY, 150);
-                    const awayAngle = Math.atan2(this.y - aimY, this.x - aimX);
-                    this.escapeDashAngle = flankDash !== null ? flankDash : awayAngle;
+                    // 🎮 Player-driven ball: the dash glides in the direction the ball is ALREADY moving
+                    //    (falls back to the aim direction only when the ball stands still).
+                    //    AI balls keep the smart flank / away-from-enemy behaviour.
+                    let _dashAng;
+                    if (_humanControlled) {
+                        const _mvSpd = Math.hypot(this.vx || 0, this.vy || 0);
+                        if (_mvSpd > 0.35) {
+                            _dashAng = Math.atan2(this.vy, this.vx);
+                        } else {
+                            const _hpAim = (typeof _humanAimPoint === 'function') ? _humanAimPoint(this) : null;
+                            _dashAng = _hpAim ? Math.atan2(_hpAim.y - this.y, _hpAim.x - this.x)
+                                              : Math.atan2(aimY - this.y, aimX - this.x);
+                        }
+                    } else {
+                        // Smart Wall-Evasion: flank laterally if wall is behind, otherwise dash away
+                        const flankDash = computeSmartFlankAngle(this, aimX, aimY, 150);
+                        const awayAngle = Math.atan2(this.y - aimY, this.x - aimX);
+                        _dashAng = flankDash !== null ? flankDash : awayAngle;
+                    }
+                    this.escapeDashAngle = _dashAng;
                     this.escapeDashTimer = 0.24;
                     audio.playShot();
                     addFloatingText(this.x, this.y - 30, '💨 ESCAPE DASH + PLASMA MINE!', this.color);
@@ -22635,13 +23708,19 @@
                 if (this.freezeTimer > 0) spdMult = 0.4;
                 else if (this.slowTimer > 0) spdMult = 0.5;
 
-                if (typeof applyHumanControlMotion === 'function' && applyHumanControlMotion(this, dt, { baseSpeed: 6.0 })) {
-                    // 🎮 player-driven plasma ball: input only, no AI kiting / escape dash
-                } else if (this.escapeDashTimer > 0) {
+                let _plasmaHumanMoved = false;
+                if (this.escapeDashTimer > 0) {
+                    // 🎮 dash glide: the ball slides along its own heading (works for the player as well)
                     this.escapeDashTimer -= dt;
                     const dashSpd = 16.5 * spdMult;
                     this.vx = Math.cos(this.escapeDashAngle) * dashSpd;
                     this.vy = Math.sin(this.escapeDashAngle) * dashSpd;
+                    this.x += this.vx * (dt * 60);
+                    this.y += this.vy * (dt * 60);
+                    this.x = Math.max(this.radius, Math.min(ARENA_SIZE - this.radius, this.x));
+                    this.y = Math.max(this.radius, Math.min(ARENA_SIZE - this.radius, this.y));
+                } else if ((_plasmaHumanMoved = (typeof applyHumanControlMotion === 'function' && applyHumanControlMotion(this, dt, { baseSpeed: 6.0 })))) {
+                    // 🎮 player-driven plasma ball: input only, no AI kiting / escape dash
                 } else {
                     // Smart Tactical AI Kiting: evaluates 12 candidate angles to maintain optimal shooting distance (215px),
                     // secure bank-shot sightlines, dodge incoming projectiles/hazards, and strictly avoid wall/corner traps.
@@ -22720,8 +23799,10 @@
                     this.vy = (this.vy || 0) * 0.72 + targetVy * 0.28;
                 }
 
-                this.x += this.vx * (dt * 60);
-                this.y += this.vy * (dt * 60);
+                if (!_plasmaHumanMoved) {         // the control helper already integrated the position
+                    this.x += this.vx * (dt * 60);
+                    this.y += this.vy * (dt * 60);
+                }
                 this.x = Math.max(this.radius, Math.min(ARENA_SIZE - this.radius, this.x));
                 this.y = Math.max(this.radius, Math.min(ARENA_SIZE - this.radius, this.y));
 
@@ -24564,11 +25645,9 @@
         }
         function getTargetEffectiveRadius(ent, enemyRoot) {
             if (!ent) return 24;
-            if (enemyRoot && enemyRoot.isCultists && ent === enemyRoot.deity) {
-                return getEntityRadius(enemyRoot);
-            }
-            if (ent.deity) return getEntityRadius(ent);
-            return ent.radius || 24;
+            // same circle rule as getEntityRadius: the entity's own body size
+            if (enemyRoot && enemyRoot.isCultists && ent === enemyRoot.deity) return entityHitRadius(ent);
+            return entityHitRadius(ent);
         }
 
         class GodOfWarBall extends Ball {
@@ -24769,7 +25848,7 @@
                 const targetRevs = 4 + Math.floor(Math.random() * 4); // 4 đến 7 vòng tùy lúc
                 this.spinDuration = (targetRevs * Math.PI * 2) / 20 + 0.04;
                 this.spinActiveTimer = this.spinDuration;
-                this.spinCd = 3.5;
+                this.spinCd = 2.8;
                 this.spinPulledTargets = [];
                 this._spinHitSet = new Set();
                 this._bladeTouchState = new Map();
@@ -24785,7 +25864,7 @@
             }
 
             triggerLeviathanAxe(target) {
-                this.axeCd = 5.0;
+                this.axeCd = 3.6;
                 const tx = target ? target.x : (this.x + 120);
                 const ty = target ? target.y : this.y;
                 this.axeWindupAngle = Math.atan2(ty - this.y, tx - this.x);
@@ -24812,7 +25891,7 @@
             }
 
             triggerSpartanCharge(target) {
-                this.chargeCd = 6.5;
+                this.chargeCd = 4.2;
                 const tx = target ? target.x : (this.x + 150);
                 const ty = target ? target.y : this.y;
                 this.chargeAngle = Math.atan2(ty - this.y, tx - this.x);
@@ -24823,7 +25902,7 @@
             }
 
             triggerGuardianShield() {
-                this.shieldCd = 4.5;
+                this.shieldCd = 3.2;
                 this.shieldActiveTimer = 3.0;
                 addFloatingText(this.x, this.y - this.radius - 18, '🛡️ BULWARK OF GODS!', '#fbbf24');
                 if (typeof audio !== 'undefined' && audio.playShield) audio.playShield();
@@ -24851,7 +25930,7 @@
             }
 
             triggerDraupnirBarrage(target) {
-                this.spearCd = 6.0;
+                this.spearCd = 4.0;
                 const tx = target ? target.x : (this.x + 150);
                 const ty = target ? target.y : this.y;
                 this.spearBurstBaseAngle = Math.atan2(ty - this.y, tx - this.x);
@@ -24913,6 +25992,35 @@
                     return;
                 }
                 if (this.isDead || this.isVanished || ((gameState === 'FINISHER' || gameState === 'ENDED' || gameState === 'DOUBLE_KO') && !(typeof window !== 'undefined' && window.__codexSimActive))) return;
+
+                // 🎮 the first frame this ball is player-driven its whole arsenal is charged
+                //    (fixes rematches / ball switches where startControlMode ran before the ball existed)
+                {
+                    const _ctrlNow = (typeof isHumanControlledBall === 'function' && isHumanControlledBall(this));
+                    if (_ctrlNow && !this._ctrlKitInit) {
+                        this._ctrlKitInit = true;
+                        this.spinCd = 0; this.axeCd = 0; this.chargeCd = 0; this.shieldCd = 0; this.spearCd = 0;
+                        this.skillRecoveryTimer = 0;
+                    } else if (!_ctrlNow) {
+                        this._ctrlKitInit = false;
+                    }
+                }
+
+                // ⏱ every weapon recharges on its own clock — one active skill never locks the rest
+                //    🕒 and a weapon's cooldown only starts counting AFTER its animation is over
+                if (gameState === 'PLAYING' || (typeof window !== 'undefined' && window.__codexSimActive)) {
+                    if (this.skillRecoveryTimer > 0) this.skillRecoveryTimer = Math.max(0, this.skillRecoveryTimer - dt);
+                    const _bladesBusy = (this.spinActiveTimer || 0) > 0;
+                    const _axeBusy = (this.axeWindupTimer || 0) > 0 || (this.leviathanAxes || []).length > 0;
+                    const _stompBusy = (this.chargeState || 'IDLE') !== 'IDLE';
+                    const _shieldBusy = (this.shieldActiveTimer || 0) > 0;
+                    const _spearBusy = (this.draupnirSlamState || 'IDLE') !== 'IDLE' || (this.draupnirSpears || []).length > 0;
+                    if (!_bladesBusy) this.spinCd = Math.max(-0.01, (this.spinCd || 0) - dt);
+                    if (!_axeBusy) this.axeCd = Math.max(-0.01, (this.axeCd || 0) - dt);
+                    if (!_stompBusy) this.chargeCd = Math.max(-0.01, (this.chargeCd || 0) - dt);
+                    if (!_shieldBusy) this.shieldCd = Math.max(-0.01, (this.shieldCd || 0) - dt);
+                    if (!_spearBusy) this.spearCd = Math.max(-0.01, (this.spearCd || 0) - dt);
+                }
 
                 this.weaponOrbitAngle += dt * (this.rageActiveTimer > 0 ? 5.2 : 3.0);
 
@@ -25081,7 +26189,11 @@
                 if (this.axeStowTimer > 0) this.axeStowTimer = Math.max(0, this.axeStowTimer - dt);
                 if (this.spearStowTimer > 0) this.spearStowTimer = Math.max(0, this.spearStowTimer - dt);
 
-                const primaryTarget = getPrimaryEnemyTarget(this, enemy);
+                // 🎮 player-driven God of War: every weapon resolves at the cursor point
+                const _gCtrlAim = (typeof isHumanControlledBall === 'function' && isHumanControlledBall(this))
+                                   ? _humanAimPoint(this) : null;
+                // 🎯 human: the designated point (never the nearest cultist / falcon / pawn)
+                const primaryTarget = _gCtrlAim || getPrimaryEnemyTarget(this, enemy);
                 if (this.axeWindupTimer > 0 && this.stunTimer <= 0 && this.trappedTimer <= 0) {
                     if (primaryTarget) {
                         this.axeWindupAngle = Math.atan2(primaryTarget.y - this.y, primaryTarget.x - this.x);
@@ -25398,12 +26510,7 @@
                 }
 
                 if ((gameState === 'PLAYING' || (typeof window !== 'undefined' && window.__codexSimActive)) && !(this.empSilenceTimer > 0) && this.stunTimer <= 0 && this.trappedTimer <= 0) {
-                    if (this.skillRecoveryTimer > 0) this.skillRecoveryTimer = Math.max(0, this.skillRecoveryTimer - dt);
-                    this.spinCd -= dt;
-                    this.axeCd -= dt;
-                    this.chargeCd -= dt;
-                    this.shieldCd -= dt;
-                    this.spearCd -= dt;
+                    // (cooldowns are ticked at the top of update so they never freeze mid-animation)
 
                     const distToEnemy = primaryTarget ? Math.hypot(primaryTarget.x - this.x, primaryTarget.y - this.y) : 999;
 
@@ -25432,7 +26539,9 @@
                             this.axeStowTimer <= 0.12 &&
                             this.spearStowTimer <= 0.12
                         );
-                        if (isTheGodOfWar(this) && readyForNextPreview) {
+                        if (typeof isHumanControlledBall === 'function' && isHumanControlledBall(this)) {
+                            this.pendingNextWeapon = null;
+                        } else if (isTheGodOfWar(this) && readyForNextPreview) {
                             if (this.spinCd <= 0 && this._isEnemyNearBladesRange(enemy) && this.spinActiveTimer <= 0) this.pendingNextWeapon = 'blades';
                             else if (this.axeCd <= 0 && this.leviathanAxes.length === 0 && this.axeWindupTimer <= 0) this.pendingNextWeapon = 'axe';
                             else if (this.shieldCd <= 0 && distToEnemy <= 165 && this.shieldActiveTimer <= 0) this.pendingNextWeapon = 'shield';
@@ -25441,6 +26550,9 @@
                         } else if (isTheGodOfWar(this)) {
                             this.pendingNextWeapon = null;
                         }
+                    } else if (typeof isHumanControlledBall === 'function' && isHumanControlledBall(this)) {
+                        // 🎮 never auto-cast the divine weapons for a human-driven Kratos
+                        this.pendingNextWeapon = null;
                     } else {
                         this.pendingNextWeapon = null;
                         if (this.spinCd <= 0 && this._isEnemyNearBladesRange(enemy)) {
@@ -26533,8 +27645,14 @@
                 fullLbl = appendBallStatusTags(this, fullLbl);
                 ctx.fillText(fullLbl, this.x + jx, this.y - r - 28 + jy);
 
-                // Clear, high-contrast on-canvas HP bar for Void Existence
-                const hpPct = Math.max(0, Math.min(1, (this.hp || 0) / (this.maxHp || 900)));
+                // ⏱ 60s (timeattack) mode: the bar counts the DAMAGE this entity has taken/dealt
+                const _voidTA = (typeof activeGameMode !== 'undefined' && activeGameMode === 'timeattack'
+                    && typeof activeMatchContext !== 'undefined' && activeMatchContext !== 'lobby');
+                const _voidDmg = Math.round(this.damageTaken || 0);
+                // Clear, high-contrast on-canvas HP/damage bar for Void Existence
+                const hpPct = _voidTA
+                    ? Math.max(0, Math.min(1, _voidDmg / Math.max(1, (this.maxHp || 900))))
+                    : Math.max(0, Math.min(1, (this.hp || 0) / (this.maxHp || 900)));
                 const barW = 74;
                 const barH = 8;
                 const bx = this.x - barW / 2;
@@ -26559,7 +27677,9 @@
                 ctx.fillStyle = '#ffffff';
                 ctx.shadowColor = '#000000';
                 ctx.shadowBlur = 4;
-                ctx.fillText(`${Math.max(0, Math.round(this.hp || 0))} / ${this.maxHp || 900}`, this.x, by + 7);
+                ctx.fillText(_voidTA
+                    ? `${_voidDmg} / ${this.maxHp || 900}`
+                    : `${Math.max(0, Math.round(this.hp || 0))} / ${this.maxHp || 900}`, this.x, by + 7);
                 ctx.restore();
 
                 if (this.tearSlashTimer > 0) {
@@ -26581,10 +27701,38 @@
             }
         }
 
+        // 🎯 Inert training target used by the codex "Try" sparring match.
+        //    It has a full update()/updatePhysics() cycle so the match loop never chokes,
+        //    but it never attacks and it cannot be killed (hp refills at 0).
+        class TrainingDummyBall extends Ball {
+            constructor(x, y, color, side) {
+                super('🎯 DUMMY', x, y, 34, color || '#64748b', side);
+                this.radius = 34;
+                this.maxHp = 9999;
+                this.hp = 9999;
+                this.isTrainingDummy = true;
+                this._isTrainingDummy = true;
+                this.vx = 0;
+                this.vy = 0;
+            }
+            update(dt) {
+                if (typeof this.updatePhysics === 'function') {
+                    try { this.updatePhysics(dt); } catch (e) {}
+                }
+                if ((this.hp || 0) <= 0) this.hp = this.maxHp;
+                this.updateCardUI();
+            }
+        }
+
         function createBall(type, side, opposingColor = false) {
             const isLeft = side === 'left';
             const x = isLeft ? ARENA_SIZE * 0.24 : ARENA_SIZE * 0.76;
             const y = ARENA_SIZE / 2;
+
+            // 🎯 training DUMMY (used by the codex "Try" sparring match) — inert, huge HP
+            if (type === 'dummy') {
+                return new TrainingDummyBall(x, y, '#64748b', side);
+            }
 
             const color = isLeft ? PALETTES[type].left : (opposingColor ? PALETTES[type].right : PALETTES[type].left);
 
@@ -26846,6 +27994,27 @@
             }
         }
 
+        // 🏷️ in-match status labels: localised instead of English-only
+        const SPECIAL_LABELS = {
+            pentas: ['TRẠNG THÁI NGŨ NHÃN:', 'FIVE EYES STATE:'],
+            plasmaricochet: ['THANH TẬP TRUNG:', 'FOCUS METER:'],
+            grandmaster: ['NĂNG LƯỢNG CỜ & THẾ ĐỨNG:', 'CHESS ENERGY & STANCE:'],
+            sirmalakor: ['GIÁP & CHIẾN MÃ:', 'ARMOR & MOUNT:'],
+            abyssal: ['KỸ NĂNG BOSS:', 'BOSS ABILITIES:'],
+            axehunter: ['TÌNH TRẠNG VŨ KHÍ:', 'WEAPON STATUS:'],
+            plague: ['THUỐC ĐỘC:', 'TOXIC POTION:'],
+            chronovoid: ['MẢNH THỜI GIAN:', 'CHRONO SHARDS:'],
+            depressed: ['ĐẾM NGƯỢC:', 'COUNTDOWN:'],
+            gambler: ['XU GACHA:', 'GACHA COINS:'],
+            phantomfan: ['ĐIỂM QUẠT:', 'FAN STACKS:'],
+            timetraveler: ['HỒI DỊCH CHUYỂN:', 'WARP COOLDOWN:'],
+            godofwar: ['PHẪN NỘ:', 'DIVINE WRATH:']
+        };
+        function specialLabelFor(type) {
+            const e = SPECIAL_LABELS[type];
+            return e ? tUI(e[0], e[1]) : tUI('NỘ KHÍ:', 'FORM RAGE:');
+        }
+
         function setupFighterCards() {
             const leftType = document.getElementById('leftBallSelect').value;
             const rightType = document.getElementById('rightBallSelect').value;
@@ -26853,8 +28022,8 @@
             document.getElementById('leftPointBarContainer').style.display = 'block';
             document.getElementById('rightPointBarContainer').style.display = 'block';
 
-            document.getElementById('leftSpecialLabel').textContent = (leftType === 'pentas') ? 'FIVE EYES STATE:' : ((leftType === 'plasmaricochet') ? 'FOCUS METER:' : ((leftType === 'grandmaster') ? 'CHESS ENERGY & STANCE:' : ((leftType === 'sirmalakor') ? 'ARMOR & MOUNT:' : ((leftType === 'abyssal') ? 'BOSS ABILITIES:' : ((leftType === 'axehunter') ? 'WEAPON STATUS:' : ((leftType === 'plague') ? 'TOXIC POTION:' : ((leftType === 'chronovoid') ? 'CHRONO SHARDS:' : ((leftType === 'depressed') ? 'COUNTDOWN:' : ((leftType === 'gambler') ? 'GACHA COINS:' : ((leftType === 'phantomfan') ? 'FAN STACKS:' : ((leftType === 'timetraveler') ? 'WARP COOLDOWN:' : ((leftType === 'godofwar') ? 'DIVINE WRATH:' : 'FORM RAGE:'))))))))))));
-            document.getElementById('rightSpecialLabel').textContent = (rightType === 'pentas') ? 'FIVE EYES STATE:' : ((rightType === 'plasmaricochet') ? 'FOCUS METER:' : ((rightType === 'grandmaster') ? 'CHESS ENERGY & STANCE:' : ((rightType === 'sirmalakor') ? 'ARMOR & MOUNT:' : ((rightType === 'abyssal') ? 'BOSS ABILITIES:' : ((rightType === 'axehunter') ? 'WEAPON STATUS:' : ((rightType === 'plague') ? 'TOXIC POTION:' : ((rightType === 'chronovoid') ? 'CHRONO SHARDS:' : ((rightType === 'depressed') ? 'COUNTDOWN:' : ((rightType === 'gambler') ? 'GACHA COINS:' : ((rightType === 'phantomfan') ? 'FAN STACKS:' : ((rightType === 'timetraveler') ? 'WARP COOLDOWN:' : ((rightType === 'godofwar') ? 'DIVINE WRATH:' : 'FORM RAGE:'))))))))))));
+            document.getElementById('leftSpecialLabel').textContent = specialLabelFor(leftType);
+            document.getElementById('rightSpecialLabel').textContent = specialLabelFor(rightType);
 
             const nameMap = {
                 pentas: 'Pentas (5-Eyed)',
@@ -26873,7 +28042,8 @@
                 cultists: 'The Cultists',
                 phantomfan: 'Phantom Fan',
                 godofwar: 'Wrath of Abyss',
-                voidexistence: 'V̷O̷I̷D̷_̸E̷X̸I̶S̷T̸E̶N̷C̶E̷'
+                voidexistence: 'V̷O̷I̷D̷_̸E̷X̸I̶S̷T̸E̶N̷C̶E̷',
+                dummy: '🎯 DUMMY'
             };
 
             const tgEquip = typeof playerData !== 'undefined' && playerData.equippedSkins && playerData.equippedSkins['sirmalakor'] === 'thanhgiong';
@@ -31122,8 +32292,18 @@
                 return;
             }
 
+            // 🎮 if control started before the ball existed (rematch / ball swap), arm it now
+            try {
+                if (controlState.active) {
+                    const _kb = controlBallForSide(controlState.side);
+                    if (_kb && !_kb._kitArmed) { _kb._kitArmed = true; _armPlayerKit(_kb); }
+                }
+            } catch (e) {}
+
             const _preProjLenL = projectiles.length;
+            if (ballLeft) { try { cdFreezeSnapshot(ballLeft); if (ballLeft.falcon) cdFreezeSnapshot(ballLeft.falcon); } catch (e) {} }
             if (ballLeft) ballLeft.update(effectiveDt, ballRight);
+            if (ballLeft) { try { cdFreezeRestore(ballLeft); if (ballLeft.falcon) cdFreezeRestore(ballLeft.falcon); } catch (e) {} }
             if (ballLeft && ballLeft.mindCollapseTimer > 0 && projectiles.length > _preProjLenL && (ballLeft._mindCollapseReflectCd || 0) <= 0) {
                 let spawnedOwn = false;
                 for (let pi = _preProjLenL; pi < projectiles.length; pi++) {
@@ -31138,7 +32318,9 @@
                 }
             }
             const _preProjLenR = projectiles.length;
+            if (ballRight) { try { cdFreezeSnapshot(ballRight); if (ballRight.falcon) cdFreezeSnapshot(ballRight.falcon); } catch (e) {} }
             if (ballRight) ballRight.update(effectiveDt, ballLeft);
+            if (ballRight) { try { cdFreezeRestore(ballRight); if (ballRight.falcon) cdFreezeRestore(ballRight.falcon); } catch (e) {} }
             if (ballRight && ballRight.mindCollapseTimer > 0 && projectiles.length > _preProjLenR && (ballRight._mindCollapseReflectCd || 0) <= 0) {
                 let spawnedOwn = false;
                 for (let pi = _preProjLenR; pi < projectiles.length; pi++) {
@@ -31364,6 +32546,14 @@
                     ctx.stroke();
                     ctx.restore();
                 }
+            }
+
+            // 📷 sandbox · two non-skill balls -> arrow marks the ball the camera follows
+            if (typeof activeMatchContext !== 'undefined' && activeMatchContext === 'sandbox'
+                && ballLeft && ballRight && !isSkillBallEntity(ballLeft) && !isSkillBallEntity(ballRight)
+                && !isMatchEndedState()) {
+                const _camBall = controlFocusBall();
+                if (_camBall) drawCameraFollowArrow(ctx, _camBall);
             }
 
             for (let p of projectiles) {
@@ -32535,8 +33725,8 @@
         });
         // ===== Control-mode UI labels (13 languages) =====
         const I18N_EXTRA_CTRL = {
-            vi: { ctrlSwitch: '🔄 Đổi bóng', ctrlHint: 'WASD / mũi tên • Q/E/R (1/2/3) tung chiêu theo con trỏ • 📱 chạm = tự nhắm, giữ & kéo = chọn hướng, kéo vào ✕ HỦY để thu hồi', rotateTitle: 'XOAY NGANG ĐIỆN THOẠI ĐỂ CHƠI', rotateSub: 'Game chỉ hoạt động ở chế độ màn hình ngang (landscape). Hãy xoay thiết bị rồi thử lại.', chooseCtrlBall: 'CHỌN BÓNG BẠN ĐIỀU KHIỂN', chooseCtrlBallSub: 'Cả hai bóng đều là bóng kỹ năng (không điều khiển được). Hãy chọn 1 trong 2 để điều khiển.' },
-            en: { ctrlSwitch: '🔄 Switch ball', ctrlHint: 'WASD / arrows • Q/E/R (1/2/3) casts at the cursor • 📱 tap = auto-aim, hold & drag = aim, drag onto ✕ CANCEL to abort', rotateTitle: 'ROTATE TO LANDSCAPE', rotateSub: 'This game only runs in landscape mode. Rotate your device and try again.', chooseCtrlBall: 'CHOOSE THE BALL YOU CONTROL', chooseCtrlBallSub: 'Both balls are skill balls (not controllable by default). Pick one of the two to control.' },
+            vi: { profileTitle:'Hồ sơ người chơi', settingsTitle:'Cài Đặt', dropRateTitle:'Tỉ lệ rơi', chestClickTitle:'Nhấn vào rương để xem phần thưởng', viewRatesTitle:'Xem tỉ lệ', backTitle:'Quay lại', renameTitle:'Đổi tên', editBioTitle:'Chỉnh sửa mô tả', sendTitle:'Gửi', joinRoomPlaceholder:'VD: A1B2C3', accUserPlaceholder:'Tên đăng nhập...', accPassPlaceholder:'Mật khẩu (từ 4 ký tự)...', ctrlSwitch: '🔄 Đổi bóng', ctrlHint: 'WASD / mũi tên • Q/E/R/F (1/2/3/4) tung chiêu theo con trỏ • 📱 chạm = tự nhắm, giữ & kéo = chọn hướng (🦅 kéo để chỉ điểm lướt), kéo vào ✕ HỦY để thu hồi', rotateTitle: 'XOAY NGANG ĐIỆN THOẠI ĐỂ CHƠI', rotateSub: 'Game chỉ hoạt động ở chế độ màn hình ngang (landscape). Hãy xoay thiết bị rồi thử lại.', chooseCtrlBall: 'CHỌN BÓNG BẠN ĐIỀU KHIỂN', chooseCtrlBallSub: 'Cả hai bóng đều là bóng kỹ năng (không điều khiển được). Hãy chọn 1 trong 2 để điều khiển.' },
+            en: { profileTitle:'Player profile', settingsTitle:'Settings', dropRateTitle:'Drop rates', chestClickTitle:'Tap the chest to see the rewards', viewRatesTitle:'View rates', backTitle:'Back', renameTitle:'Rename', editBioTitle:'Edit bio', sendTitle:'Send', joinRoomPlaceholder:'e.g. A1B2C3', accUserPlaceholder:'Username...', accPassPlaceholder:'Password (min 4 characters)...', ctrlSwitch: '🔄 Switch ball', ctrlHint: 'WASD / arrows • Q/E/R/F (1/2/3/4) casts at the cursor • 📱 tap = auto-aim, hold & drag = aim (🦅 drag to mark the glide point), drag onto ✕ CANCEL to abort', rotateTitle: 'ROTATE TO LANDSCAPE', rotateSub: 'This game only runs in landscape mode. Rotate your device and try again.', chooseCtrlBall: 'CHOOSE THE BALL YOU CONTROL', chooseCtrlBallSub: 'Both balls are skill balls (not controllable by default). Pick one of the two to control.' },
             ja: { ctrlSwitch: '🔄 操作ボール変更', ctrlHint: 'WASD / 矢印キー • スマホはジョイスティック • マウス長押しで追従', rotateTitle: '横向きにしてください', rotateSub: 'このゲームは横向き（ランドスケープ）専用です。端末を回転してください。', chooseCtrlBall: '操作するボールを選択', chooseCtrlBallSub: '両方ともスキルボールです。どちらか1つを選んで操作してください。' },
             ko: { ctrlSwitch: '🔄 볼 변경', ctrlHint: 'WASD / 방향키 • 모바일 조이스틱 • 마우스 길게 눌러 이동', rotateTitle: '가로 모드로 회전하세요', rotateSub: '이 게임은 가로 모드에서만 실행됩니다. 기기를 회전하세요.', chooseCtrlBall: '조작할 볼 선택', chooseCtrlBallSub: '두 볼 모두 스킬 볼입니다. 하나를 선택해 조작하세요.' },
             zh: { ctrlSwitch: '🔄 切换球体', ctrlHint: 'WASD / 方向键 • 手机摇杆 • 按住鼠标移动', rotateTitle: '请横屏游玩', rotateSub: '本游戏仅支持横屏模式，请旋转设备后重试。', chooseCtrlBall: '选择你要操控的球', chooseCtrlBallSub: '两个球都是技能球，请选择其中一个进行操控。' },
@@ -33700,7 +34890,6 @@
             const templates = [
                 { title: 'Thắng 1 trận Sandbox', type: 'sandbox_win', target: 1 },
                 { title: 'Chơi 1 trận Thời Gian', type: 'time_attack', target: 1 },
-                { title: 'Chơi 1 trận Đẩy Boom', type: 'bomb', target: 1 },
                 { title: 'Quay Gacha 1 lần', type: 'gacha', target: 1 },
                 { title: 'Đấu 1 trận Multiplayer', type: 'mp', target: 1 },
                 { title: 'Gây 1000 sát thương', type: 'damage', target: 1000 },
@@ -34168,6 +35357,12 @@
                     isNewAccount = false;
                 }
             } catch (e) {}
+            // 🚫 the bomb-push mode no longer exists: drop its mission from old saves
+            try {
+                if (playerData && Array.isArray(playerData.missions)) {
+                    playerData.missions = playerData.missions.filter(m => m && m.type !== 'bomb' && !/Đẩy Boom|Bomb Push/i.test(m.title || ''));
+                }
+            } catch (e) {}
             if (isNewAccount || !playerData.name || playerData.name === 'NeonFighter') {
                 playerData.name = generateUniqueAccountName('NeonFighter');
                 registerTakenName(playerData.name);
@@ -34208,7 +35403,6 @@
                 const templates = [
                     { title: 'Thắng 1 trận Sandbox', type: 'sandbox_win', target: 1 },
                     { title: 'Chơi 1 trận Thời Gian', type: 'time_attack', target: 1 },
-                    { title: 'Chơi 1 trận Đẩy Boom', type: 'bomb', target: 1 },
                     { title: 'Quay Gacha 1 lần', type: 'gacha', target: 1 },
                     { title: 'Đấu 1 trận Multiplayer', type: 'mp', target: 1 },
                     { title: 'Gây 1000 sát thương', type: 'damage', target: 1000 },
@@ -34259,6 +35453,11 @@
                 const k = el.getAttribute('data-i18n-placeholder');
                 const val = dict[k] || I18N.en[k] || I18N.vi[k];
                 if (val) el.placeholder = val;
+            });
+            document.querySelectorAll('[data-i18n-title]').forEach(el => {
+                const k = el.getAttribute('data-i18n-title');
+                const val = dict[k] || I18N.en[k] || I18N.vi[k];
+                if (val) el.title = val;
             });
             if (typeof window.__npaRefreshRuntimeHooks === 'function') window.__npaRefreshRuntimeHooks();
             const loginBtn = document.getElementById('btnLoginRewards');
@@ -36312,7 +37511,8 @@
             document.querySelectorAll('.sandbox-submode-btn').forEach(btn => {
                 btn.onclick = () => {
                     audio.playClick();
-                    selectedSubmode = btn.dataset.submode;
+                    // 🚫 bomb-push mode removed — its button is gone, and a stale value is ignored
+                    selectedSubmode = (btn.dataset.submode === 'bombpush') ? 'classic' : btn.dataset.submode;
                     document.querySelectorAll('.sandbox-submode-btn').forEach(b => {
                         b.classList.toggle('border-cyan-400', b === btn);
                         b.classList.toggle('text-cyan-300', b === btn);
@@ -36326,7 +37526,10 @@
                 audio.playClick();
                 const _lIdC = sL.value || 'phantomfan';
                 const _rIdC = sR.value || 'axehunter';
-                if (!isControllableBallId(_lIdC) && !isControllableBallId(_rIdC) && !controlState.overrideSide) {
+                // 🎮 2 skill balls  -> ask the player to pick only ONE (cannot control both)
+                //    1 skill ball    -> enter normally (that ball is yours)
+                //    0 skill balls   -> enter normally, the camera arrow shows which ball is followed
+                if (isControllableBallId(_lIdC) && isControllableBallId(_rIdC) && !controlState.overrideSide) {
                     const _lMetaC = CODEX_DATA.find(b => b.id === _lIdC);
                     const _rMetaC = CODEX_DATA.find(b => b.id === _rIdC);
                     const _lNameEl = document.getElementById('ctrlPickLeftName');
@@ -36338,7 +37541,7 @@
                 }
                 document.getElementById('battleModeModal').classList.add('hidden');
                 activeMatchContext = 'sandbox';
-                activeGameMode = selectedSubmode;
+                activeGameMode = (selectedSubmode === 'bombpush') ? 'classic' : selectedSubmode;
                 isMatchPaused = false;
                 matchElapsedSec = 0; timeAttackRemaining = 60.0; dmgDealtLeft = 0; dmgDealtRight = 0; arenaBombs = []; bombSpawnTimer = 0;
                 document.getElementById('inMatchModeBadge').textContent = `SANDBOX: ${selectedSubmode.toUpperCase()}`;
@@ -36364,6 +37567,62 @@
                 document.getElementById('sandboxControlModal').classList.add('hidden');
                 document.getElementById('btnStartSandbox').click();
             };
+
+            // 🧪 Codex → "Try": launch a sandbox sparring match against an inert DUMMY ball
+            function ensureDummyOption(sel) {
+                if (!sel) return;
+                if (sel.querySelector('option[value="dummy"]')) return;
+                const o = document.createElement('option');
+                o.value = 'dummy'; o.textContent = '🎯 DUMMY';
+                sel.appendChild(o);
+            }
+            function startCodexSkillTrial(ballId) {
+                const id = ballId || 'axehunter';
+                ['leftBallSelect', 'rightBallSelect', 'sandboxLeftSelect', 'sandboxRightSelect'].forEach(sid => {
+                    ensureDummyOption(document.getElementById(sid));
+                });
+                const sL = document.getElementById('sandboxLeftSelect');
+                const sR = document.getElementById('sandboxRightSelect');
+                if (!sL || !sR) return false;
+                sL.value = id;
+                sR.value = 'dummy';
+                controlState.overrideSide = 'left';
+                selectedSubmode = 'classic';
+                document.querySelectorAll('.sandbox-submode-btn').forEach(b => {
+                    const on = b.dataset.submode === 'classic';
+                    b.classList.toggle('border-cyan-400', on);
+                    b.classList.toggle('text-cyan-300', on);
+                    b.classList.toggle('border-slate-700', !on);
+                    b.classList.toggle('text-slate-300', !on);
+                });
+                // 🧹 close EVERY codex overlay (list + detail + pickers) — they are fixed z-50/z-60
+                //    layers that would otherwise cover the arena and freeze the match loop.
+                ['codexDetailModal', 'codexModal', 'battleModeModal', 'sandboxControlModal', 'codexPickerModal'].forEach(mid => {
+                    const el = document.getElementById(mid);
+                    if (el) el.classList.add('hidden');
+                });
+                document.body.classList.remove('modal-open');
+                document.querySelectorAll('#codexFilterTabs button, #codexGrid button').forEach(b => b.blur());
+                if (typeof stopCodexLivePreview === 'function') { try { stopCodexLivePreview(); } catch (e) {} }
+                const bs = document.getElementById('btnStartSandbox');
+                if (!bs) return false;
+                bs.click();
+                // ⚡ the sparring test must be live immediately: skip the READY/FIGHT countdown
+                const fastForwardIntro = () => {
+                    try {
+                        if (typeof gameState !== 'undefined' && gameState === 'SPAWN_INTRO') {
+                            introTimer = 2.0;
+                            const io = document.getElementById('introOverlay');
+                            if (io) io.style.opacity = '0';
+                        }
+                    } catch (e) {}
+                };
+                setTimeout(fastForwardIntro, 40);
+                setTimeout(fastForwardIntro, 320);
+                setTimeout(fastForwardIntro, 900);
+                return true;
+            }
+            try { window.startCodexSkillTrial = startCodexSkillTrial; } catch (e) {}
 
             // Friend Request Helper (Works both In-Match and Post-Match)
             function sendMpFriendRequest() {
@@ -37545,6 +38804,18 @@
                 if (typeof stopAllCharacterVoices === 'function') stopAllCharacterVoices();
             }
 
+            // 🧪 localised label of the codex "Try / Thử" button
+            const CODEX_TRY_I18N = {
+                vi: '🧪 THỬ', en: '🧪 TRY', ja: '🧪 試す', ko: '🧪 시험', zh: '🧪 试用', es: '🧪 PROBAR',
+                fr: '🧪 ESSAYER', de: '🧪 TESTEN', pt: '🧪 TESTAR', ru: '🧪 ПРОБА', th: '🧪 ทดลอง',
+                id: '🧪 COBA', ar: '🧪 جرّب'
+            };
+            function codexTryLabel() {
+                const l = (typeof playerData !== 'undefined' && playerData && playerData.lang) || 'vi';
+                return CODEX_TRY_I18N[l] || CODEX_TRY_I18N.en;
+            }
+            try { window.codexTryLabel = codexTryLabel; } catch (e) {}
+
             function startCodexLivePreview(ballId, skillId) {
                 if (codexPreviewAnimId) cancelAnimationFrame(codexPreviewAnimId);
                 codexPreviewBallId = ballId;
@@ -37958,8 +39229,9 @@
                     const zoomSkill = 1.28;
                     const scale = (dCanvas.width / PREVIEW_FRAME) * zoomSkill;
                     const halfV = (dCanvas.width / scale) * 0.5;   // half of the visible world width
-                    const focusX = sim.pBall.x * 0.65 + sim.dummy.x * 0.35;
-                    const focusY = sim.pBall.y * 0.65 + sim.dummy.y * 0.35;
+                    // 🎥 the codex camera is locked on the SUBJECT (the ball that owns the skill)
+                    const focusX = sim.pBall.x * 0.9 + sim.dummy.x * 0.1;
+                    const focusY = sim.pBall.y * 0.9 + sim.dummy.y * 0.1;
                     const targetCamX = Math.max(halfV, Math.min(ARENA_SIZE - halfV, focusX));
                     const targetCamY = Math.max(halfV, Math.min(ARENA_SIZE - halfV, focusY));
                     const camLerp = 1 - Math.exp(-6.5 * dt);
@@ -38094,6 +39366,20 @@
                         };
                         btnWrap.appendChild(b);
                     });
+
+                    // 🧪 "Try" — fight a training DUMMY with this ball right away
+                    if (isControllableBallId(item.id)) {
+                        const tryBtn = document.createElement('button');
+                        tryBtn.id = 'codexTrySkillBtn';
+                        tryBtn.type = 'button';
+                        tryBtn.className = 'px-2.5 py-1 rounded-lg text-[10px] font-black cursor-pointer transition bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.55)]';
+                        tryBtn.textContent = codexTryLabel();
+                        tryBtn.onclick = () => {
+                            audio.playClick();
+                            if (typeof startCodexSkillTrial === 'function') startCodexSkillTrial(item.id);
+                        };
+                        btnWrap.appendChild(tryBtn);
+                    }
 
                     const activeObj = skillsList.find(s => s.id === selectedSkillId);
                     if (activeObj) {
@@ -41809,13 +43095,43 @@
                     #skillCancelZone span{font-size:26px;line-height:1;}
                     #skillCancelZone em{font-style:normal;letter-spacing:.12em;}
                     #skillCancelZone.hot{transform:scale(1.18);background:rgba(127,29,29,.94);border-style:solid;border-color:#fca5a5;color:#fff;box-shadow:0 0 26px rgba(248,113,113,.8);}
+                    #falconStick{position:fixed;z-index:81;left:0;top:0;width:0;height:0;pointer-events:none;display:none;}
+                    #falconStick.on{display:block;}
+                    #falconStick .fs-base{position:absolute;width:104px;height:104px;margin:-52px 0 0 -52px;border-radius:9999px;border:2px dashed rgba(251,191,36,.85);background:radial-gradient(circle,rgba(251,191,36,.16),rgba(2,6,23,.30) 72%);box-shadow:0 0 22px rgba(251,191,36,.35);}
+                    #falconStick .fs-knob{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:9999px;background:radial-gradient(circle at 34% 30%,#fef9c3,#f59e0b);border:2px solid #fde047;box-shadow:0 0 18px rgba(251,191,36,.9);}
+                    #falconStick .fs-tip{position:absolute;transform:translate(-50%,-50%);font:900 11px/1 ui-sans-serif,system-ui,sans-serif;color:#fde047;letter-spacing:.1em;text-shadow:0 0 8px #000;white-space:nowrap;}
+                    #falconStick .fs-tip.cancel{color:#fca5a5;}
+                    #controlSkillBar .sk-slot.locked{filter:grayscale(1) brightness(.75);opacity:.5;border-color:rgba(148,163,184,.45);box-shadow:none;}
+                    #controlSkillBar .sk-slot.locked .sk-cd{color:#cbd5e1;}
                     #controlSkillBar .sk-slot.held{transform:scale(1.12);border-color:#fde047;box-shadow:0 0 30px rgba(251,191,36,.85),inset 0 0 20px rgba(251,191,36,.3);opacity:1;}
+                    #controlSkillBar .sk-slot.acting{opacity:1;border-color:#fb923c;box-shadow:0 0 26px rgba(249,115,22,.8),inset 0 0 18px rgba(249,115,22,.28);}
+                    #controlSkillBar .sk-slot.acting .sk-cd{color:#fdba74;}
+                    #controlSkillBar.stunned .sk-slot{border-color:rgba(248,113,113,.7) !important;box-shadow:0 0 16px rgba(248,113,113,.4) !important;}
+                    #controlSkillBar.stunned .sk-slot .sk-cd{color:#fca5a5 !important;}
+                    /* 🚫 stunned / frozen / EMP-silenced: a red diagonal bar over the slot */
+                    #controlSkillBar .sk-slot.blocked::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+                        background:linear-gradient(45deg,rgba(239,68,68,0) 41%,#dc2626 44%,#fca5a5 50%,#dc2626 56%,rgba(239,68,68,0) 59%);
+                        box-shadow:inset 0 0 14px rgba(239,68,68,.6);opacity:.95;}
+                    #controlSkillBar .sk-slot.blocked .sk-icon{opacity:.45;}
+                    #controlSkillBar .sk-slot.blocked .sk-cd{color:#fca5a5 !important;}
+                    /* 🔁 sequential mode: the other weapons wait for the one being performed */
+                    #controlSkillBar .sk-slot.waiting{filter:grayscale(.85) brightness(.8);opacity:.42;border-color:rgba(148,163,184,.4) !important;box-shadow:none !important;}
+                    #controlSkillBar .sk-slot.waiting .sk-cd{color:#94a3b8 !important;}
+                    #skDebug{position:fixed;left:8px;bottom:92px;z-index:210;display:none;white-space:pre;pointer-events:none;
+                        font:10px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;color:#a7f3d0;
+                        background:rgba(2,6,23,.88);border:1px solid rgba(34,211,238,.55);border-radius:8px;padding:6px 8px;
+                        box-shadow:0 0 18px rgba(34,211,238,.25);}
+                    #skDebug.show{display:block;}
                 </style>
                 <div id="skillCancelZone" class="hidden"><span>✕</span><em>HỦY</em></div>
+        <div id="falconStick"><div class="fs-base"></div><div class="fs-knob"></div><div class="fs-tip">🦅</div></div>
+                <div id="skDebug"></div>
                 <div id="controlSkillBar" class="hidden" style="display:none">
         <button type="button" class="sk-slot" data-slot="0" aria-label="skill 1"><span class="sk-icon">🌀</span><span class="sk-sweep"></span><span class="sk-cd"></span><span class="sk-key">Q / 1</span></button>
         <button type="button" class="sk-slot" data-slot="1" aria-label="skill 2"><span class="sk-icon">💥</span><span class="sk-sweep"></span><span class="sk-cd"></span><span class="sk-key">E / 2</span></button>
         <button type="button" class="sk-slot" data-slot="2" aria-label="skill 3"><span class="sk-icon">💨</span><span class="sk-sweep"></span><span class="sk-cd"></span><span class="sk-key">R / 3</span></button>
+        <button type="button" class="sk-slot" data-slot="3" aria-label="skill 4"><span class="sk-icon">✨</span><span class="sk-sweep"></span><span class="sk-cd"></span><span class="sk-key">F / 4</span></button>
+        <button type="button" class="sk-slot" data-slot="4" aria-label="skill 5"><span class="sk-icon">🌟</span><span class="sk-sweep"></span><span class="sk-cd"></span><span class="sk-key">G / 5</span></button>
     </div>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5e5f733da036e5b',t:'MTc5NTMyOTg2Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5e5f733da036e5b',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5e722401c3c91bd',t:'MTc5NTM0MjExNQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5e722401c3c91bd',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
