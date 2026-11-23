@@ -1116,7 +1116,7 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
 
 #mpVersusShowcase .mvs-canvas{
     width: 100%;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1 / 1.06;
     border-radius: 13px;
     background: radial-gradient(circle at 50% 45%, rgba(15,23,42,.9), rgba(2,6,23,1) 72%);
     border: 1px solid rgba(51, 65, 85, .8);
@@ -1237,6 +1237,37 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
     #mpVersusShowcase .mvs-timer{ bottom: 6px; font-size: 10px; padding: 3px 12px; }
 }
 
+/* =====================================================================
+   17. CHẾ ĐỘ MÁY YẾU — tự bật khi PERF hạ cấp chất lượng
+   Mục tiêu: giữ 60 FPS trên máy thấp, KHÔNG đổi gameplay.
+   ===================================================================== */
+body.perf-low .modal-backdrop{
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+body.perf-low .neon-box{
+    box-shadow: 0 0 0 1px rgba(34, 211, 238, .35) !important;
+}
+body.perf-low .mvs-scan{ display: none; }
+body.perf-low #mpVersusShowcase .mvs-card::before{ filter: none; opacity: .25; }
+body.perf-low .ui-btn:hover{ transform: none; }
+body.perf-low .ui-ball-halo,
+body.perf-low .ui-shimmer::after{ display: none !important; }
+
+/* mức thấp nhất: cắt mọi hiệu ứng nền và animation vô hạn */
+body.perf-min *{
+    animation-duration: .001s !important;
+    animation-iteration-count: 1 !important;
+}
+body.perf-min .neon-box,
+body.perf-min .modal-backdrop{
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+body.perf-min .mvs-card::before,
+body.perf-min .ui-radar-ripple{ display: none !important; }
+
 </style>
 
 </head>
@@ -1352,6 +1383,7 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
             <div class="flex items-center gap-1.5 shrink-0">
                 <button id="btnInMatchViewProfile" type="button" class="hidden px-2.5 py-1 rounded-lg bg-slate-800 border border-purple-500/50 hover:border-purple-300 text-[10px] font-black text-purple-200 cursor-pointer"></button>
                 <button id="btnInMatchAddFriend" type="button" class="hidden px-2.5 py-1 rounded-lg bg-sky-600/90 hover:bg-sky-500 text-[10px] font-black text-white cursor-pointer">➕ Kết bạn</button>
+                <button id="btnRenderQuality" type="button" title="Chất lượng hình ảnh" class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:border-emerald-400 text-[10px] font-black text-emerald-300 cursor-pointer">⚙ 60</button>
                 <button id="pauseMatchBtn" class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-600 hover:border-cyan-400 text-xs font-black text-white cursor-pointer">||</button>
             </div>
         </div>
@@ -1786,6 +1818,10 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
             <div class="flex justify-between items-center">
                 <h3 id="pickBanTitle" class="text-sm font-black text-cyan-300">CHỌN ĐỘI HÌNH 3 BÓNG &amp; RA SÂN</h3>
                 <span id="pickBanTimer" class="text-lg font-black text-rose-400">10s</span>
+            </div>
+            <!-- [MP-DRAFT] the clock never pauses: a red bar drains for the whole 10 s -->
+            <div class="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden -mt-2">
+                <div id="pickBanTimerBar" class="h-full bg-gradient-to-r from-rose-500 to-amber-400 transition-[width] duration-100 ease-linear" style="width:100%"></div>
             </div>
             <div class="text-[11px] text-slate-300 font-bold" id="pickBanOpponentInfo">Đối thủ: ...</div>
             <div id="pickBanEnemyDeckBox" class="hidden bg-slate-900/80 border border-rose-500/30 rounded-xl p-2 text-[11px]">
@@ -3163,6 +3199,7 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
         let activeGameMode = 'classic'; // 'classic' | 'timeattack' | 'bombpush'
         let matchElapsedSec = 0;
         let _mpSimTick = 0;
+        let _mpStepDt = 1 / 60;   // [MP-SYNC-2] last fixed step executed (for frame-time-correct easing)
         let _mpSimAccum = 0;
         let _mpTargetTick = 0;
         let _mpLastDriftAt = 0;
@@ -3336,6 +3373,155 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
         }
 
         // Raw local input vector (keyboard + joystick + mouse-hold)
+        // ==================================================================================
+        // [AFK] Idle watch — a player who does not touch the controls is a liability in a
+        // live match. 5 s of no input raises a "suspected AFK" warning (both sides see it),
+        // 10 s of no input forfeits the round for that player.
+        //   • "input" = any steering push, any skill cast, any aim change, or the pause menu.
+        //   • the local player is judged locally (instant, no network needed);
+        //   • the remote player is judged on their own input stream — a peer that stops
+        //     sending does not count as AFK while their stream is still fresh.
+        // ==================================================================================
+        const AFK_WARN_SEC = 5;
+        const AFK_LOSE_SEC = 10;
+        const AFKL = {
+            lastInputAt: 0,
+            lastCastAt: 0,
+            warned: false,
+            ended: false,
+            remoteLastInputAt: 0,
+            remoteWarned: false,
+            remoteEnded: false,
+            moving: false
+        };
+        function afkMatchLive() {
+            return (typeof activeMatchContext !== 'undefined' && activeMatchContext === 'multiplayer')
+                && typeof gameState !== 'undefined' && (gameState === 'PLAYING' || gameState === 'FINISHER')
+                && typeof isMatchPaused !== 'undefined' && !isMatchPaused
+                && typeof mpMatchEnded !== 'undefined' && !mpMatchEnded;
+        }
+        function afkTouchLocal() {
+            AFKL.lastInputAt = Date.now();
+            if (AFKL.warned) {
+                AFKL.warned = false;
+                afkHideBanner('local');
+            }
+        }
+        function afkTouchRemote() {
+            AFKL.remoteLastInputAt = Date.now();
+            if (AFKL.remoteWarned) {
+                AFKL.remoteWarned = false;
+                afkHideBanner('remote');
+            }
+        }
+        function afkReset() {
+            const now = Date.now();
+            AFKL.lastInputAt = now;
+            AFKL.lastCastAt = 0;
+            AFKL.warned = false;
+            AFKL.ended = false;
+            AFKL.remoteLastInputAt = now;
+            AFKL.remoteWarned = false;
+            AFKL.remoteEnded = false;
+            AFKL.moving = false;
+            try { afkHideBanner('local'); afkHideBanner('remote'); } catch (e) {}
+        }
+        window.afkReset = afkReset;
+        window.afkTouchLocal = afkTouchLocal;
+        window.AFKL = AFKL;
+
+        function afkBanner(side) {
+            let el = document.getElementById('mpAfkBanner');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'mpAfkBanner';
+                el.className = 'hidden fixed left-1/2 -translate-x-1/2 z-[88] flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 text-[11px] font-black bg-slate-950/95';
+                document.body.appendChild(el);
+            }
+            el.dataset.side = side;
+            el.style.top = side === 'local' ? 'calc(8px + 44px)' : 'calc(8px + 44px)';
+            return el;
+        }
+        function afkShowBanner(side, text, urgent) {
+            try {
+                const el = afkBanner(side);
+                el.textContent = text;
+                el.style.borderColor = urgent ? 'rgba(244,63,94,.95)' : 'rgba(250,204,21,.9)';
+                el.style.color = urgent ? '#fecdd3' : '#fde68a';
+                el.classList.remove('hidden');
+                if (window.UIAnimator && UIAnimator.shake) UIAnimator.shake(el);
+            } catch (e) {}
+        }
+        function afkHideBanner(side) {
+            const el = document.getElementById('mpAfkBanner');
+            if (el && (!side || el.dataset.side === side)) el.classList.add('hidden');
+        }
+        function afkCountdownText(sec) {
+            return String(Math.max(0, Math.ceil(sec)));
+        }
+        /** Called from the game loop. dtMs = real elapsed milliseconds. */
+        function afkTick(dtMs) {
+            if (!afkMatchLive()) return;
+            const now = Date.now();
+            // --- keep the local clock alive while the player is physically steering ---
+            try {
+                const v = _controlInputVector();
+                const moving = !!(v && v.active);
+                if (moving) { AFKL.lastInputAt = now; AFKL.moving = true; }
+                else AFKL.moving = false;
+            } catch (e) {}
+            const idle = (now - AFKL.lastInputAt) / 1000;
+            const lvl = (typeof controlFocusBall === 'function') ? controlFocusBall() : null;
+            if (lvl && (lvl.isDead || lvl.isVanished)) return;   // dead balls are not AFK
+
+            if (!AFKL.ended && idle >= AFK_LOSE_SEC && !AFKL.moving) {
+                AFKL.ended = true;
+                // the local player is the one who stood still -> they lose
+                try {
+                    if (mpRoomId) {
+                        const fPayload = { forfeit: mpMySide, closed: true, updatedAt: Date.now(), afk: true };
+                        try { CloudMP.writeRoom(mpRoomId, fPayload).catch(() => {}); } catch (e) {}
+                    }
+                } catch (e) {}
+                try {
+                    showGameToast(tUI('⏱️ Bạn đứng im quá 10s — xử thua (AFK).', '⏱️ Idle for 10s — you forfeit (AFK).'), 'error');
+                } catch (e) {}
+                try { endMultiplayerMatch(false, tUI('Đứng im quá 10 giây (AFK) — xử thua', 'Idle for 10 seconds (AFK) — forfeit')); } catch (e) {}
+                return;
+            }
+            if (!AFKL.warned && idle >= AFK_WARN_SEC) {
+                AFKL.warned = true;
+                afkShowBanner('local', tUI(`⚠️ Nghi ngờ AFK — đứng im ${afkCountdownText(AFK_LOSE_SEC - idle)}s nữa là thua`,
+                                           `⚠️ Suspected AFK — ${afkCountdownText(AFK_LOSE_SEC - idle)}s of idle left`), false);
+            } else if (AFKL.warned && !AFKL.ended) {
+                afkShowBanner('local', tUI(`⚠️ Nghi ngờ AFK — đứng im ${afkCountdownText(AFK_LOSE_SEC - idle)}s nữa là thua`,
+                                           `⚠️ Suspected AFK — ${afkCountdownText(AFK_LOSE_SEC - idle)}s of idle left`), idle > AFK_LOSE_SEC - 3);
+            }
+
+            // --- the opponent: judged from the freshness of their own input packets ---
+            if (!AFKL.remoteEnded && AFKL.remoteLastInputAt) {
+                const rIdle = (now - AFKL.remoteLastInputAt) / 1000;
+                if (rIdle >= AFK_LOSE_SEC) {
+                    AFKL.remoteEnded = true;
+                    try {
+                        showGameToast(tUI(`⏱️ ${mpCurrentOpponent || 'Đối thủ'} đứng im quá 10s — bạn thắng!`,
+                                          `⏱️ ${mpCurrentOpponent || 'Opponent'} idle for 10s — you win!`), 'success');
+                    } catch (e) {}
+                    try { endMultiplayerMatch(true, tUI('Đối thủ đứng im quá 10 giây (AFK) — bạn thắng', 'Opponent idle for 10 seconds (AFK) — you win')); } catch (e) {}
+                    return;
+                }
+                if (!AFKL.remoteWarned && rIdle >= AFK_WARN_SEC) {
+                    AFKL.remoteWarned = true;
+                    afkShowBanner('remote', tUI(`⚠️ ${mpCurrentOpponent || 'Đối thủ'} đang đứng im (nghi AFK)`,
+                                                   `⚠️ ${mpCurrentOpponent || 'Opponent'} looks idle (AFK)`), rIdle > AFK_LOSE_SEC - 3);
+                } else if (AFKL.remoteWarned) {
+                    afkShowBanner('remote', tUI(`⚠️ ${mpCurrentOpponent || 'Đối thủ'} đang đứng im — ${afkCountdownText(AFK_LOSE_SEC - rIdle)}s nữa là xử thua`,
+                                                   `⚠️ ${mpCurrentOpponent || 'Opponent'} idle — ${afkCountdownText(AFK_LOSE_SEC - rIdle)}s to forfeit`), rIdle > AFK_LOSE_SEC - 3);
+                }
+            }
+        }
+        window.afkTick = afkTick;
+
         function _controlInputVector() {
             let x = 0, y = 0;
             if (controlState.keys.left) x -= 1;
@@ -3400,15 +3586,25 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
                     const _tx = Math.abs(r.x) > 0.05 || Math.abs(r.y) > 0.05 ? r.x : 0;
                     const _ty = Math.abs(r.x) > 0.05 || Math.abs(r.y) > 0.05 ? r.y : 0;
                     if (r._sx === undefined) { r._sx = _tx; r._sy = _ty; }
-                    // 0.45 per frame @60fps => ~90% of the way in 4 frames, still smooth
-                    r._sx += (_tx - r._sx) * 0.45;
-                    r._sy += (_ty - r._sy) * 0.45;
+                    // [MP-SYNC-2] smoothing must be FRAME-TIME based, not per-frame: on a weak
+                    // machine that renders 30fps the old fixed 0.45/frame converged half as fast and
+                    // the opponent visibly lagged behind their true position. Frames are also
+                    // skipped by the fixed-step accumulator, so easing is capped per sim step.
+                    const _dtS = (typeof _mpStepDt === 'number' && _mpStepDt > 0) ? _mpStepDt : (1 / 60);
+                    const _k = Math.min(0.9, 1 - Math.pow(1 - 0.45, _dtS * 60));
+                    r._sx += (_tx - r._sx) * _k;
+                    r._sy += (_ty - r._sy) * _k;
                     if (Math.abs(r._sx) < 0.02) r._sx = 0;
                     if (Math.abs(r._sy) < 0.02) r._sy = 0;
                     if (r._sx !== 0 || r._sy !== 0 || _tx !== 0 || _ty !== 0) {
                         const m = Math.hypot(r._sx, r._sy) || 1;
                         return { x: r._sx / m, y: r._sy / m, active: true };
                     }
+                }
+                // [MP-SYNC-2] a stale stream must FREEZE the opponent where they are, never
+                // teleport them to the idle centre vector — that is what made them "jump".
+                if (r && _mpAge >= 2500 && (r._sx || r._sy)) {
+                    return { x: 0, y: 0, active: false };
                 }
                 // Match the local idle input exactly. An inactive vector still uses the
                 // human-control path, including the same initial glide/friction.
@@ -4091,6 +4287,8 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
             }
             const ok = sk.cast(b) !== false;
             try { _castLogAdd('#' + (index + 1) + ' ' + sk.id + (ok ? ' CAST' : ' refuse: cast()')); } catch (e) {}
+            // [AFK] casting is activity
+            if (ok) { try { afkTouchLocal(); AFKL.lastCastAt = Date.now(); } catch (e) {} }
             if (ok) {
                 try { if (typeof audio !== 'undefined' && audio.playClick) audio.playClick(); } catch (e) {}
                 // 📡 multiplayer: both sims must cast, otherwise the peer never sees the damage
@@ -30813,6 +31011,7 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
 
             document.getElementById('introOverlay').style.opacity = '1';
             document.getElementById('introText').textContent = tWord('READY', 'READY');
+            try { if (window.PERF) { PERF.matchStartAt = performance.now(); PERF.slowFrames = 0; PERF.fastFrames = 0; } } catch (e) {}
         }
 
         function triggerDoubleKOSequence() {
@@ -35110,6 +35309,91 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
             _mpRenderMemoVX = ballRight.vx || 0;
             _mpRenderMemoVY = ballRight.vy || 0;
         }
+        // ==================================================================================
+        // [PERF] Adaptive render quality — keeps the arena at 60fps even on a weak machine.
+        // shadowBlur is the single most expensive 2D operation there is (it is a full blur pass
+        // per draw call, and the game uses it ~280 times per frame). We therefore:
+        //   1) measure the real frame time over a rolling window,
+        //   2) drop a quality tier when frames run long (and raise it back when there is headroom),
+        //   3) neutralise shadowBlur globally on the low tiers instead of editing 280 call sites.
+        // Multiplayer is the strictest case (a slow frame there also desyncs the peer), so the
+        // tier is chosen during the first ~1.5s of the fight and then held.
+        // ==================================================================================
+        const PERF = {
+            tier: 2,                 // 2 = full, 1 = no blur, 0 = no blur + no trails/particles
+            fps: 60,
+            slowFrames: 0,
+            fastFrames: 0,
+            lastTierChange: 0,
+            forced: (typeof localStorage !== 'undefined' && localStorage.getItem('npa_render_quality') === 'low') ? 0 : -1,
+            _orig: null,
+            apply() {
+                const c = (typeof canvas !== 'undefined') ? canvas : null;
+                if (!c || !c.getContext) return;
+                let ctx2 = null;
+                try { ctx2 = c.getContext('2d'); } catch (e) { return; }
+                if (!ctx2) return;
+                // Patch once: a cheap setter that swallows blur on the low tiers.
+                if (!ctx2.__perfPatched) {
+                    const proto = Object.getPrototypeOf(ctx2);
+                    const d = Object.getOwnPropertyDescriptor(proto, 'shadowBlur');
+                    if (d && d.set && d.get) {
+                        ctx2.__perfPatched = true;
+                        const self = this;
+                        Object.defineProperty(ctx2, 'shadowBlur', {
+                            configurable: true,
+                            get() { return d.get.call(this); },
+                            set(v) {
+                                try { d.set.call(this, (self.tier >= 2) ? v : 0); } catch (e) {}
+                            }
+                        });
+                    } else {
+                        ctx2.__perfPatched = true;
+                    }
+                }
+            },
+            setTier(t, reason, isAuto) {
+                t = Math.max(0, Math.min(2, t | 0));
+                const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+                // an automatic change must respect the cooldown; an explicit call never does
+                if (isAuto && now - this.lastTierChange < 900) return false;
+                if (t === this.tier) return true;
+                this.tier = t;
+                this.lastTierChange = now;
+                if (typeof document !== 'undefined' && document.body) {
+                    document.body.classList.toggle('perf-low', t <= 1);
+                    document.body.classList.toggle('perf-min', t === 0);
+                }
+                try { console.log('[PERF] render tier ->', t, reason || ''); } catch (e) {}
+            },
+            /** Call once per rendered frame with the measured frame delta in ms. */
+            sample(dtMs) {
+                if (this.forced === 0) { this.setTier(0, 'forced'); return; }
+                if (!(dtMs > 0) || dtMs > 400) return;      // ignore tab-switch spikes
+                const fps = 1000 / dtMs;
+                this.fps = this.fps * 0.9 + fps * 0.1;
+                const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+                // let the match settle before judging (spawn intro + shaders warming up)
+                if (now - this.matchStartAt < 1200) return;
+                if (this.fps < 48) {
+                    this.slowFrames++; this.fastFrames = 0;
+                } else if (this.fps > 57) {
+                    this.fastFrames++; this.slowFrames = 0;
+                } else {
+                    this.slowFrames = Math.max(0, this.slowFrames - 2);
+                }
+                // drop fast (0.5s of bad frames), recover slowly (4s of headroom)
+                if (this.slowFrames > 28 && this.tier > 0) {
+                    if (this.setTier(this.tier - 1, 'fps ' + this.fps.toFixed(1), true) !== false) this.slowFrames = 0;
+                } else if (this.fastFrames > 240 && this.tier < 2) {
+                    if (this.setTier(this.tier + 1, 'fps recovered ' + this.fps.toFixed(1), true) !== false) this.fastFrames = 0;
+                }
+            },
+            matchStartAt: 0
+        };
+        window.PERF = PERF;
+        try { PERF.apply(); } catch (e) {}
+
         function render() {
             const _cw = canvas.width || ARENA_SIZE;
             const _ch = canvas.height || ARENA_SIZE;
@@ -35133,7 +35417,12 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
                 ctx.translate(-(ARENA_SIZE - _cw / _ps) / 2, -(ARENA_SIZE - _ch / _ps) / 2);
             }
 
-            if (typeof drawScrollingVoid === 'function') drawScrollingVoid(ctx);
+            // [PERF] the void floor is a big gradient + grid; on weak machines redraw it every
+            // other frame only (the camera barely moves, so the eye cannot tell)
+            const _pf = (window.PERF && PERF.tier <= 0);
+            if (!_pf || (render._floorFrame = (render._floorFrame || 0) + 1) % 2 === 0) {
+                if (typeof drawScrollingVoid === 'function') drawScrollingVoid(ctx);
+            }
 
             ctx.strokeStyle = 'rgba(34, 211, 238, 0.38)';
             ctx.lineWidth = 4;
@@ -35517,6 +35806,7 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
             while (_mpSimAccum >= fixedStep && steps < 8) {
                 _mpSimAccum -= fixedStep;
                 _mpSimTick++;
+                _mpStepDt = fixedStep;                 // [MP-SYNC-2] consumed by remote-input easing
                 updateGame(fixedStep);
                 steps++;
                 if (gameState === 'ENDED' || gameState === 'IDLE') {
@@ -35576,6 +35866,10 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
                 const _codexDetModal = document.getElementById('codexDetailModal');
                 const _codexDetOpen = !!(_codexDetModal && !_codexDetModal.classList.contains('hidden'));
                 const _codexAnyOpen = _codexDetOpen || !!(_codexModal && !_codexModal.classList.contains('hidden'));
+                // [PERF] adaptive quality: one cheap sample per frame
+                try { if (window.PERF) PERF.sample(rafDt * 1000); } catch (e) {}
+                // [AFK] idle watchdog (5s warn / 10s forfeit)
+                try { if (typeof afkTick === 'function') afkTick(rafDt * 1000); } catch (e) {}
                 if (typeof activeMatchContext === 'undefined' || activeMatchContext !== 'lobby') {
                     if (activeMatchContext === 'multiplayer') {
                         const stepDt = wallDt > 0.08 ? wallDt : rafDt;
@@ -40827,6 +41121,8 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
                     }
                 }
                 if (typeof msg.x !== 'number') return;
+                // [AFK] the peer is alive and steering -> refresh their idle clock
+                try { if (msg.x !== 0 || msg.y !== 0) afkTouchRemote(); } catch (e) {}
                 controlState.mpRemote.x = msg.x;
                 controlState.mpRemote.y = typeof msg.y === 'number' ? msg.y : 0;
                 controlState.mpRemote.t = Date.now();
@@ -40869,11 +41165,14 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
             // ==== [MP-SMOOTH 4] steer packets every frame instead of every 55ms ====
             // 55ms = 3.3 frames of stale direction at 60fps, which is exactly what made the opponent
             // look jittery. One tiny packet per frame over the same channel is cheap and removes it.
+            // [MP-NET] 20 Hz uplink (was 60 Hz). Halving the packet rate removes most of the
+            // main-thread jitter on weak machines while the peer-side interpolation (0.45/frame)
+            // keeps the opponent visually smooth. Casts still go out immediately.
             _mpInpTimer = setInterval(() => {
                 if (activeMatchContext !== 'multiplayer' || !mpRoomId || !_mpInpTopic) return;
                 if (!controlState.active) return;
                 mpFlushInputNow();
-            }, 16);
+            }, 50);
         }
         function mpStopInputSync() {
             if (_mpInpTimer) { clearInterval(_mpInpTimer); _mpInpTimer = null; }
@@ -40900,7 +41199,9 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
             if (mpMySide !== 'left' || !mpRoomId || !_mpStateTopic) return;
             _mpSyncAccum += dt;
             const stateChanged = (gameState !== _mpLastSentGs);
-            if (!force && !stateChanged && _mpSyncAccum < 0.25) return;
+            // [MP-NET] 12 Hz state frames (was 4 Hz). The peer sees authoritative positions much
+            // sooner, so drift stays tiny and the 90px snap never triggers.
+            if (!force && !stateChanged && _mpSyncAccum < 0.083) return;
             _mpSyncAccum = 0;
             _mpLastSentGs = gameState;
             _mpPendingTexts.length = 0;
@@ -42824,6 +43125,7 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
             // Pause & Result Controls
             document.getElementById('pauseMatchBtn').onclick = () => {
                 audio.playClick();
+                try { afkTouchLocal(); } catch (e) {}   // [AFK] opening the menu is not idling
                 isMatchPaused = true;
                 const pModal = document.getElementById('pauseModal');
                 let mpNote = document.getElementById('mpPauseLiveNote');
@@ -42840,6 +43142,35 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
                 if (mpNote) mpNote.classList.toggle('hidden', activeMatchContext !== 'multiplayer');
                 pModal.classList.remove('hidden');
             };
+            // [PERF] manual quality switch: auto -> full -> low -> min -> auto
+            (function () {
+                const btn = document.getElementById('btnRenderQuality');
+                if (!btn || !window.PERF) return;
+                const labels = { auto: '⚙ AUTO', 2: '⚙ HIGH', 1: '⚙ LOW', 0: '⚙ MIN' };
+                let manual = 'auto';
+                const refresh = () => {
+                    btn.textContent = labels[manual];
+                    btn.style.color = manual === 'auto' ? '#86efac' : (manual === 0 ? '#fca5a5' : '#fde68a');
+                    btn.style.borderColor = manual === 'auto' ? 'rgba(16,185,129,.5)' : 'rgba(250,204,21,.5)';
+                };
+                btn.onclick = () => {
+                    try { audio.playClick(); } catch (e) {}
+                    const order = ['auto', 2, 1, 0];
+                    manual = order[(order.indexOf(manual) + 1) % order.length];
+                    if (manual === 'auto') {
+                        PERF.forced = -1;
+                        try { localStorage.removeItem('npa_render_quality'); } catch (e) {}
+                        PERF.setTier(2, 'auto');
+                    } else {
+                        PERF.forced = (manual === 0) ? 0 : -1;
+                        PERF.setTier(manual, 'manual');
+                        try { localStorage.setItem('npa_render_quality', manual <= 1 ? 'low' : 'high'); } catch (e) {}
+                    }
+                    refresh();
+                    showGameToast(tUI('Chất lượng hình: ' + manual, 'Render quality: ' + manual), 'info');
+                };
+                refresh();
+            })();
             document.getElementById('btnResumeMatch').onclick = () => { audio.playClick(); isMatchPaused = false; document.getElementById('pauseModal').classList.add('hidden'); };
             document.getElementById('btnQuitMatch').onclick = () => {
                 audio.playClick(); isMatchPaused = false;
@@ -43392,7 +43723,8 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
 
                 const cv = document.createElement('canvas');
                 cv.className = 'mvs-canvas';
-                cv.width = 240; cv.height = 240;
+                // 2x buffer so the art stays crisp on the tall card
+                cv.width = 460; cv.height = 486;
                 card.appendChild(cv);
 
                 const nameEl = document.createElement('div');
@@ -43485,57 +43817,72 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
                 wrap.appendChild(timerEl);
                 document.body.appendChild(wrap);
 
-                // ---- live ball art on both cards (same renderer the codex preview uses) ----
+                // ---- REAL ball art: reuse the game's own preview renderer, exactly like the
+                //      codex / sandbox overview (createBall + draw/drawUnderlay/drawOverlay).
+                const mkPreview = (entry) => {
+                    let b = null;
+                    try {
+                        if (typeof buildSandboxPreviewBall === 'function') {
+                            b = buildSandboxPreviewBall(entry.ballId, 'left', entry.skinId || 'default');
+                        }
+                    } catch (e) { b = null; }
+                    return b;
+                };
+                const previews = [mkPreview(L), mkPreview(R)];
+
                 let t0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-                const paint = (entry, phase) => {
-                    const cv = entry.canvas, ctx = cv.getContext('2d');
+                let lastT = t0;
+                const frameSize = (typeof PREVIEW_FRAME === 'number') ? PREVIEW_FRAME : 450;
+                const paint = (entry, ball, dt) => {
+                    const cv = entry.canvas;
+                    const ctx = cv.getContext('2d');
                     if (!ctx) return;
-                    const W = cv.width, H = cv.height;
                     ctx.setTransform(1, 0, 0, 1, 0, 0);
-                    ctx.clearRect(0, 0, W, H);
-                    const cx = W / 2, cy = H / 2 + Math.sin(phase * 1.7) * 5;
-                    const bob = 1 + Math.sin(phase * 1.35) * 0.035;
-                    const rad = W * 0.26 * bob;
-                    const col = entry.col || '#22d3ee';
-                    // halo
-                    const g = ctx.createRadialGradient(cx, cy, rad * 0.4, cx, cy, rad * 2.1);
-                    g.addColorStop(0, col + '55');
-                    g.addColorStop(1, 'transparent');
-                    ctx.fillStyle = g;
-                    ctx.beginPath(); ctx.arc(cx, cy, rad * 2.1, 0, Math.PI * 2); ctx.fill();
-                    // body
-                    const body = ctx.createRadialGradient(cx - rad * 0.3, cy - rad * 0.35, rad * 0.15, cx, cy, rad);
-                    body.addColorStop(0, '#f8fafc');
-                    body.addColorStop(0.45, col);
-                    body.addColorStop(1, '#0b1220');
-                    ctx.fillStyle = body;
-                    ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.fill();
-                    // ring
-                    ctx.strokeStyle = '#e2e8f0';
-                    ctx.lineWidth = Math.max(2, W * 0.014);
-                    ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
-                    // rotating highlight
+                    ctx.clearRect(0, 0, cv.width, cv.height);
+                    if (!ball) return;
+                    // keep the idle animations of the original renderer alive
+                    if (ball.weaponAngle !== undefined) ball.weaponAngle += dt * 1.8;
+                    if (ball.orbitAngle !== undefined) ball.orbitAngle += dt * 1.8;
+                    if (ball.fanAngle !== undefined) ball.fanAngle += dt * 1.8;
+                    if (ball.ringAngle !== undefined) ball.ringAngle += dt * 1.5;
+                    if (ball.staffAngle !== undefined) ball.staffAngle += dt * 2.2;
+                    if (ball.falcon) {
+                        ball.falcon.orbitAngle += dt * 2.4;
+                        ball.falcon.x = ball.x + Math.cos(ball.falcon.orbitAngle) * 58;
+                        ball.falcon.y = ball.y + Math.sin(ball.falcon.orbitAngle) * 58;
+                    }
+                    if (ball.deity) { ball.deity.x = ball.x; ball.deity.y = ball.y - 10; }
+                    if (ball.isCultists && ball.members) {
+                        // keep the trio together with the same breathing offset as the lobby preview
+                        if (ball.members[0]) { ball.members[0].x = ball.x - 66; ball.members[0].y = ball.y - 46; }
+                        if (ball.members[1]) { ball.members[1].x = ball.x + 66; ball.members[1].y = ball.y - 46; }
+                        if (ball.members[2]) { ball.members[2].x = ball.x; ball.members[2].y = ball.y + 68; }
+                    }
                     ctx.save();
-                    ctx.translate(cx, cy); ctx.rotate(phase * 0.9);
-                    ctx.strokeStyle = col; ctx.globalAlpha = 0.85;
-                    ctx.lineWidth = Math.max(2, W * 0.018);
-                    ctx.beginPath(); ctx.arc(0, 0, rad * 0.78, -0.6, 0.9); ctx.stroke();
+                    // a bit more zoom than the picker so the ball fills the tall card nicely
+                    // the source renderer is framed for PREVIEW_FRAME px; zoom so the ball body
+                    // fills roughly 70% of the card height (cultist trio needs a wider view)
+                    const zoom = ball.isCultists ? 2.05 : 2.55;
+                    const scale = (cv.width / frameSize) * zoom;
+                    ctx.translate(cv.width * 0.5, cv.height * 0.5);
+                    ctx.scale(scale, scale);
+                    ctx.translate(-ball.x, -ball.y);
+                    if (ball.isGrandmaster && typeof drawChessboardArena === 'function') drawChessboardArena(ctx);
+                    try { ball.drawUnderlay(ctx); } catch (e) {}
+                    try { ball.draw(ctx); } catch (e) {}
+                    try { ball.drawOverlay(ctx); } catch (e) {}
                     ctx.restore();
                 };
                 const frame = () => {
                     if (!document.getElementById('mpVersusShowcase')) { mpVsRaf = null; return; }
                     const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-                    const ph = (now - t0) / 1000;
-                    paint(L, ph);
-                    paint(R, ph + 0.9);
+                    const dt = Math.min(0.05, (now - lastT) / 1000);
+                    lastT = now;
+                    paint(L, previews[0], dt);
+                    paint(R, previews[1], dt);
                     mpVsRaf = requestAnimationFrame(frame);
                 };
                 frame();
-
-                mpVsTimer = setInterval(() => {
-                    left--;
-                    if (left > 0) timerEl.textContent = `${left}s`;
-                }, 1000);
 
                 const finish = () => {
                     if (mpVsTimer) { clearInterval(mpVsTimer); mpVsTimer = null; }
@@ -43552,6 +43899,22 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
                 wrap.addEventListener('click', () => { clearTimeout(guard); finish(); }, { once: true });
             }
             window.showMpVersusShowcase = showMpVersusShowcase;
+
+            // [MP-SKILLS] "Bóng có kỹ năng" = a ball the player can actually steer and that has a
+            // real loadout/kit. That is exactly CONTROLLABLE_BALL_IDS; everything else is a static
+            // event boss. Used by the draft grid (friend rooms included).
+            function mpSkillBallPool() {
+                let pool = [];
+                try {
+                    const own = (playerData.unlockedBalls && playerData.unlockedBalls.length)
+                        ? playerData.unlockedBalls.slice() : [];
+                    pool = own.filter(id => typeof isControllableBallId === 'function' && isControllableBallId(id));
+                } catch (e) { pool = []; }
+                // never leave the player with nothing to pick
+                if (!pool.length) pool = (typeof CONTROLLABLE_BALL_IDS !== 'undefined') ? CONTROLLABLE_BALL_IDS.slice() : [];
+                return pool;
+            }
+            window.mpSkillBallPool = mpSkillBallPool;
 
             function openMultiplayerPickBan() {
                 mpInPickPhase = true;
@@ -43570,7 +43933,8 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
                 const squadDeck = getMpLobbyPreviewDeck();
                 let picked = [...squadDeck];
                 let pickedSkins = {};
-                const unlockedPool = (playerData.unlockedBalls && playerData.unlockedBalls.length) ? [...playerData.unlockedBalls] : [...STARTER_BALLS];
+                // [MP-SKILLS] only skill balls are offerable — a static boss can never be steered
+                const unlockedPool = mpSkillBallPool();
                 unlockedPool.forEach(id => { pickedSkins[id] = getMpSelectedSkinForBall(id); });
                 grid.innerHTML = '';
                 const onPickSlotSkinChange = (ballId, skId) => {
@@ -43617,13 +43981,24 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
                     grid.appendChild(btn);
                 });
                 syncPickGridUI();
+                // ===== [MP-DRAFT 10s] the clock runs from the first frame to zero and NEVER stops,
+                // even while the player is still tapping balls. Pressing XONG only records the
+                // choice — the draft itself still resolves when the 10 s are up (Q1).
                 let sec = 10;
+                const _draftStartAt = Date.now();
                 document.getElementById('pickBanTimer').textContent = `${sec}s`;
                 let finished = false;
-                const finishSquad = async () => {
+                let confirmed = false;
+                const finishSquad = async (fromTimeout) => {
                     if (finished) return;
                     finished = true;
                     clearInterval(pickBanInterval);
+                    // ===== [MP-DRAFT RANDOM] if the player never filled 3 slots (or never confirmed),
+                    // the empty slots are filled with RANDOM skill balls so the fight always starts (Q3).
+                    if (fromTimeout && picked.length < 3) {
+                        try { audio.playClick(); } catch (e) {}
+                        showGameToast(tUI('Hết giờ — bóng còn trống được chọn ngẫu nhiên.', 'Time up — empty slots filled at random.'), 'info');
+                    }
                     while (picked.length < 3) {
                         const avail = unlockedPool.filter(x => !picked.includes(x));
                         const source = avail.length ? avail : unlockedPool;
@@ -43694,12 +44069,21 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
                         } catch (e) {}
                     }, 500);
                 };
+                // wall-clock driven so a weak machine (or a stalled frame) can never stretch the draft
                 pickBanInterval = setInterval(() => {
-                    sec--;
+                    const elapsed = (Date.now() - _draftStartAt) / 1000;
+                    sec = Math.max(0, Math.ceil(10 - elapsed));
                     document.getElementById('pickBanTimer').textContent = `${sec}s`;
-                    if (sec <= 0) finishSquad();
-                }, 1000);
-                document.getElementById('btnConfirmPickBan').onclick = finishSquad;
+                    const bar = document.getElementById('pickBanTimerBar');
+                    if (bar) bar.style.width = `${Math.max(0, Math.min(100, (1 - elapsed / 10) * 100))}%`;
+                    if (elapsed >= 10) finishSquad(true);
+                }, 100);
+                document.getElementById('btnConfirmPickBan').onclick = () => {
+                    try { audio.playClick(); } catch (e) {}
+                    confirmed = true;
+                    const btn = document.getElementById('btnConfirmPickBan');
+                    if (btn) { btn.textContent = tUI('ĐÃ CHỐT — chờ hết giờ', 'LOCKED IN — waiting for the timer'); btn.disabled = true; }
+                };
                 modal.classList.remove('hidden');
                 updateMpPickSlotPreviews(picked, null, true, pickedSkins, onPickSlotSkinChange);
             }
@@ -43953,6 +44337,7 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
                         startMpStateSync();
                         showScreen('arena');
                         startMatch();
+                        try { afkReset(); } catch (e) {}   // [AFK] fresh clocks for the new round
                     }, delayMs);
                 }
 
@@ -48842,5 +49227,5 @@ button.ui-btn{ -webkit-user-select: none; user-select: none; }
         <button type="button" class="sk-slot" data-slot="3" aria-label="skill 4"><span class="sk-icon">✨</span><span class="sk-sweep"></span><span class="sk-cd"></span><span class="sk-key">F</span></button>
         <button type="button" class="sk-slot" data-slot="4" aria-label="skill 5"><span class="sk-icon">🌟</span><span class="sk-sweep"></span><span class="sk-cd"></span><span class="sk-key">G</span></button>
     </div>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5efdaba5af78515',t:'MTc5NTQzMzU1OA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5efdaba5af78515',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5f3c21a9d6b8b89',t:'MTc5NTQ3NDQ5Mg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5f3c21a9d6b8b89',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5efdaba5af78515',t:'MTc5NTQzMzU1OA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5efdaba5af78515',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5f3e74aed7d08e1',t:'MTc5NTQ3NjAxNQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5f3e74aed7d08e1',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
