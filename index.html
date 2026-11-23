@@ -113,6 +113,7 @@
         #codexPreviewPane { position:sticky; top:0; z-index:5; background:#0f172a; }
         #detailPreviewCanvas { width:min(210px, 25vh) !important; height:min(210px, 25vh) !important; }
         #codexDetailBody { overscroll-behavior:contain; }
+        #codexEqMovedNote { position:relative; z-index:20; display:block; }
         #equipSlots {position:absolute;inset:20% 3% auto;display:flex;justify-content:space-between;gap:6px;pointer-events:none}
         .equip-column {display:grid;gap:8px;pointer-events:auto}
         .equip-slot {width:clamp(50px,9vw,74px);min-height:54px;border:2px solid #64748b;border-radius:12px;background:#07111f;color:white;font:700 10px system-ui;cursor:pointer}
@@ -229,7 +230,7 @@
                 <button id="btnBattleMain" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-orange-500 via-rose-600 to-purple-700 text-white font-black text-base tracking-wider shadow-[0_0_28px_rgba(249,115,22,0.5)] border border-amber-300/40 hover:brightness-110 transition cursor-pointer flex items-center justify-center gap-3">
                     <span>⚔️</span> <span data-i18n="battle">Vào Trận Đấu</span>
                 </button>
-                <div id="lobbyGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div id="lobbyGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                     <button id="btnCodex" class="lobby-btn rounded-xl p-3 text-xs font-bold text-cyan-200 flex flex-col items-center gap-1 cursor-pointer"><span>📖</span><span data-i18n="codex">Cẩm Nang Bóng</span></button>
                     <button id="btnForge" class="lobby-btn rounded-xl p-3 text-xs font-bold text-amber-200 flex flex-col items-center gap-1 cursor-pointer"><span>⚒️</span><span id="forgeLobbyLabel">Lò Rèn</span></button>
                     <button id="btnMissions" class="lobby-btn rounded-xl p-3 text-xs font-bold text-emerald-200 flex flex-col items-center gap-1 cursor-pointer"><span>🎯</span><span data-i18n="missions">Nhiệm Vụ</span></button>
@@ -238,6 +239,7 @@
                     <button id="btnFriends" class="lobby-btn relative rounded-xl p-3 text-xs font-bold text-sky-200 flex flex-col items-center gap-1 cursor-pointer"><span>👥</span><span data-i18n="friends">Bạn Bè</span><span id="btnFriendsBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center">0</span></button>
                     <button id="btnBattlePass" class="lobby-btn rounded-xl p-3 text-xs font-bold text-purple-200 flex flex-col items-center gap-1 cursor-pointer"><span>🏆</span><span data-i18n="bp">Battle Pass</span></button>
                     <button id="btnMailbox" class="lobby-btn relative rounded-xl p-3 text-xs font-bold text-amber-200 flex flex-col items-center gap-1 cursor-pointer"><span>📬</span><span data-i18n="mailbox">Hòm Thư</span><span id="mailboxBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center">0</span></button>
+                    <button id="btnEquipment" class="lobby-btn rounded-xl p-3 text-xs font-bold text-cyan-100 flex flex-col items-center gap-1 cursor-pointer"><span>⚔️</span><span id="btnEquipmentLabel">Trang Bị</span></button>
                     <button id="btnHowToPlay" class="lobby-btn rounded-xl p-3 text-xs font-bold text-teal-200 flex flex-col items-center gap-1 cursor-pointer"><span>📘</span><span data-i18n="howToPlay">Hướng Dẫn</span></button>
                 </div>
             </div>
@@ -351,7 +353,7 @@
                 </style>
                 <!-- skill bar is mounted at the end of <body> (fixed overlay) -->
                 <!-- 🎮 CONTROL BADGE -->
-                <div id="controlBadge" class="hidden absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-slate-950/85 border border-cyan-400/60 text-[10px] font-black text-cyan-300 z-20 pointer-events-none">🎮 <span id="controlBadgeName">—</span><span id="buildStamp" class="ml-1 opacity-60" style="font-weight:700;pointer-events:auto;cursor:pointer">v25.69-equipment-mp</span></div>
+                <div id="controlBadge" class="hidden absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-slate-950/85 border border-cyan-400/60 text-[10px] font-black text-cyan-300 z-20 pointer-events-none">🎮 <span id="controlBadgeName">—</span><span id="buildStamp" class="ml-1 opacity-60" style="font-weight:700;pointer-events:auto;cursor:pointer">v25.71-equipment-panel-mp-fix</span></div>
 
                 <!-- Intro Countdown Overlay -->
                 <div id="introOverlay" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300 opacity-0 rounded-3xl">
@@ -812,8 +814,7 @@
             </div>
             <div id="codexDetailBody" class="flex-1 min-h-0 flex flex-col overflow-y-auto gap-3 sm:gap-4">
                 <div id="codexPreviewPane" style="position:sticky" class="shrink-0 bg-slate-900/70 rounded-2xl p-2.5 sm:p-3 flex flex-col items-center border border-slate-800">
-                    <div id="equipSlots" hidden><div class="equip-column" id="equipLeft"></div><div class="equip-column" id="equipRight"></div></div>
-                    <div id="detailPreviewPhaseBadge" class="text-[10px] font-bold text-cyan-300 mb-1.5 tracking-wider">IDLE (3.0s) → SKILL (5.0s)</div>
+                                        <div id="detailPreviewPhaseBadge" class="text-[10px] font-bold text-cyan-300 mb-1.5 tracking-wider">IDLE (3.0s) → SKILL (5.0s)</div>
                     <canvas id="detailPreviewCanvas" width="560" height="560" style="image-rendering:auto" class="w-[210px] h-[210px] sm:w-[260px] sm:h-[260px] md:w-[280px] md:h-[280px] rounded-2xl bg-[#030712] border border-slate-800 shadow-[0_0_24px_rgba(15,23,42,0.85)]"></canvas>
                     <button id="btnEquipShowcase" data-i18n="equipShowcaseBtn" class="mt-2 px-4 py-1.5 rounded-lg bg-cyan-500 text-slate-950 font-black text-[11px] cursor-pointer">Đặt Làm Đại Diện</button>
                 </div>
@@ -836,7 +837,53 @@
         </div>
     </div>
 
-    <div id="equipmentDialog" hidden><div class="equip-panel"><div style="display:flex;justify-content:space-between;gap:8px"><strong id="equipDialogTitle">🎒 TÚI TRANG BỊ</strong><button id="eqClose">✕</button></div><div id="equipDeckPanel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px;margin:8px 0"></div><div id="equipmentContent"></div></div></div>
+        <!-- EQUIPMENT PANEL: ball list -> per-ball overview (2 slots left / 2 right) -->
+    <div id="equipmentPanelModal" class="fixed inset-0 z-[85] hidden modal-backdrop flex items-center justify-center p-2 sm:p-3">
+        <div class="w-full max-w-4xl max-h-[94vh] flex flex-col gap-2 bg-[#070c18] border border-cyan-500/40 rounded-3xl p-3 sm:p-4 neon-box">
+            <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
+                <div class="min-w-0">
+                    <h2 id="eqPanelTitle" class="text-base font-black text-cyan-300 truncate">⚔️ TRANG BỊ</h2>
+                    <p id="eqPanelSub" class="text-[11px] font-bold text-slate-400"></p>
+                </div>
+                <button id="eqPanelBack" type="button" class="shrink-0 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-[11px] font-black text-slate-200 cursor-pointer">← Back</button>
+            </div>
+            <div id="eqPanelListWrap" class="flex flex-col gap-2 min-h-0 overflow-y-auto pr-1">
+                <p id="eqPanelHint" class="text-[10px] font-bold text-slate-500"></p>
+                <h3 id="eqPanelBallsLabel" class="text-[11px] font-black text-purple-300 uppercase tracking-wide"></h3>
+                <div id="equipmentPanelGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2"></div>
+            </div>
+            <div id="eqPanelBallWrap" class="hidden flex-col gap-2 min-h-0 overflow-y-auto pr-1">
+                <div class="flex items-center justify-between gap-2">
+                    <button id="eqPanelBackBalls" type="button" class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-[10px] font-black text-slate-300 cursor-pointer">← Balls</button>
+                    <span id="eqPanelBallStatus" class="text-[10px] font-black text-cyan-200"></span>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 items-stretch">
+                    <div class="flex flex-row sm:flex-col gap-2 justify-center items-center order-2 sm:order-1 shrink-0">
+                        <div id="eqPanelLeftCol" class="flex flex-col gap-2"></div>
+                    </div>
+                    <div id="eqPanelStageWrap" class="flex-1 flex flex-col items-center justify-start gap-1 order-1 sm:order-2 min-w-0">
+                        <h3 id="eqPanelBallName" class="text-xs sm:text-sm font-black text-cyan-200 text-center"></h3>
+                        <p id="eqPanelBallSub" class="text-[9px] font-black text-slate-500 uppercase tracking-widest"></p>
+                        <canvas id="eqPanelPreview" width="520" height="520" class="w-[clamp(120px,44vh,290px)] h-[clamp(120px,44vh,290px)] rounded-2xl bg-[#030712] border border-slate-800 shadow-[0_0_24px_rgba(15,23,42,0.85)]"></canvas>
+                        <p id="eqPanelSlotHint" class="text-[10px] font-bold text-slate-500 text-center"></p>
+                    </div>
+                    <div class="flex flex-row sm:flex-col gap-2 justify-center items-center order-3 shrink-0">
+                        <div id="eqPanelRightCol" class="flex flex-col gap-2"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="eqPanelPickerWrap" class="hidden flex-col gap-2 min-h-0 overflow-y-auto pr-1">
+                <div class="flex items-center justify-between gap-2">
+                    <button id="eqPanelPickerBack" type="button" class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-[10px] font-black text-slate-300 cursor-pointer">← Back</button>
+                    <button id="eqPanelPickerClear" type="button" class="px-2.5 py-1 rounded-lg bg-rose-950 border border-rose-500/50 text-[10px] font-black text-rose-200 cursor-pointer">✕ Clear</button>
+                </div>
+                <h3 id="eqPanelPickerTitle" class="text-[11px] font-black text-cyan-300 uppercase tracking-wide"></h3>
+                <div id="eqPanelPickerGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+            </div>
+        </div>
+    </div>
+
+<div id="equipmentDialog" hidden><div class="equip-panel"><div style="display:flex;justify-content:space-between;gap:8px"><strong id="equipDialogTitle">🎒 TÚI TRANG BỊ</strong><button id="eqClose">✕</button></div><div id="equipDeckPanel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px;margin:8px 0"></div><div id="equipmentContent"></div></div></div>
     <div id="forgeModal" hidden style="position:fixed;inset:0;z-index:110;background:#020617eF;display:flex;align-items:center;justify-content:center;padding:12px">
         <div style="width:min(900px,100%);max-height:92vh;overflow:auto;border:1px solid #fb923c;border-radius:20px;background:linear-gradient(135deg,#21130e,#081225);padding:16px;color:#e2e8f0;font:14px system-ui">
             <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><strong id="forgeTitle" style="font-size:18px;color:#fdba74">⚒️ LÒ RÈN</strong><button id="forgeClose" style="border:0;color:#fff;background:#334155;border-radius:8px;padding:7px 12px;cursor:pointer">✕</button></header>
@@ -29008,11 +29055,10 @@
         function startMatch() {
             const _inMpMatch = (typeof activeMatchContext !== 'undefined' && activeMatchContext === 'multiplayer');
             if (_inMpMatch) {
-                if(!mpEquipmentLeft || !mpEquipmentRight) {
-                    cleanupMultiplayerSession(true);
-                    showGameToast(tUI('Thiếu dữ liệu trang bị multiplayer; trận đấu đã hủy.', 'Missing multiplayer equipment data; match cancelled.'),'info');
-                    return;
-                }
+                // [MP-EXTRA 14] Missing gear is not a reason to drop a match: both sides fall back to
+                // an empty loadout and the fight plays out on the shared deterministic simulation.
+                if (!mpEquipmentLeft) mpEquipmentLeft = _mpFrozenEquipLeft || { version: 1, deck: [], loadouts: {} };
+                if (!mpEquipmentRight) mpEquipmentRight = _mpFrozenEquipRight || { version: 1, deck: [], loadouts: {} };
                 const _lIdSeed = document.getElementById('leftBallSelect').value;
                 const _rIdSeed = document.getElementById('rightBallSelect').value;
                 _mpSeedForRound(typeof mpRoomId !== 'undefined' ? mpRoomId : 'mp', typeof mpRoundNumber !== 'undefined' ? mpRoundNumber : 1, _lIdSeed, _rIdSeed);
@@ -29020,6 +29066,11 @@
             _mpUseDetSim = _inMpMatch;
             let _startRes;
             try { _startRes = _startMatchCore(); } finally { _mpUseDetSim = false; }
+            // [MP-EXTRA 14] Re-seed AFTER creation so both clients enter the round on an identical
+            // RNG stream no matter how many random draws ball/deck/skin creation consumed.
+            if (_inMpMatch) {
+                try { _mpSeedForRound(typeof mpRoomId !== 'undefined' ? mpRoomId : 'mp', typeof mpRoundNumber !== 'undefined' ? mpRoundNumber : 1, _lIdSeed, _rIdSeed); } catch (e) {}
+            }
             try { if (typeof initControlModeForMatch === 'function') initControlModeForMatch(); } catch (e) {}
             if (typeof fitArenaCanvas === 'function') setTimeout(fitArenaCanvas, 30);
             return _startRes;
@@ -29053,9 +29104,10 @@
             ballLeft = createBall(leftType, 'left', false);
             ballRight = createBall(rightType, 'right', isSameType);
             if (activeMatchContext === 'sandbox') { initSandboxEquipment(ballLeft,leftType); initSandboxEquipment(ballRight,rightType); }
-            else if(activeMatchContext==='multiplayer' && mpEquipmentLeft && mpEquipmentRight) {
-                initSandboxEquipment(ballLeft,leftType,mpEquipmentLeft.loadouts[leftType]||{});
-                initSandboxEquipment(ballRight,rightType,mpEquipmentRight.loadouts[rightType]||{});
+            else if(activeMatchContext==='multiplayer') {
+                // [MP-EXTRA 14] each side reads its OWN snapshot; a ball it never geared enters bare
+                initSandboxEquipment(ballLeft,leftType,equipmentSideLoadoutFor(mpEquipmentLeft,leftType)||{});
+                initSandboxEquipment(ballRight,rightType,equipmentSideLoadoutFor(mpEquipmentRight,rightType)||{});
             }
             if (ballLeft) {
                 ballLeft.isCrimsonMirror = false;
@@ -33220,7 +33272,7 @@
                 }
             }
                 equipmentUpdateStunJoystick();
-                if (activeMatchContext === 'sandbox' || (activeMatchContext==='multiplayer' && mpEquipmentLeft && mpEquipmentRight)) { equipmentTickMagmaDebuffs(effectiveDt); tickSandboxEquipment(ballLeft,effectiveDt); tickSandboxEquipment(ballRight,effectiveDt); }
+                if (activeMatchContext === 'sandbox' || activeMatchContext === 'multiplayer') { equipmentTickMagmaDebuffs(effectiveDt); tickSandboxEquipment(ballLeft,effectiveDt); tickSandboxEquipment(ballRight,effectiveDt); }
                 // ⛓️ the chains hold every frame: no dash may start, none may continue
                 for (const _dlb of [ballLeft, ballRight]) {
                     try { enforceDashLock(_dlb); } catch (e) {}
@@ -36233,6 +36285,455 @@
             if(entries[8]) entries[8][1]='Awakened: gain movement speed equal to the blocked ranged damage percentage for 2 seconds.';
             if(entries[9]) entries[9][1]='Awakened: touching the heat aura reduces healing by 40% for 4 seconds.';
         }
+        // =====================================================================
+        //  🎒 EQUIPMENT PANEL (new lobby entry: "Trang Bị")
+        //  Ball list  ->  per-ball overview (4 slots, 2 left / 2 right)  ->  slot picker.
+        //  No chest / no currency here: this screen only edits loadouts.
+        // =====================================================================
+        const EQ_PANEL_I18N = {
+            vi: { label: 'Trang Bị', title: '⚔️ TRANG BỊ', sub: 'Chọn một bóng kỹ năng để thay đổi trang bị', back: 'Quay lại', hint: 'Bấm vào một bóng để mở túi trang bị của bóng đó', balls: 'Bóng kỹ năng', empty: 'Bạn chưa sở hữu bóng kỹ năng nào.', slotsFilled: 'ô đã gắn', openBag: 'Mở túi', notOwned: 'Chưa sở hữu', full: 'Đã đủ 4 ô', partialEmpty: 'Còn ô trống', detailTitle: 'Trang bị cho', clearAll: 'Bỏ hết', editHint: 'Chạm vào từng ô để chọn món cho bóng này', backBalls: 'Danh sách bóng', slotEmpty: 'Ô trống', tapSlot: 'Chạm vào ô để chọn trang bị', pickFor: 'Chọn món cho ô', noItems: 'Chưa có món nào cho ô này — mở rương ở Chợ Đen hoặc ghép cấp ở Lò Rèn.', equippedTag: 'Đang gắn', lvLocked: 'Chưa có', copiesShort: 'bản', slotsTitle: 'TRANG BỊ CỦA BÓNG' },
+            en: { label: 'Equipment', title: '⚔️ EQUIPMENT', sub: 'Pick a skill ball to change its loadout', back: 'Back', hint: 'Tap a ball to open its equipment bag', balls: 'Skill balls', empty: 'You do not own any skill ball yet.', slotsFilled: 'slots filled', openBag: 'Open bag', notOwned: 'Not owned', full: 'All 4 slots ready', partialEmpty: 'Empty slots left', detailTitle: 'Equipment for', clearAll: 'Clear all', editHint: 'Tap a slot to choose the item for this ball', backBalls: 'Ball list', slotEmpty: 'Empty slot', tapSlot: 'Tap a slot to pick gear', pickFor: 'Pick an item for', noItems: 'No item for this slot yet — open chests in the Black Market or forge levels at the Smithy.', equippedTag: 'Equipped', lvLocked: 'None', copiesShort: 'copies', slotsTitle: 'THIS BALL\u2019S GEAR' },
+            ja: { label: '装備', title: '⚔️ 装備', sub: 'スキルボールを選んで装備を変更', back: '戻る', hint: 'ボールをタップして装備バッグを開きます', balls: 'スキルボール', empty: 'スキルボールをまだ所持していません。', slotsFilled: 'スロット装備済み', openBag: 'バッグを開く', notOwned: '未所持', full: '4スロット完成', partialEmpty: '空きスロットあり', detailTitle: '装備対象', clearAll: 'すべて外す', editHint: 'スロットをタップして装備を選択', backBalls: 'ボール一覧', slotEmpty: '空きスロット', tapSlot: 'スロットをタップして装備を選択', pickFor: 'このスロットの装備を選択', noItems: 'このスロットの装備がありません — 闇市場で箱を開けるか鍛冶場で強化してください。', equippedTag: '装備中', lvLocked: 'なし', copiesShort: '個', slotsTitle: 'このボールの装備' },
+            ko: { label: '장비', title: '⚔️ 장비', sub: '스킬 볼을 선택해 장비를 변경하세요', back: '뒤로', hint: '볼을 탭하면 장비 가방이 열립니다', balls: '스킬 볼', empty: '아직 보유한 스킬 볼이 없습니다.', slotsFilled: '슬롯 장착됨', openBag: '가방 열기', notOwned: '미보유', full: '4슬롯 완료', partialEmpty: '빈 슬롯 있음', detailTitle: '장비 대상', clearAll: '모두 해제', editHint: '슬롯을 탭해 장비를 선택하세요', backBalls: '볼 목록', slotEmpty: '빈 슬롯', tapSlot: '슬롯을 탭해 장비를 선택', pickFor: '이 슬롯 장비 선택', noItems: '이 슬롯에 장비가 없습니다 — 암시장에서 상자를 열거나 대장간에서 강화하세요.', equippedTag: '장착됨', lvLocked: '없음', copiesShort: '개', slotsTitle: '이 볼의 장비' },
+            zh: { label: '装备', title: '⚔️ 装备', sub: '选择技能球以更换装备', back: '返回', hint: '点击球体打开它的装备背包', balls: '技能球', empty: '你还没有任何技能球。', slotsFilled: '个槽位已装备', openBag: '打开背包', notOwned: '未拥有', full: '四槽已满', partialEmpty: '仍有空槽', detailTitle: '装备对象', clearAll: '全部卸下', editHint: '点击槽位为该球选择装备', backBalls: '球体列表', slotEmpty: '空槽位', tapSlot: '点击槽位选择装备', pickFor: '为该槽位选择装备', noItems: '该槽位还没有装备 — 去黑市开箱或在铁匠铺合成等级。', equippedTag: '已装备', lvLocked: '无', copiesShort: '份', slotsTitle: '该球的装备' },
+            es: { label: 'Equipo', title: '⚔️ EQUIPO', sub: 'Elige una bola de habilidad para cambiar su equipo', back: 'Volver', hint: 'Toca una bola para abrir su bolsa de equipo', balls: 'Bolas de habilidad', empty: 'Todavía no tienes ninguna bola de habilidad.', slotsFilled: 'ranuras equipadas', openBag: 'Abrir bolsa', notOwned: 'No obtenida', full: '4 ranuras listas', partialEmpty: 'Quedan ranuras vacías', detailTitle: 'Equipo de', clearAll: 'Quitar todo', editHint: 'Toca una ranura para elegir el objeto de esta bola', backBalls: 'Lista de bolas', slotEmpty: 'Ranura vacía', tapSlot: 'Toca una ranura para elegir equipo', pickFor: 'Elige un objeto para', noItems: 'Aún no hay objetos para esta ranura — abre cofres en el Mercado Negro o mejora en la Forja.', equippedTag: 'Equipado', lvLocked: 'Ninguna', copiesShort: 'copias', slotsTitle: 'EQUIPO DE ESTA BOLA' },
+            fr: { label: 'Équipement', title: '⚔️ ÉQUIPEMENT', sub: "Choisissez une boule de compétence pour changer son équipement", back: 'Retour', hint: 'Touchez une boule pour ouvrir son sac', balls: 'Boules de compétence', empty: "Vous ne possédez encore aucune boule de compétence.", slotsFilled: 'emplacements équipés', openBag: 'Ouvrir le sac', notOwned: 'Non possédée', full: '4 emplacements prêts', partialEmpty: 'Emplacements vides', detailTitle: 'Équipement de', clearAll: 'Tout retirer', editHint: "Touchez un emplacement pour choisir l'objet", backBalls: 'Liste des boules', slotEmpty: 'Emplacement vide', tapSlot: 'Touchez un emplacement pour choisir', pickFor: 'Choisir un objet pour', noItems: "Aucun objet pour cet emplacement — ouvrez des coffres au Marché Noir ou forgez à la Forge.", equippedTag: 'Équipé', lvLocked: 'Aucun', copiesShort: 'ex.', slotsTitle: 'ÉQUIPEMENT DE CETTE BOULE' },
+            de: { label: 'Ausrüstung', title: '⚔️ AUSRÜSTUNG', sub: 'Wähle eine Fähigkeitskugel, um ihre Ausrüstung zu ändern', back: 'Zurück', hint: 'Tippe eine Kugel an, um ihre Ausrüstungstasche zu öffnen', balls: 'Fähigkeitskugeln', empty: 'Du besitzt noch keine Fähigkeitskugel.', slotsFilled: 'Slots belegt', openBag: 'Tasche öffnen', notOwned: 'Nicht erhalten', full: 'Alle 4 Slots bereit', partialEmpty: 'Leere Slots übrig', detailTitle: 'Ausrüstung für', clearAll: 'Alles abnehmen', editHint: 'Tippe einen Slot an, um den Gegenstand zu wählen', backBalls: 'Kugelliste', slotEmpty: 'Leerer Slot', tapSlot: 'Slot antippen, um Ausrüstung zu wählen', pickFor: 'Gegenstand wählen für', noItems: 'Noch kein Gegenstand für diesen Slot — öffne Truhen im Schwarzmarkt oder schmiede in der Schmiede.', equippedTag: 'Angelegt', lvLocked: 'Keine', copiesShort: 'Stk.', slotsTitle: 'AUSRÜSTUNG DIESER KUGEL' },
+            pt: { label: 'Equipamento', title: '⚔️ EQUIPAMENTO', sub: 'Escolha uma bola de habilidade para trocar o equipamento', back: 'Voltar', hint: 'Toque numa bola para abrir a bolsa de equipamento', balls: 'Bolas de habilidade', empty: 'Ainda não possui nenhuma bola de habilidade.', slotsFilled: 'espaços equipados', openBag: 'Abrir bolsa', notOwned: 'Não obtida', full: '4 espaços prontos', partialEmpty: 'Espaços vazios', detailTitle: 'Equipamento de', clearAll: 'Retirar tudo', editHint: 'Toque num espaço para escolher o item desta bola', backBalls: 'Lista de bolas', slotEmpty: 'Espaço vazio', tapSlot: 'Toque num espaço para escolher equipamento', pickFor: 'Escolher um item para', noItems: 'Ainda não há itens para este espaço — abra baús no Mercado Negro ou melhore na Forja.', equippedTag: 'Equipado', lvLocked: 'Nenhum', copiesShort: 'cópias', slotsTitle: 'EQUIPAMENTO DESTA BOLA' },
+            ru: { label: 'Снаряжение', title: '⚔️ СНАРЯЖЕНИЕ', sub: 'Выберите шар навыка, чтобы изменить снаряжение', back: 'Назад', hint: 'Нажмите на шар, чтобы открыть его сумку снаряжения', balls: 'Шары навыков', empty: 'У вас пока нет ни одного шара навыков.', slotsFilled: 'слотов занято', openBag: 'Открыть сумку', notOwned: 'Не получен', full: 'Все 4 слота готовы', partialEmpty: 'Остались пустые слоты', detailTitle: 'Снаряжение для', clearAll: 'Снять всё', editHint: 'Нажмите на слот, чтобы выбрать предмет', backBalls: 'Список шаров', slotEmpty: 'Пустой слот', tapSlot: 'Нажмите на слот, чтобы выбрать снаряжение', pickFor: 'Выбрать предмет для', noItems: 'Для этого слота пока нет предметов — открывайте сундуки на Чёрном рынке или улучшайте в Кузнице.', equippedTag: 'Надето', lvLocked: 'Нет', copiesShort: 'шт.', slotsTitle: 'СНАРЯЖЕНИЕ ЭТОГО ШАРА' },
+            th: { label: 'อุปกรณ์', title: '⚔️ อุปกรณ์', sub: 'เลือกบอลสกิลเพื่อเปลี่ยนอุปกรณ์', back: 'ย้อนกลับ', hint: 'แตะบอลเพื่อเปิดกระเป๋าอุปกรณ์ของบอลนั้น', balls: 'บอลสกิล', empty: 'คุณยังไม่มีบอลสกิล', slotsFilled: 'ช่องที่ใส่อุปกรณ์แล้ว', openBag: 'เปิดกระเป๋า', notOwned: 'ยังไม่มี', full: 'ครบ 4 ช่อง', partialEmpty: 'ยังมีช่องว่าง', detailTitle: 'อุปกรณ์ของ', clearAll: 'ถอดทั้งหมด', editHint: 'แตะช่องเพื่อเลือกไอเทมให้บอลนี้', backBalls: 'รายการบอล', slotEmpty: 'ช่องว่าง', tapSlot: 'แตะช่องเพื่อเลือกอุปกรณ์', pickFor: 'เลือกไอเทมสำหรับ', noItems: 'ยังไม่มีไอเทมสำหรับช่องนี้ — เปิดหีบที่ตลาดมืดหรือหลอมระดับที่โรงตีเหล็ก', equippedTag: 'ใส่อยู่', lvLocked: 'ไม่มี', copiesShort: 'ชิ้น', slotsTitle: 'อุปกรณ์ของบอลนี้' },
+            id: { label: 'Perlengkapan', title: '⚔️ PERLENGKAPAN', sub: 'Pilih bola skill untuk mengubah perlengkapannya', back: 'Kembali', hint: 'Ketuk bola untuk membuka tas perlengkapannya', balls: 'Bola skill', empty: 'Kamu belum memiliki bola skill.', slotsFilled: 'slot terisi', openBag: 'Buka tas', notOwned: 'Belum dimiliki', full: '4 slot siap', partialEmpty: 'Masih ada slot kosong', detailTitle: 'Perlengkapan untuk', clearAll: 'Lepas semua', editHint: 'Ketuk slot untuk memilih barang bola ini', backBalls: 'Daftar bola', slotEmpty: 'Slot kosong', tapSlot: 'Ketuk slot untuk memilih perlengkapan', pickFor: 'Pilih barang untuk', noItems: 'Belum ada barang untuk slot ini — buka peti di Pasar Gelap atau tempa level di Pandai Besi.', equippedTag: 'Terpasang', lvLocked: 'Tidak ada', copiesShort: 'salinan', slotsTitle: 'PERLENGKAPAN BOLA INI' },
+            ar: { label: 'المعدات', title: '⚔️ المعدات', sub: 'اختر كرة مهارة لتغيير معداتها', back: 'رجوع', hint: 'اضغط على الكرة لفتح حقيبة معداتها', balls: 'كرات المهارات', empty: 'لا تملك أي كرة مهارة بعد.', slotsFilled: 'خانات مجهزة', openBag: 'فتح الحقيبة', notOwned: 'غير مملوكة', full: 'الخانات الأربع جاهزة', partialEmpty: 'ما زالت هناك خانات فارغة', detailTitle: 'معدات', clearAll: 'إزالة الكل', editHint: 'اضغط على خانة لاختيار قطعة لهذه الكرة', backBalls: 'قائمة الكرات', slotEmpty: 'خانة فارغة', tapSlot: 'اضغط على خانة لاختيار المعدات', pickFor: 'اختر قطعة لـ', noItems: 'لا توجد قطع لهذه الخانة بعد — افتح الصناديق في السوق السوداء أو طوّر المستوى في الحدادة.', equippedTag: 'مجهزة', lvLocked: 'لا يوجد', copiesShort: 'نسخة', slotsTitle: 'معدات هذه الكرة' }
+        };
+        function eqp(key) {
+            const pack = EQ_PANEL_I18N[eqLocale()] || EQ_PANEL_I18N.en;
+            return pack[key] || EQ_PANEL_I18N.en[key] || key;
+        }
+        // Category labels live in the codex I18N table; reuse them so the panel is fully translated.
+        function eqCatText(cats) {
+            const pack = (typeof I18N !== 'undefined' && I18N[playerData.lang]) || (typeof I18N !== 'undefined' ? I18N.en : null);
+            const fallback = (typeof I18N !== 'undefined' && I18N.en && I18N.en.cats) || {};
+            const dict = (pack && pack.cats) || {};
+            return (cats || []).map(c => dict[c] || fallback[c] || c).join(' · ');
+        }
+        // Localised ball names: reuse the codex name table when the language differs from Vietnamese.
+        const EQ_PANEL_BALL_NAMES = {
+            vi: { phantomfan: 'Phantom Fan', axehunter: 'Axe Hunter', plasmaricochet: 'Plasma Ricochet', sirmalakor: 'Sir Malakor', godofwar: 'Wrath of Abyss' },
+            en: { phantomfan: 'Phantom Fan', axehunter: 'Axe Hunter', plasmaricochet: 'Plasma Ricochet', sirmalakor: 'Sir Malakor', godofwar: 'Wrath of Abyss' },
+            ja: { phantomfan: 'ファントムファン', axehunter: 'アックスハンター', plasmaricochet: 'プラズマリコシェ', sirmalakor: 'サー・マラコール', godofwar: '深淵の怒り' },
+            ko: { phantomfan: '팬텀 팬', axehunter: '액스 헌터', plasmaricochet: '플라즈마 리코셰', sirmalakor: '서 말라코르', godofwar: '심연의 분노' },
+            zh: { phantomfan: '幻影扇', axehunter: '斧猎者', plasmaricochet: '等离子弹跳球', sirmalakor: '马拉科尔爵士', godofwar: '深渊之怒' },
+            es: { phantomfan: 'Abanico Fantasma', axehunter: 'Cazador de Hachas', plasmaricochet: 'Rebote de Plasma', sirmalakor: 'Sir Malakor', godofwar: 'Ira del Abismo' },
+            fr: { phantomfan: 'Éventail Fantôme', axehunter: "Chasseur à la Hache", plasmaricochet: 'Ricochet Plasma', sirmalakor: 'Sire Malakor', godofwar: "Colère de l'Abysse" },
+            de: { phantomfan: 'Phantomschwung', axehunter: 'Axtjäger', plasmaricochet: 'Plasma-Ricochet', sirmalakor: 'Sir Malakor', godofwar: 'Zorn des Abgrunds' },
+            pt: { phantomfan: 'Leque Fantasma', axehunter: 'Caçador de Machado', plasmaricochet: 'Ricochete de Plasma', sirmalakor: 'Sir Malakor', godofwar: 'Ira do Abismo' },
+            ru: { phantomfan: 'Веер Призрака', axehunter: 'Охотник с топором', plasmaricochet: 'Плазменный рикошет', sirmalakor: 'Сэр Малакор', godofwar: 'Гнев Бездны' },
+            th: { phantomfan: 'พัดแฟนทอม', axehunter: 'นักล่าขวาน', plasmaricochet: 'พลาสม่าริโคเชต์', sirmalakor: 'เซอร์มาลาคอร์', godofwar: 'พยโกรธแห่งอเวจี' },
+            id: { phantomfan: 'Kipas Phantom', axehunter: 'Pemburu Kapak', plasmaricochet: 'Ricochet Plasma', sirmalakor: 'Sir Malakor', godofwar: 'Murka Jurang' },
+            ar: { phantomfan: 'مروحة الشبح', axehunter: 'صياد الفأس', plasmaricochet: 'ارتداد البلازما', sirmalakor: 'سير مالاكور', godofwar: 'غضب الهاوية' }
+        };
+        function eqBallName(metaOrId) {
+            const id = typeof metaOrId === 'string' ? metaOrId : (metaOrId && metaOrId.id);
+            const meta = CODEX_DATA.find(b => b.id === id);
+            const pack = EQ_PANEL_BALL_NAMES[eqLocale()] || EQ_PANEL_BALL_NAMES.en;
+            return pack[id] || (meta ? meta.name : id);
+        }
+
+        // Skill balls only: the codex ids that are actually steerable in a match.
+        function equipmentPanelBallList() {
+            const owned = Array.isArray(playerData.unlockedBalls) ? playerData.unlockedBalls : [];
+            const all = CODEX_DATA.filter(b => isControllableBallId(b.id));
+            const ownedList = all.filter(b => owned.includes(b.id));
+            const rest = all.filter(b => !owned.includes(b.id));
+            return ownedList.concat(rest);
+        }
+        function equipmentPanelLoadoutCount(ballId) {
+            const load = (playerData.equipmentLoadouts || {})[ballId] || {};
+            return EQ_SLOTS.filter(s => load[s]).length;
+        }
+
+        let _eqPanelBallId = null;
+        let _eqPanelSlot = null;
+        let _eqPanelPreviewRaf = null;
+        let _eqPanelPreviewBall = null;
+
+        function eqPanelShowList() {
+            _eqPanelBallId = null;
+            _eqPanelSlot = null;
+            stopEqPanelPreview();
+            const list = document.getElementById('eqPanelListWrap');
+            const ball = document.getElementById('eqPanelBallWrap');
+            if (list) list.classList.remove('hidden');
+            if (ball) ball.classList.add('hidden');
+            renderEquipmentPanel();
+        }
+
+        // ---------- list of skill balls ----------
+        function renderEquipmentPanel() {
+            const grid = document.getElementById('equipmentPanelGrid');
+            if (!grid) return;
+            ensureEquipmentData();
+            reconcileEquipmentAllocations();
+            document.getElementById('eqPanelTitle').textContent = eqp('title');
+            document.getElementById('eqPanelSub').textContent = eqp('sub');
+            document.getElementById('eqPanelBack').textContent = '← ' + eqp('back');
+            document.getElementById('eqPanelHint').textContent = eqp('hint');
+            document.getElementById('eqPanelBallsLabel').textContent = eqp('balls');
+            const list = equipmentPanelBallList();
+            const owned = Array.isArray(playerData.unlockedBalls) ? playerData.unlockedBalls : [];
+            grid.replaceChildren();
+            if (!list.length) {
+                const empty = document.createElement('div');
+                empty.className = 'text-xs font-bold text-slate-400 py-6 text-center';
+                empty.textContent = eqp('empty');
+                grid.appendChild(empty);
+                return;
+            }
+            for (const meta of list) {
+                const isOwned = owned.includes(meta.id);
+                const filled = equipmentPanelLoadoutCount(meta.id);
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'eqp-ball';
+                card.style.cssText = 'position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px;border-radius:16px;border:1px solid ' +
+                    (isOwned ? (filled === 4 ? '#22d3ee' : '#334155') : '#1e293b') +
+                    ';background:linear-gradient(160deg,#0b1220,#020617);cursor:pointer;' +
+                    (isOwned ? '' : 'opacity:.55;');
+                const dot = document.createElement('span');
+                dot.style.cssText = `width:10px;height:10px;border-radius:50%;background:${meta.color};box-shadow:0 0 10px ${meta.color}`;
+                card.appendChild(dot);
+                const name = document.createElement('span');
+                name.style.cssText = 'font-size:10px;font-weight:900;color:#e2e8f0;text-align:center;line-height:1.15;min-height:24px';
+                name.textContent = eqBallName(meta);
+                card.appendChild(name);
+                const skill = document.createElement('span');
+                skill.style.cssText = 'font-size:8px;font-weight:800;color:#94a3b8;text-align:center;line-height:1.1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden';
+                skill.textContent = eqCatText(meta.cats);
+                card.appendChild(skill);
+                const status = document.createElement('span');
+                status.style.cssText = `font-size:9px;font-weight:900;color:${isOwned ? (filled === 4 ? '#67e8f9' : '#fbbf24') : '#64748b'}`;
+                status.textContent = !isOwned ? '🔒 ' + eqp('notOwned') : `${filled}/4 · ${filled === 4 ? eqp('full') : eqp('partialEmpty')}`;
+                card.appendChild(status);
+                const bar = document.createElement('span');
+                bar.style.cssText = 'display:flex;gap:2px;margin-top:1px';
+                for (const slot of EQ_SLOTS) {
+                    const load = (playerData.equipmentLoadouts[meta.id] || {})[slot];
+                    const cell = document.createElement('span');
+                    cell.style.cssText = `height:15px;min-width:18px;padding:0 2px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;gap:1px;font-size:8px;font-weight:900;border:1px solid ${load ? '#22d3ee' : '#334155'};background:${load ? '#082f49' : 'transparent'};color:#a5f3fc`;
+                    cell.textContent = load ? EQ_SYMBOLS[slot] + load.lv : '';
+                    bar.appendChild(cell);
+                }
+                card.appendChild(bar);
+                card.onclick = () => {
+                    try { audio.playClick(); } catch (e) {}
+                    if (!isOwned) {
+                        showGameToast(eqp('notOwned'), 'info');
+                        return;
+                    }
+                    openEqPanelBall(meta.id);
+                };
+                grid.appendChild(card);
+            }
+        }
+
+        // ---------- per-ball screen: live overview + 4 slots (2 left / 2 right) ----------
+        function eqPanelSlotButton(ballId, slot) {
+            const load = (playerData.equipmentLoadouts[ballId] || {})[slot];
+            const item = load ? ITEMS_DATABASE.find(it => it.id === load.id && it.slot === slot) : null;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'eqp-slot' + (item ? ' eqp-slot-on lv' + load.lv : '');
+            btn.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:92px;padding:8px 6px;border-radius:14px;' +
+                'border:1px solid ' + (item ? (load.lv === 4 ? '#facc15' : '#22d3ee') : '#334155') + ';' +
+                'background:' + (item ? 'rgba(8,47,73,.75)' : 'rgba(2,6,23,.85)') + ';cursor:pointer;color:#e2e8f0';
+            const art = document.createElement('span');
+            art.style.cssText = 'display:flex;align-items:center;justify-content:center;width:34px;height:34px';
+            art.innerHTML = item ? eqArt(item) : `<span style="font-size:20px">${EQ_SYMBOLS[slot]}</span>`;
+            btn.appendChild(art);
+            const nm = document.createElement('span');
+            nm.style.cssText = 'font-size:9px;font-weight:900;color:' + (item ? '#a5f3fc' : '#64748b') + ';text-align:center;line-height:1.1;max-width:86px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+            nm.textContent = item ? eqItemName(item) : eqSlotName(slot);
+            btn.appendChild(nm);
+            const lv = document.createElement('span');
+            lv.style.cssText = 'font-size:9px;font-weight:900;color:' + (item ? (load.lv === 4 ? '#facc15' : '#67e8f9') : '#475569');
+            lv.textContent = item ? 'Lv.' + load.lv : eqp('slotEmpty');
+            btn.appendChild(lv);
+            btn.title = item ? eqItemName(item) + ' Lv.' + load.lv : eqp('slotEmpty');
+            btn.onclick = () => {
+                try { audio.playClick(); } catch (e) {}
+                openEqPanelPicker(slot);
+            };
+            return btn;
+        }
+        function renderEqPanelBallView() {
+            const ballId = _eqPanelBallId;
+            if (!ballId) return;
+            ensureEquipmentData();
+            reconcileEquipmentAllocations();
+            const meta = CODEX_DATA.find(b => b.id === ballId) || { name: ballId, color: '#67e8f9' };
+            document.getElementById('eqPanelBallName').textContent = eqBallName(meta);
+            document.getElementById('eqPanelBallSub').textContent = eqp('slotsTitle');
+            document.getElementById('eqPanelBackBalls').textContent = '← ' + eqp('backBalls');
+            document.getElementById('eqPanelSlotHint').textContent = eqp('tapSlot');
+            const left = document.getElementById('eqPanelLeftCol');
+            const right = document.getElementById('eqPanelRightCol');
+            left.replaceChildren(); right.replaceChildren();
+            left.appendChild(eqPanelSlotButton(ballId, 'weapon'));
+            left.appendChild(eqPanelSlotButton(ballId, 'armor'));
+            right.appendChild(eqPanelSlotButton(ballId, 'helmet'));
+            right.appendChild(eqPanelSlotButton(ballId, 'boots'));
+            const filled = equipmentPanelLoadoutCount(ballId);
+            const status = document.getElementById('eqPanelBallStatus');
+            status.textContent = `${filled}/4 · ${filled === 4 ? eqp('full') : eqp('partialEmpty')}`;
+            status.style.color = filled === 4 ? '#67e8f9' : '#fbbf24';
+        }
+        function openEqPanelBall(ballId) {
+            _eqPanelBallId = ballId;
+            _eqPanelSlot = null;
+            const list = document.getElementById('eqPanelListWrap');
+            const wrap = document.getElementById('eqPanelBallWrap');
+            if (list) list.classList.add('hidden');
+            if (wrap) wrap.classList.remove('hidden');
+            document.getElementById('eqPanelPickerWrap').classList.add('hidden');
+            document.getElementById('eqPanelBallWrap').classList.remove('hidden');
+            renderEqPanelBallView();
+            startEqPanelPreview(ballId);
+        }
+
+        // ---------- slot picker ----------
+        function openEqPanelPicker(slot) {
+            if (!_eqPanelBallId) return;
+            _eqPanelSlot = slot;
+            document.getElementById('eqPanelBallWrap').classList.add('hidden');
+            const wrap = document.getElementById('eqPanelPickerWrap');
+            wrap.classList.remove('hidden');
+            document.getElementById('eqPanelPickerTitle').textContent = eqp('pickFor') + ' ' + EQ_SYMBOLS[slot] + ' ' + eqSlotName(slot);
+            document.getElementById('eqPanelPickerBack').textContent = '← ' + eqSlotName(slot);
+            stopEqPanelPreview();
+            renderEqPanelPicker();
+        }
+        function eqPanelEquipItem(item, lv) {
+            const ballId = _eqPanelBallId;
+            if (!ballId) return;
+            reconcileEquipmentAllocations();
+            const target = playerData.equipmentLoadouts[ballId] || (playerData.equipmentLoadouts[ballId] = {});
+            const cur = target[item.slot];
+            if (cur && cur.id === item.id && cur.lv === lv) { delete target[item.slot]; }
+            else {
+                if (eqCopies(item.id, lv) - eqAllocated(item.id, lv) <= 0) return false;
+                target[item.slot] = { id: item.id, lv };
+            }
+            savePlayerData();
+            try { renderEquipmentPanel(); } catch (e) {}
+            try { if (typeof refreshLobbyEquipmentUI === 'function') refreshLobbyEquipmentUI(); } catch (e) {}
+            return true;
+        }
+        function renderEqPanelPicker() {
+            const grid = document.getElementById('eqPanelPickerGrid');
+            const slot = _eqPanelSlot;
+            const ballId = _eqPanelBallId;
+            if (!grid || !slot || !ballId) return;
+            ensureEquipmentData();
+            reconcileEquipmentAllocations();
+            const load = playerData.equipmentLoadouts[ballId] || {};
+            const cur = load[slot];
+            grid.replaceChildren();
+            const items = ITEMS_DATABASE.filter(it => it.slot === slot);
+            let shown = 0;
+            for (const it of items) {
+                const ownedLevels = [1, 2, 3, 4].filter(lv => eqCopies(it.id, lv) > 0);
+                if (!ownedLevels.length) continue;
+                shown++;
+                const card = document.createElement('div');
+                card.style.cssText = 'position:relative;border:1px solid #1e293b;border-radius:14px;background:linear-gradient(160deg,#0b1220,#020617);padding:8px;display:flex;flex-direction:column;gap:6px';
+                const head = document.createElement('div');
+                head.style.cssText = 'display:flex;align-items:center;gap:6px';
+                const art = document.createElement('span');
+                art.style.cssText = 'width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex:0 0 auto';
+                art.innerHTML = eqArt(it);
+                head.appendChild(art);
+                const nm = document.createElement('span');
+                nm.style.cssText = 'flex:1;min-width:0;font-size:11px;font-weight:900;color:#e2e8f0;line-height:1.15';
+                nm.textContent = eqItemName(it);
+                head.appendChild(nm);
+                const info = document.createElement('button');
+                info.type = 'button';
+                info.textContent = 'i';
+                info.style.cssText = 'width:20px;height:20px;border-radius:50%;border:1px solid #22d3ee;background:#082f49;color:#67e8f9;font-size:10px;font-weight:900;cursor:pointer;flex:0 0 auto';
+                info.onclick = () => { try { showEquipmentInfo(it, (cur && cur.id === it.id) ? cur.lv : 1); } catch (e) {} };
+                head.appendChild(info);
+                card.appendChild(head);
+                const lvRow = document.createElement('div');
+                lvRow.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap';
+                for (let lv = 1; lv <= 4; lv++) {
+                    const copies = eqCopies(it.id, lv);
+                    const isCur = !!(cur && cur.id === it.id && cur.lv === lv);
+                    const usable = copies - eqAllocated(it.id, lv) + (isCur ? 1 : 0);
+                    const chip = document.createElement('button');
+                    chip.type = 'button';
+                    chip.disabled = !isCur && copies <= 0;
+                    chip.style.cssText = 'flex:1;min-width:42px;padding:4px 2px;border-radius:8px;font-size:9px;font-weight:900;cursor:' + (chip.disabled ? 'not-allowed' : 'pointer') + ';' +
+                        'border:1px solid ' + (isCur ? (lv === 4 ? '#facc15' : '#22d3ee') : (copies > 0 ? '#334155' : '#1e293b')) + ';' +
+                        'background:' + (isCur ? (lv === 4 ? 'rgba(250,204,21,.16)' : 'rgba(34,211,238,.16)') : (copies > 0 ? 'rgba(2,6,23,.9)' : 'rgba(15,23,42,.5)')) + ';' +
+                        'color:' + (isCur ? (lv === 4 ? '#fde68a' : '#a5f3fc') : (copies > 0 ? '#cbd5e1' : '#475569')) + ';opacity:' + (chip.disabled ? '0.45' : '1');
+                    chip.innerHTML = `Lv.${lv}<br><span style="font-size:8px;font-weight:800">${copies > 0 ? copies + ' ' + eqp('copiesShort') : eqp('lvLocked')}</span>`;
+                    chip.onclick = () => {
+                        try { audio.playClick(); } catch (e) {}
+                        if (chip.disabled) return;
+                        eqPanelEquipItem(it, lv);
+                        renderEqPanelPicker();
+                        renderEqPanelBallView();
+                    };
+                    lvRow.appendChild(chip);
+                }
+                card.appendChild(lvRow);
+                if (cur && cur.id === it.id) {
+                    const tag = document.createElement('span');
+                    tag.style.cssText = 'position:absolute;top:6px;left:6px;font-size:8px;font-weight:900;color:#052e16;background:#67e8f9;border-radius:6px;padding:1px 5px';
+                    tag.textContent = eqp('equippedTag') + ' Lv.' + cur.lv;
+                    card.appendChild(tag);
+                }
+                grid.appendChild(card);
+            }
+            if (!shown) {
+                const empty = document.createElement('div');
+                empty.style.cssText = 'grid-column:1/-1;text-align:center;font-size:11px;font-weight:800;color:#94a3b8;padding:14px 6px';
+                empty.textContent = eqp('noItems');
+                grid.appendChild(empty);
+            }
+            const clr = document.getElementById('eqPanelPickerClear');
+            if (clr) {
+                clr.textContent = '✕ ' + eqp('clearAll');
+                clr.style.display = cur ? '' : 'none';
+                clr.onclick = () => {
+                    try { audio.playClick(); } catch (e) {}
+                    const l = playerData.equipmentLoadouts[_eqPanelBallId];
+                    if (l && _eqPanelSlot) { delete l[_eqPanelSlot]; savePlayerData(); }
+                    renderEqPanelPicker(); renderEqPanelBallView(); renderEquipmentPanel();
+                };
+            }
+        }
+
+        // ---------- live animated overview of the ball (same art as the codex) ----------
+        function stopEqPanelPreview() {
+            if (_eqPanelPreviewRaf) { cancelAnimationFrame(_eqPanelPreviewRaf); _eqPanelPreviewRaf = null; }
+            _eqPanelPreviewBall = null;
+        }
+        function startEqPanelPreview(ballId) {
+            stopEqPanelPreview();
+            const cv = document.getElementById('eqPanelPreview');
+            if (!cv || !ballId) return;
+            const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2);
+            const cssW = cv.clientWidth || 260;
+            cv.width = Math.round(cssW * dpr);
+            cv.height = Math.round(cssW * dpr);
+            const c2 = cv.getContext('2d', { alpha: true }) || cv.getContext('2d');
+            if (!c2) return;
+            let ball = null;
+            try {
+                projectiles = []; particles = []; bloodStains = []; floatingTexts = [];
+                graves = []; minions = []; handTraps = []; candies = [];
+                burnTrails = []; eyeMines = []; scorchCraters = []; cursedIceZones = []; voidDecoys = [];
+                window.__codexPreviewSkinOverride = null;
+                ball = createBall(ballId, 'left', false);
+                ball.spawnOpacity = 1; ball.spawnScale = 1;
+                ball.x = ARENA_SIZE * 0.5; ball.y = ARENA_SIZE * 0.5;
+                ball.vx = 0; ball.vy = 0;
+                if (ball.isCultists) {
+                    if (ball.deity) { ball.deity.x = ball.x; ball.deity.y = ball.y - 10; }
+                    if (ball.members) {
+                        const offs = [[-52, -32], [52, -32], [0, 52]];
+                        ball.members.forEach((m, i) => { const o = offs[i] || [0, 0]; m.x = ball.x + o[0]; m.y = ball.y + o[1]; });
+                    }
+                }
+                if (ball.isSirMalakor) { ball.spawnTargetX = ball.x; ball.spawnTargetY = ball.y; }
+                if (ball.isPhantomFan) { ball.fanIntroY = 0; ball.isBoomerangThrown = false; }
+            } catch (e) { return; }
+            _eqPanelPreviewBall = ball;
+            const t0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+            const frame = (now) => {
+                const modal = document.getElementById('equipmentPanelModal');
+                if (!modal || modal.classList.contains('hidden') || _eqPanelBallId !== ballId || !_eqPanelPreviewBall) {
+                    _eqPanelPreviewRaf = null; _eqPanelPreviewBall = null; return;
+                }
+                const dt = Math.min(0.033, Math.max(0.001, (now - t0) / 1000)) * 0 + 1 / 60;
+                const b = _eqPanelPreviewBall;
+                // idle animation exactly like the codex overview
+                if (b.weaponAngle !== undefined) b.weaponAngle += dt * 1.65;
+                if (b.orbitAngle !== undefined) b.orbitAngle += dt * 1.65;
+                if (b.fanAngle !== undefined) b.fanAngle += dt * 1.65;
+                if (b.ringAngle !== undefined) b.ringAngle += dt * 1.45;
+                if (b.staffAngle !== undefined) b.staffAngle += dt * 2.0;
+                if (b.halberdAngle !== undefined) b.halberdAngle += dt * 1.5;
+                if (b.scytheAngle !== undefined) b.scytheAngle += dt * 1.6;
+                if (b.fireAuraAngle !== undefined) b.fireAuraAngle += dt * 1.5;
+                if (b.runeAngle !== undefined) b.runeAngle += dt * 1.25;
+                if (b.timeMatrixAngle !== undefined) b.timeMatrixAngle += dt * 1.4;
+                if (b.castlingOrbitAngle !== undefined) b.castlingOrbitAngle += dt * 1.5;
+                if (b.animAngle !== undefined) b.animAngle += dt * 1.5;
+                if (b.hexRotation !== undefined) b.hexRotation += dt * 1.35;
+                if (b.stickAngle !== undefined) b.stickAngle += dt * 1.65;
+                if (b.legAnimPhase !== undefined) b.legAnimPhase += dt * 3.2;
+                if (b.auraPhase !== undefined) b.auraPhase += dt * 2.0;
+                if (b.pulsePhase !== undefined) b.pulsePhase += dt * 2.2;
+                if (b.falcon) {
+                    b.falcon.orbitAngle += dt * 2.2;
+                    b.falcon.x = b.x + Math.cos(b.falcon.orbitAngle) * 58;
+                    b.falcon.y = b.y + Math.sin(b.falcon.orbitAngle) * 58;
+                }
+                if (b.deity) { b.deity.x = b.x; b.deity.y = b.y - 10 + Math.sin((now - t0) / 450) * 2.0; }
+                c2.setTransform(1, 0, 0, 1, 0, 0);
+                c2.clearRect(0, 0, cv.width, cv.height);
+                const grad = c2.createRadialGradient(cv.width * 0.5, cv.height * 0.5, cv.width * 0.04, cv.width * 0.5, cv.height * 0.5, cv.width * 0.52);
+                grad.addColorStop(0, 'rgba(30,41,59,0.38)');
+                grad.addColorStop(0.65, 'rgba(15,23,42,0.16)');
+                grad.addColorStop(1, 'rgba(3,7,18,0)');
+                c2.fillStyle = grad;
+                c2.fillRect(0, 0, cv.width, cv.height);
+                const zoom = b.isCultists ? 2.18 : 1.98;
+                const s = (cv.width / PREVIEW_FRAME) * zoom;
+                const floatY = Math.sin((now - t0) / 450) * 2.4;
+                c2.save();
+                c2.translate(cv.width * 0.5, cv.height * 0.5);
+                c2.scale(s, s);
+                c2.translate(-b.x, -b.y + floatY);
+                if (b.isGrandmaster && typeof drawChessboardArena === 'function') drawChessboardArena(c2);
+                try { b.drawUnderlay(c2); b.draw(c2); b.drawOverlay(c2); } catch (e) {}
+                c2.restore();
+                _eqPanelPreviewRaf = requestAnimationFrame(frame);
+            };
+            _eqPanelPreviewRaf = requestAnimationFrame(frame);
+        }
+
+        // ---------- open / close ----------
+        function openEquipmentPanel() {
+            ensureEquipmentData();
+            const modal = document.getElementById('equipmentPanelModal');
+            if (!modal) return;
+            const lb = document.getElementById('mainLobbyScreen');
+            // If the panel is opened from inside a match screen we snap back to the lobby first,
+            // otherwise closing the panel would leave the player on a half-hidden screen.
+            if (lb && lb.classList.contains('hidden') && typeof showScreen === 'function') {
+                try { showScreen('lobby'); } catch (e) {}
+            }
+            _eqPanelBallId = null;
+            _eqPanelSlot = null;
+            document.getElementById('eqPanelBallWrap').classList.add('hidden');
+            document.getElementById('eqPanelListWrap').classList.remove('hidden');
+            renderEquipmentPanel();
+            modal.classList.remove('hidden');
+            modal.hidden = false;
+            if (lb) lb.classList.add('eqp-hidden');
+        }
+        function closeEquipmentPanel() {
+            const modal = document.getElementById('equipmentPanelModal');
+            if (modal) { modal.classList.add('hidden'); modal.hidden = true; }
+            stopEqPanelPreview();
+            const lb = document.getElementById('mainLobbyScreen');
+            if (lb) lb.classList.remove('eqp-hidden');
+            try { if (typeof updateLobbyUI === 'function') updateLobbyUI(); } catch (e) {}
+        }
+
         function eqLocale(){return SUPPORTED_GAME_LANGS.includes(playerData.lang)?playerData.lang:'en';}
         function eqUI(index){const a=EQ_UI_I18N[eqLocale()]||EQ_UI_I18N.en;return a[index] || EQ_UI_I18N.en[index] || '';}
 
@@ -36750,6 +37251,14 @@
             wrap.className = 'space-y-2';
             const intro = document.createElement('div');
             intro.className = 'bg-slate-900/70 border border-purple-500/40 rounded-2xl p-3';
+            try {
+                const goBtn = document.createElement('button');
+                goBtn.type = 'button';
+                goBtn.style = 'margin-bottom:6px;padding:4px 10px;border-radius:9px;border:1px solid #22d3ee;background:#082f49;color:#a5f3fc;font-weight:900;font-size:10px;cursor:pointer';
+                goBtn.textContent = '⚔️ ' + ((typeof eqp === 'function') ? eqp('label') : 'EQUIPMENT');
+                goBtn.onclick = () => { try { document.getElementById('howToPlayModal').classList.add('hidden'); } catch (e) {} if (typeof openEquipmentPanel === 'function') openEquipmentPanel(); };
+                wrap.appendChild(goBtn);
+            } catch (e) {}
             intro.innerHTML = `<div class="text-xs font-black text-purple-300 mb-1">${tUI('⚔️ TRANG BỊ & ĐẤU MẠNG', '⚔️ EQUIPMENT & MULTIPLAYER')}</div>
                 <div class="text-[11px] leading-relaxed text-slate-300">${tUI(
                     'Mỗi bóng trong đội hình 3 bóng được gắn 4 ô: Vũ khí, Giáp, Mũ, Chân. Vật phẩm mua bằng 💎 tại Chợ Đen, ghép cấp tại Lò Rèn. Mỗi cấp chỉ có 3 bản cho cả đội. Khi vào trận Đấu Mạng, trang bị được <b>chốt và gửi</b> sang đối thủ nên hai bên luôn nhìn thấy cùng một sức mạnh.',
@@ -36861,8 +37370,12 @@
             const openBtn = document.createElement('button');
             openBtn.type = 'button';
             openBtn.style.cssText = 'flex:1;min-width:110px;padding:5px 8px;border-radius:9px;border:1px solid #22d3ee;background:#082f49;color:#a5f3fc;font-weight:900;font-size:10px;cursor:pointer';
-            openBtn.textContent = '🎒 ' + tUI('TÚI TRANG BỊ', 'EQUIPMENT');
-            openBtn.onclick = () => { try { audio.playClick(); } catch (e) {} openEquipmentDialog(equipmentFirstDeckBallId(), 'weapon'); };
+            openBtn.textContent = '⚔️ ' + tUI('TRANG BỊ', 'EQUIPMENT');
+            openBtn.onclick = () => {
+                try { audio.playClick(); } catch (e) {}
+                if (typeof openEquipmentPanel === 'function') openEquipmentPanel();
+                else openEquipmentDialog(equipmentFirstDeckBallId(), 'weapon');
+            };
             btns.appendChild(openBtn);
             const autoBtn = document.createElement('button');
             autoBtn.type = 'button';
@@ -36981,6 +37494,10 @@
                             savePlayerData();
                             renderEquipmentDeckPanel();
                             try { refreshLobbyEquipmentUI(); } catch (e) {}
+                        } else if (typeof openEqPanelBall === 'function') {
+                            try { openEquipmentPanel(); } catch (e) {}
+                            openEqPanelBall(id);
+                            setTimeout(() => { try { openEqPanelPicker(slot); } catch (e) {} }, 40);
                         } else {
                             _equipmentBallId = id; _equipmentSlot = slot;
                             openEquipmentDialog(id, slot);
@@ -37078,13 +37595,34 @@
         // The deck snapshot is a 3-ball contract (validated at deck confirm). A match fields
         // only 2 of those balls, so before starting we verify the frozen snapshot really
         // carries a loadout entry for BOTH picks.
-        function equipmentSnapshotCoversPair(snapshot, leftId, rightId) {
-            if (!snapshot || !Array.isArray(snapshot.deck) || snapshot.deck.length !== 3) return false;
-            if (!isControllableBallId(leftId) || !isControllableBallId(rightId)) return false;
-            if (!snapshot.deck.includes(leftId) || !snapshot.deck.includes(rightId)) return false;
+        // A side snapshot describes ONE player's own 3-ball deck. A match only fields that side's
+        // picked ball, so the snapshot must cover just that ball — never the opponent's pick.
+        // Two players with different decks (or different gear) is a normal match, not an error.
+        function equipmentSnapshotCoversOwnBall(snapshot, ballId) {
+            if (!snapshot || typeof snapshot !== 'object') return false;
+            if (!Array.isArray(snapshot.deck) || snapshot.deck.length !== 3) return false;
+            if (!isControllableBallId(ballId)) return false;
+            const own = snapshot.deck.find(id => id === ballId);
+            if (!own) {
+                // Deck order may differ between clients: accept any controllable ball in the deck
+                // (a snapshot always carries a loadout entry for every controllable id it lists).
+                return snapshot.deck.some(id => isControllableBallId(id));
+            }
             const loads = snapshot.loadouts || {};
-            return Object.prototype.hasOwnProperty.call(loads, leftId) &&
-                   Object.prototype.hasOwnProperty.call(loads, rightId);
+            return Object.prototype.hasOwnProperty.call(loads, own);
+        }
+        // Kept for older call sites: a pair is playable when each side covers its own pick.
+        function equipmentSnapshotCoversPair(snapshot, leftId, rightId) {
+            return equipmentSnapshotCoversOwnBall(snapshot, leftId) || equipmentSnapshotCoversOwnBall(snapshot, rightId);
+        }
+        // Build a guaranteed non-null loadout map for one side, so a match never gets cancelled
+        // because gear data is missing/different: missing gear simply means "no items".
+        function equipmentSideLoadoutFor(snapshot, ballId) {
+            // Never borrow another ball's gear: a ball that was not geared enters with nothing.
+            if (!snapshot || typeof snapshot !== 'object') return {};
+            const loads = snapshot.loadouts || {};
+            if (Object.prototype.hasOwnProperty.call(loads, ballId)) return loads[ballId] || {};
+            return {};
         }
 
         // An attack token is created once at cast, shared by all of that cast's hitboxes.
@@ -37537,37 +38075,22 @@
             return item;
         }
         let _equipmentBallId = null, _equipmentSlot = 'weapon';
-        function renderEquipmentSlots(ballId) {
-            _equipmentBallId = ballId;
-            const shell=document.getElementById('equipSlots'), l=document.getElementById('equipLeft'), r=document.getElementById('equipRight');
-            if (!shell || !l || !r) return;
-            const eligible = isControllableBallId(ballId);
-            shell.hidden=!eligible; shell.style.display=eligible?'flex':'none';
-            l.replaceChildren(); r.replaceChildren();
-            if (!eligible) return;
-            ensureEquipmentData(); reconcileEquipmentAllocations();
-            EQ_SLOTS.forEach((slot,i)=> {
-                const selected=(playerData.equipmentLoadouts[ballId]||{})[slot];
-                const item=selected && ITEMS_DATABASE.find(x=>x.id===selected.id && x.slot===slot);
-                const lv=item && eqCopies(item.id,selected.lv)>0 ? selected.lv : 0;
-                const btn=document.createElement('button'); btn.type='button'; btn.className='equip-slot'+(lv?' equip-lv'+lv:'');
-                btn.title=item ? eqItemName(item)+' Lv.'+lv : eqSlotName(slot);
-                btn.innerHTML=(lv?eqArt(item):'<b>'+EQ_SYMBOLS[slot]+'</b>')+eqSlotName(slot)+(lv?' · '+lv:'');
-                btn.onclick=()=>openEquipmentDialog(ballId,slot);
-                (i<2?l:r).appendChild(btn);
-            });
-        }
         function openEquipmentDialog(ballId, slot) {
             if (!isControllableBallId(ballId)) return;
             ensureEquipmentData(); reconcileEquipmentAllocations(); _equipmentBallId=ballId; _equipmentSlot=slot || 'weapon';
             document.getElementById('equipmentDialog').hidden=false;
             document.getElementById('equipDialogTitle').textContent='🎒 '+eqUI(4);
             const box=document.getElementById('equipmentContent'); box.replaceChildren();
+            if (typeof eqp === 'function') {
+                const who=document.createElement('div');
+                who.style='display:flex;align-items:center;gap:6px;font-size:13px;font-weight:900;color:#67e8f9;margin-bottom:4px';
+                who.textContent='🎯 '+eqp('detailTitle')+' '+eqBallName(ballId);
+                box.appendChild(who);
+            }
             const notice=document.createElement('p'); notice.style='color:#fbbf24;font-size:12px'; notice.textContent=eqUI(5)+' '+eqUI(26);box.appendChild(notice);
             const bal=document.createElement('strong');bal.textContent='💎 '+playerData.equipmentRays.toLocaleString()+' '+eqUI(6);box.appendChild(bal);
             const tabs=document.createElement('div');tabs.style='display:flex;gap:5px;flex-wrap:wrap;margin:10px 0';
             EQ_SLOTS.forEach(k=>{const b=document.createElement('button');b.textContent=EQ_SYMBOLS[k]+' '+eqSlotName(k);if(k===_equipmentSlot)b.style.borderColor='#22d3ee';b.onclick=()=>openEquipmentDialog(ballId,k);tabs.appendChild(b)});box.appendChild(tabs);
-            try { renderEquipmentDeckPanel(); } catch (e) {}
             const grid=document.createElement('div');grid.className='equip-list';let total=0;
             ITEMS_DATABASE.filter(it=>it.slot===_equipmentSlot).forEach(it=>{
                 for(let lv=1;lv<=4;lv++) {
@@ -37580,7 +38103,7 @@
                     const info=document.createElement('button');info.className='equip-info';info.textContent='i';info.title=eqUI(22);info.setAttribute('aria-label',eqUI(22)+' '+eqItemName(it)+' Lv.'+lv);info.onclick=()=>showEquipmentInfo(it,lv);card.appendChild(info);
                     const stats=document.createElement('p');stats.style='font-size:12px;color:#cbd5e1;margin:5px 0';stats.textContent=eqStatText(it,lv)+' • '+eqUI(7)+' '+amount+' • '+eqUI(8)+' '+available;card.appendChild(stats);
                     const equip=document.createElement('button');equip.textContent=selected?eqUI(9):(available>0?eqUI(10):eqUI(11));equip.disabled=!selected && available<=0;equip.style.opacity=equip.disabled?'0.5':'1';
-                    equip.onclick=()=>{reconcileEquipmentAllocations();const target=playerData.equipmentLoadouts[ballId]||(playerData.equipmentLoadouts[ballId]={});const cur=target[it.slot];if(cur&&cur.id===it.id&&cur.lv===lv){delete target[it.slot];}else{if(eqCopies(it.id,lv)-eqAllocated(it.id,lv)<=0)return;target[it.slot]={id:it.id,lv};}savePlayerData();renderEquipmentSlots(ballId);openEquipmentDialog(ballId,it.slot)};card.appendChild(equip);
+                    equip.onclick=()=>{reconcileEquipmentAllocations();const target=playerData.equipmentLoadouts[ballId]||(playerData.equipmentLoadouts[ballId]={});const cur=target[it.slot];if(cur&&cur.id===it.id&&cur.lv===lv){delete target[it.slot];}else{if(eqCopies(it.id,lv)-eqAllocated(it.id,lv)<=0)return;target[it.slot]={id:it.id,lv};}savePlayerData();try{renderEquipmentPanel();}catch(e){}openEquipmentDialog(ballId,it.slot)};card.appendChild(equip);
 
                     grid.appendChild(card);
                 }
@@ -38306,7 +38829,13 @@
         }
 
         function updateLobbyUI() {
+            const _eqLbl = document.getElementById('btnEquipmentLabel');
+            if (_eqLbl && typeof eqp === 'function') _eqLbl.textContent = eqp('label');
             const _fl=document.getElementById('forgeLobbyLabel');if(_fl && typeof forgeDict==='function') _fl.textContent=forgeDict().label;
+            try {
+                const _eqPanel = document.getElementById('equipmentPanelModal');
+                if (_eqPanel && !_eqPanel.classList.contains('hidden') && typeof renderEquipmentPanel === 'function') renderEquipmentPanel();
+            } catch (e) {}
             document.getElementById('lobbyPlayerName').textContent = playerData.name;
             document.getElementById('lobbyAvatarTxt').textContent = playerData.name[0].toUpperCase();
             document.getElementById('lobbyAuthBadge').textContent = playerData.authProvider;
@@ -38394,6 +38923,7 @@
         // Hook Finisher Endings for Sandbox Rewards & Real Cloud Multiplayer Rounds
         let mpDeckLeft = [], mpDeckRight = [], mpCurrentOpponent = null;
         let mpEquipmentLeft=null, mpEquipmentRight=null, mpEquipmentWaitTimer=null;
+        let _mpFrozenEquipLeft=null, _mpFrozenEquipRight=null;
         function mpWaitForEquipment() {
             if(mpEquipmentWaitTimer) clearTimeout(mpEquipmentWaitTimer);
             const session=mpSessionSeq;
@@ -38409,7 +38939,7 @@
         let mpRoundNumber = 1, mpFriendState = 'none', mpInPickPhase = false, mpPickPollTimer = null, mpPickHbTimer = null;
         let mpSessionSeq = 0, mpMatchEnded = false, mpRevealTimeout = null, mpMatchDelayTimeout = null;
         function cleanupMultiplayerSession(clearRoom = true) {
-            mpEquipmentLeft=null;mpEquipmentRight=null;
+            mpEquipmentLeft=null;mpEquipmentRight=null;_mpFrozenEquipLeft=null;_mpFrozenEquipRight=null;
             if(mpEquipmentWaitTimer) {clearTimeout(mpEquipmentWaitTimer);mpEquipmentWaitTimer=null;}
             mpSessionSeq++;
             mpSearching = false;
@@ -41506,22 +42036,30 @@
                         document.getElementById('inMatchModeBadge').textContent = `RANKED vs ${mpCurrentOpponent}`;
                         document.getElementById('leftBallSelect').value = leftId;
                         document.getElementById('rightBallSelect').value = rightId;
-                        // ==== [MP-EXTRA 10] equipment is validated for exactly these two picks ====
-                        // A pick can already sit in either slot before the pick phase started, so the
-                        // frozen snapshot is re-checked against the actual [left, right] pair here.
+                        // ==== [MP-EXTRA 14] mismatched / missing gear NEVER cancels a match ====
+                        // Each side freezes its own deck; the two players rarely have the same balls or
+                        // the same items. A side whose snapshot does not carry the picked ball simply
+                        // enters with an empty loadout — the fight still runs on the shared sim.
                         try {
-                            const lOk = equipmentSnapshotCoversPair(mpEquipmentLeft, leftId, rightId);
-                            const rOk = equipmentSnapshotCoversPair(mpEquipmentRight, leftId, rightId);
-                            if (!lOk) mpEquipmentLeft = null;
-                            if (!rOk) mpEquipmentRight = null;
-                        } catch (e) { mpEquipmentLeft = null; mpEquipmentRight = null; }
-                        if (!mpEquipmentLeft || !mpEquipmentRight) {
-                            cleanupMultiplayerSession(true);
-                            showGameToast(tUI('Trang bị của hai bên không khớp đội hình ra sân — trận đã huỷ, 300 🪙 được hoàn.', 'Equipment data did not match the final picks — match cancelled, 300 🪙 refunded.'), 'error');
-                            playerData.coins += 300;
-                            updateLobbyUI();
-                            return;
+                            mpEquipmentLeft = mpEquipmentLeft || {};
+                            mpEquipmentRight = mpEquipmentRight || {};
+                            const lLoad = equipmentSideLoadoutFor(mpEquipmentLeft, leftId);
+                            const rLoad = equipmentSideLoadoutFor(mpEquipmentRight, rightId);
+                            if (!lLoad || !rLoad) {
+                                // nothing frozen at all -> both sides fight bare-handed, no cancel
+                                mpEquipmentLeft = mpEquipmentLeft && Object.keys(mpEquipmentLeft).length ? mpEquipmentLeft : { version: 1, deck: [leftId, leftId, leftId], loadouts: { [leftId]: {} } };
+                                mpEquipmentRight = mpEquipmentRight && Object.keys(mpEquipmentRight).length ? mpEquipmentRight : { version: 1, deck: [rightId, rightId, rightId], loadouts: { [rightId]: {} } };
+                            }
+                            if (!equipmentSnapshotCoversOwnBall(mpEquipmentLeft, leftId) || !equipmentSnapshotCoversOwnBall(mpEquipmentRight, rightId)) {
+                                showGameToast(tUI('Hai bên trang bị khác nhau — vẫn vào trận bình thường.', 'Gear differs between players — the match still runs.'), 'info');
+                            }
+                        } catch (e) {
+                            mpEquipmentLeft = { version: 1, deck: [leftId, leftId, leftId], loadouts: { [leftId]: {} } };
+                            mpEquipmentRight = { version: 1, deck: [rightId, rightId, rightId], loadouts: { [rightId]: {} } };
                         }
+                        // [MP-EXTRA 14] Remembers this round pair's frozen gear for every later round.
+                        _mpFrozenEquipLeft = mpEquipmentLeft;
+                        _mpFrozenEquipRight = mpEquipmentRight;
                         updateMpPlayersBar();
                         startRoomEventPoller();
                         startMpStateSync();
@@ -42258,7 +42796,32 @@
                     : ((codexPickerSide && sandboxSideSkins[codexPickerSide]) ? sandboxSideSkins[codexPickerSide] : (playerData.equippedSkins[item.id] || 'default'));
                 window.__activeCodexInspectedSkin = inspectedSkinId;
                 document.getElementById('detailBallName').textContent = item.name;
-                renderEquipmentSlots(item.id);
+                try {
+                    const pane = document.getElementById('codexPreviewPane');
+                    let note = document.getElementById('codexEqMovedNote');
+                    if (pane && !note) {
+                        note = document.createElement('p');
+                        note.id = 'codexEqMovedNote';
+                        note.style = 'margin:6px 0 0;font-size:10px;font-weight:800;color:#67e8f9;text-align:center';
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.id = 'codexEqMovedBtn';
+                        btn.style = 'margin-left:2px;text-decoration:underline;cursor:pointer;background:none;border:none;color:#22d3ee;font-weight:900;font-size:10px';
+                        btn.onclick = () => {
+                            try { document.getElementById('codexDetailModal').classList.add('hidden'); } catch (e) {}
+                            if (typeof openEquipmentPanel === 'function') openEquipmentPanel();
+                        };
+                        note.appendChild(btn);
+                        pane.appendChild(note);
+                    }
+                    if (note) {
+                        const lbl = (typeof eqp === 'function') ? eqp('label') : 'Equipment';
+                        let lead = note.querySelector('#codexEqMovedLead');
+                        if (!lead) { lead = document.createElement('span'); lead.id = 'codexEqMovedLead'; note.insertBefore(lead, note.firstChild); }
+                        lead.textContent = '⚔️ ' + ((typeof eqp === 'function') ? eqp('openBag') : 'Open bag') + ': ';
+                        document.getElementById('codexEqMovedBtn').textContent = lbl;
+                    }
+                } catch (e) {}
                 if (item.id === 'godofwar' && inspectedSkinId === 'the_god_of_war' && typeof playGodOfWarVoice === 'function') {
                     playGodOfWarVoice('select', { force: true });
                 }
@@ -46165,6 +46728,28 @@
                     if (hp && !hp.classList.contains('hidden')) renderHowToPlay();
                 };
             }
+            const _btnEquipment = document.getElementById('btnEquipment');
+            if (_btnEquipment) _btnEquipment.onclick = () => {
+                audio.playClick();
+                openEquipmentPanel();
+            };
+            // panel navigation: list -> ball view -> slot picker (no chest, no currency here)
+            const _bindEqPanelNav = () => {
+                const back = document.getElementById('eqPanelBack');
+                if (back) back.onclick = () => { try { audio.playClick(); } catch (e) {} closeEquipmentPanel(); };
+                const backBalls = document.getElementById('eqPanelBackBalls');
+                if (backBalls) backBalls.onclick = () => { try { audio.playClick(); } catch (e) {} eqPanelShowList(); };
+                const pickerBack = document.getElementById('eqPanelPickerBack');
+                if (pickerBack) pickerBack.onclick = () => {
+                    try { audio.playClick(); } catch (e) {}
+                    document.getElementById('eqPanelPickerWrap').classList.add('hidden');
+                    document.getElementById('eqPanelBallWrap').classList.remove('hidden');
+                    _eqPanelSlot = null;
+                    renderEqPanelBallView();
+                    startEqPanelPreview(_eqPanelBallId);
+                };
+            };
+            _bindEqPanelNav();
             const _btnMailbox = document.getElementById('btnMailbox');
             if (_btnMailbox) _btnMailbox.onclick = () => {
                 audio.playClick();
@@ -46328,7 +46913,12 @@
                         font:10px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;color:#a7f3d0;
                         background:rgba(2,6,23,.88);border:1px solid rgba(34,211,238,.55);border-radius:8px;padding:6px 8px;
                         box-shadow:0 0 18px rgba(34,211,238,.25);}
-                    #skDebug.show{display:block;}
+                            /* ---- new "Trang Bị" panel ---- */
+        #mainLobbyScreen.eqp-hidden { display: none !important; }
+        .eqp-ball { transition: transform .12s, border-color .12s; }
+        .eqp-ball:hover { transform: translateY(-2px); border-color: #22d3ee !important; }
+        #equipmentPanelModal { background: rgba(2,6,23,.82); backdrop-filter: blur(6px); }
+#skDebug.show{display:block;}
                 </style>
                 <div id="skillCancelZone" class="hidden"><span>✕</span><em>HỦY</em></div>
         <div id="falconStick"><div class="fs-base"></div><div class="fs-knob"></div><div class="fs-tip">🦅</div></div>
@@ -46345,5 +46935,5 @@
         <button type="button" class="sk-slot" data-slot="3" aria-label="skill 4"><span class="sk-icon">✨</span><span class="sk-sweep"></span><span class="sk-cd"></span><span class="sk-key">F</span></button>
         <button type="button" class="sk-slot" data-slot="4" aria-label="skill 5"><span class="sk-icon">🌟</span><span class="sk-sweep"></span><span class="sk-cd"></span><span class="sk-key">G</span></button>
     </div>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5efdaba5af78515',t:'MTc5NTQzMzU1OA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5efdaba5af78515',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5f09ab6dea76e4b',t:'MTc5NTQ0MTQyMQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5f09ab6dea76e4b',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5efdaba5af78515',t:'MTc5NTQzMzU1OA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5efdaba5af78515',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5f0ed6e189d0717',t:'MTc5NTQ0NDgwOQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5f0ed6e189d0717',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
