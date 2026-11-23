@@ -3395,10 +3395,16 @@ body.perf-min .ui-radar-ripple{ display: none !important; }
             moving: false
         };
         function afkMatchLive() {
-            return (typeof activeMatchContext !== 'undefined' && activeMatchContext === 'multiplayer')
-                && typeof gameState !== 'undefined' && (gameState === 'PLAYING' || gameState === 'FINISHER')
-                && typeof isMatchPaused !== 'undefined' && !isMatchPaused
-                && typeof mpMatchEnded !== 'undefined' && !mpMatchEnded;
+            // [AFK-FIX] `mpMatchEnded` alone is not enough: the flag is reset later than gameState,
+            // so a finished round could still pass this test for a frame and re-forfeit. Require a
+            // genuinely live fight AND an armed watchdog (AFKL.armed is cleared by endMultiplayerMatch).
+            if (typeof activeMatchContext === 'undefined' || activeMatchContext !== 'multiplayer') return false;
+            if (typeof gameState === 'undefined' || (gameState !== 'PLAYING' && gameState !== 'FINISHER')) return false;
+            // [AFK-FIX] the pause menu is NOT a safe harbour any more: idling in the menu also
+            // counts, so a player cannot dodge the watchdog by opening it.
+            if (typeof mpMatchEnded !== 'undefined' && mpMatchEnded) return false;
+            if (typeof AFKL !== 'undefined' && AFKL.ended) return false;   // already resolved
+            return true;
         }
         function afkTouchLocal() {
             AFKL.lastInputAt = Date.now();
@@ -3435,7 +3441,7 @@ body.perf-min .ui-radar-ripple{ display: none !important; }
             if (!el) {
                 el = document.createElement('div');
                 el.id = 'mpAfkBanner';
-                el.className = 'hidden fixed left-1/2 -translate-x-1/2 z-[88] flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 text-[11px] font-black bg-slate-950/95';
+                el.className = 'hidden fixed left-1/2 -translate-x-1/2 top-[5.6rem] z-[138] flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 text-[11px] font-black bg-slate-950/95';
                 document.body.appendChild(el);
             }
             el.dataset.side = side;
@@ -3443,6 +3449,12 @@ body.perf-min .ui-radar-ripple{ display: none !important; }
             return el;
         }
         function afkShowBanner(side, text, urgent) {
+            // [AFK-FIX] a game toast lives at z-[9999] and would cover the countdown, so the
+            // AFK warning always wins: dismiss whatever toast is on screen.
+            try {
+                const tb = document.getElementById('gameToastBox');
+                if (tb) { tb.classList.add('hidden'); tb.style.opacity = '0'; }
+            } catch (e) {}
             try {
                 const el = afkBanner(side);
                 el.textContent = text;
@@ -3491,8 +3503,12 @@ body.perf-min .ui-radar-ripple{ display: none !important; }
             }
             if (!AFKL.warned && idle >= AFK_WARN_SEC) {
                 AFKL.warned = true;
-                afkShowBanner('local', tUI(`⚠️ Nghi ngờ AFK — đứng im ${afkCountdownText(AFK_LOSE_SEC - idle)}s nữa là thua`,
-                                           `⚠️ Suspected AFK — ${afkCountdownText(AFK_LOSE_SEC - idle)}s of idle left`), false);
+                const paused = (typeof isMatchPaused !== 'undefined' && isMatchPaused);
+                afkShowBanner('local', paused
+                    ? tUI(`⏸️ Đang tạm dừng — ${afkCountdownText(AFK_LOSE_SEC - idle)}s nữa là xử thua`,
+                           `⏸️ Paused — ${afkCountdownText(AFK_LOSE_SEC - idle)}s to forfeit`)
+                    : tUI(`⚠️ Nghi ngờ AFK — đứng im ${afkCountdownText(AFK_LOSE_SEC - idle)}s nữa là thua`,
+                           `⚠️ Suspected AFK — ${afkCountdownText(AFK_LOSE_SEC - idle)}s of idle left`), false);
             } else if (AFKL.warned && !AFKL.ended) {
                 afkShowBanner('local', tUI(`⚠️ Nghi ngờ AFK — đứng im ${afkCountdownText(AFK_LOSE_SEC - idle)}s nữa là thua`,
                                            `⚠️ Suspected AFK — ${afkCountdownText(AFK_LOSE_SEC - idle)}s of idle left`), idle > AFK_LOSE_SEC - 3);
@@ -30852,6 +30868,9 @@ body.perf-min .ui-radar-ripple{ display: none !important; }
 
         function startMatch() {
             const _inMpMatch = (typeof activeMatchContext !== 'undefined' && activeMatchContext === 'multiplayer');
+            // [AFK-FIX] A finished round leaves AFKL.ended = true. Without re-arming here the *next*
+            // match forfeits immediately on its first tick. Every multiplayer start re-arms now.
+            if (_inMpMatch) { try { if (typeof afkReset === 'function') afkReset(); } catch (e) {} }
             // a plain sandbox match goes back to real randomness (only seeded matches stay deterministic)
             if (!_inMpMatch && !window.__keepSeededMatch) { try { _mpUseDetSim = false; } catch (e) {} }
             if (_inMpMatch) {
@@ -35412,16 +35431,40 @@ body.perf-min .ui-radar-ripple{ display: none !important; }
             ctx.scale(_ps, _ps);
 
             if (_camT) {
+                // [FLICKER-FIX] with zoom < 1 the camera window is wider than the arena, so the
+                // gutters fall outside the ArenaSize square and would show the cleared canvas.
+                // Paint them with the same abyss colour the floor gradient uses, in world space.
+                const _vx0 = _camT.x, _vy0 = _camT.y;
+                const _vwW = _camT.viewW || ARENA_SIZE, _vwH = _camT.viewH || ARENA_SIZE;
+                if (_vx0 < 0 || _vy0 < 0 || _vx0 + _vwW > ARENA_SIZE || _vy0 + _vwH > ARENA_SIZE) {
+                    ctx.fillStyle = '#080e22';
+                    ctx.fillRect(Math.min(0, _vx0) - 2, Math.min(0, _vy0) - 2,
+                                 Math.max(ARENA_SIZE, _vx0 + _vwW) - Math.min(0, _vx0) + 4,
+                                 Math.max(ARENA_SIZE, _vy0 + _vwH) - Math.min(0, _vy0) + 4);
+                }
                 ctx.translate(-_camT.x, -_camT.y);
             } else {
                 ctx.translate(-(ARENA_SIZE - _cw / _ps) / 2, -(ARENA_SIZE - _ch / _ps) / 2);
             }
 
-            // [PERF] the void floor is a big gradient + grid; on weak machines redraw it every
-            // other frame only (the camera barely moves, so the eye cannot tell)
-            const _pf = (window.PERF && PERF.tier <= 0);
-            if (!_pf || (render._floorFrame = (render._floorFrame || 0) + 1) % 2 === 0) {
-                if (typeof drawScrollingVoid === 'function') drawScrollingVoid(ctx);
+            // [PERF-FLICKER-FIX] The floor is static, but render() clearRect()s the whole canvas
+            // every frame. The old "draw the floor every other frame" trick therefore flashed the
+            // bare body colour 30x a second (the reported MP flicker). Bake the floor once into an
+            // offscreen canvas and blit it: no flicker, and far cheaper than a gradient + 100 lines.
+            if (typeof drawScrollingVoid === 'function') {
+                try {
+                    if (!render._floorCanvas) {
+                        const fc = document.createElement('canvas');
+                        fc.width = fc.height = ARENA_SIZE;
+                        const fx = fc.getContext('2d');
+                        drawScrollingVoid(fx);
+                        render._floorCanvas = fc;
+                    }
+                    ctx.drawImage(render._floorCanvas, 0, 0);
+                } catch (e) {
+                    render._floorCanvas = null;
+                    drawScrollingVoid(ctx);   // fall back to the direct path, still no flicker
+                }
             }
 
             ctx.strokeStyle = 'rgba(34, 211, 238, 0.38)';
@@ -41812,6 +41855,11 @@ body.perf-min .ui-radar-ripple{ display: none !important; }
         function endMultiplayerMatch(playerWon, reasonText = '') {
             if (mpMatchEnded || (!mpRoomId && activeMatchContext !== 'multiplayer' && !mpInPickPhase)) return;
             mpMatchEnded = true;
+            // [AFK-FIX] disarm + hide the banner the moment the result screen takes over
+            try {
+                if (typeof AFKL !== 'undefined') { AFKL.ended = true; AFKL.remoteEnded = true; }
+                if (typeof afkHideBanner === 'function') { afkHideBanner('local'); afkHideBanner('remote'); }
+            } catch (e) {}
             cleanupMultiplayerSession(false);
             const mEndDict = I18N[playerData.lang] || I18N.en;
             isMatchPaused = true;
@@ -43127,6 +43175,14 @@ body.perf-min .ui-radar-ripple{ display: none !important; }
                 audio.playClick();
                 try { afkTouchLocal(); } catch (e) {}   // [AFK] opening the menu is not idling
                 isMatchPaused = true;
+                // [AFK-FIX] the 10 s grace starts here: pause and do nothing -> forfeit
+                try {
+                    AFKL.pausedAt = Date.now();
+                    if (typeof afkShowBanner === 'function' && afkMatchLive()) {
+                        afkShowBanner('local', tUI('⏸️ Đang tạm dừng — 10s không làm gì sẽ bị xử thua',
+                                                   '⏸️ Paused — 10s without input forfeits'), false);
+                    }
+                } catch (e) {}
                 const pModal = document.getElementById('pauseModal');
                 let mpNote = document.getElementById('mpPauseLiveNote');
                 if (!mpNote && pModal) {
@@ -43171,7 +43227,12 @@ body.perf-min .ui-radar-ripple{ display: none !important; }
                 };
                 refresh();
             })();
-            document.getElementById('btnResumeMatch').onclick = () => { audio.playClick(); isMatchPaused = false; document.getElementById('pauseModal').classList.add('hidden'); };
+            document.getElementById('btnResumeMatch').onclick = () => {
+                audio.playClick(); isMatchPaused = false;
+                document.getElementById('pauseModal').classList.add('hidden');
+                // [AFK] resuming is an action: clear the clock and the banner
+                try { AFKL.pausedAt = 0; afkTouchLocal(); afkHideBanner('local'); } catch (e) {}
+            };
             document.getElementById('btnQuitMatch').onclick = () => {
                 audio.playClick(); isMatchPaused = false;
                 document.getElementById('pauseModal').classList.add('hidden');
@@ -49227,5 +49288,5 @@ body.perf-min .ui-radar-ripple{ display: none !important; }
         <button type="button" class="sk-slot" data-slot="3" aria-label="skill 4"><span class="sk-icon">✨</span><span class="sk-sweep"></span><span class="sk-cd"></span><span class="sk-key">F</span></button>
         <button type="button" class="sk-slot" data-slot="4" aria-label="skill 5"><span class="sk-icon">🌟</span><span class="sk-sweep"></span><span class="sk-cd"></span><span class="sk-key">G</span></button>
     </div>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5efdaba5af78515',t:'MTc5NTQzMzU1OA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5efdaba5af78515',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5f3e74aed7d08e1',t:'MTc5NTQ3NjAxNQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5f3e74aed7d08e1',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5efdaba5af78515',t:'MTc5NTQzMzU1OA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5efdaba5af78515',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5f3ff0e1e661d2d',t:'MTc5NTQ3Njk4OQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5f3ff0e1e661d2d',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
