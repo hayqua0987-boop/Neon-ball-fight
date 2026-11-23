@@ -148,6 +148,1097 @@
         #equipmentDialog .equip-item {padding:10px;background:#020617;border:1px solid #475569;border-radius:10px}
 
     </style>
+<!-- =====================================================================
+     NEON PHYSICS ARENA — UI MOTION & GAME JUICE  (style block)
+     Dán nguyên khối này vào <head> của file HTML chính.
+     Chỉ animate transform / opacity / clip-path  ->  không gây layout reflow,
+     không tranh chấp 60 FPS với vòng lặp vật lý trên Canvas.
+     Tông màu: dark neon hiện có (#030408 / #070c18 + cyan/tím/vàng kim)
+     ===================================================================== -->
+<style id="ui-animations">
+:root{
+    /* Tốc độ animation toàn cục: 1 = bình thường, 0.5 = nhanh gấp đôi, 0 = tắt */
+    --ui-anim-speed: 1;
+    --ui-ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ui-ease-glide: cubic-bezier(0.22, 1, 0.36, 1);
+    --ui-ease-press: cubic-bezier(0.4, 0, 0.2, 1);
+
+    --ui-ink-0: #030408;
+    --ui-ink-1: #070c18;
+    --ui-ink-2: #0f172a;
+    --ui-line: #1e293b;
+    --ui-gold: #facc15;
+    --ui-cyan: #22d3ee;
+    --ui-violet: #a855f7;
+    --ui-rose: #f43f5e;
+    --ui-mint: #4ade80;
+}
+
+/* =====================================================================
+   1. KEYFRAMES CHUẨN
+   ===================================================================== */
+@keyframes uiFadeIn{
+    from{opacity:0}
+    to{opacity:1}
+}
+@keyframes uiFadeOut{
+    from{opacity:1}
+    to{opacity:0}
+}
+@keyframes uiPopIn{
+    0%{opacity:0;transform:scale(.88)}
+    60%{opacity:1}
+    100%{opacity:1;transform:scale(1)}
+}
+@keyframes uiPopOut{
+    from{opacity:1;transform:scale(1)}
+    to{opacity:0;transform:scale(.92)}
+}
+@keyframes uiRiseIn{
+    from{opacity:0;transform:translateY(12px)}
+    to{opacity:1;transform:translateY(0)}
+}
+@keyframes uiShakeX{
+    0%,100%{transform:translateX(0)}
+    12%{transform:translateX(-7px)}
+    28%{transform:translateX(6px)}
+    44%{transform:translateX(-5px)}
+    60%{transform:translateX(4px)}
+    76%{transform:translateX(-2px)}
+    88%{transform:translateX(1px)}
+}
+@keyframes uiShimmerSweep{
+    from{transform:translateX(-160%) skewX(-18deg)}
+    to{transform:translateX(160%) skewX(-18deg)}
+}
+@keyframes uiPulseGlow{
+    0%,100%{opacity:.35}
+    50%{opacity:1}
+}
+@keyframes uiFloatY{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-6px)}
+}
+@keyframes uiOrbitSpin{
+    from{transform:rotate(0deg)}
+    to{transform:rotate(360deg)}
+}
+@keyframes uiPopBig{
+    0%{transform:scale(.8);opacity:.2}
+    55%{transform:scale(1.05);opacity:1}
+    100%{transform:scale(1);opacity:1}
+}
+@keyframes uiBurstFlash{
+    0%{filter:brightness(1);transform:scale(1)}
+    18%{filter:brightness(2.6);transform:scale(1.18)}
+    100%{filter:brightness(1);transform:scale(1)}
+}
+@keyframes uiRadarRing{
+    0%{transform:scale(.45);opacity:.85}
+    70%{opacity:.18}
+    100%{transform:scale(1.9);opacity:0}
+}
+@keyframes uiVsSlam{
+    0%{transform:scale(2.5);opacity:0}
+    55%{transform:scale(.94);opacity:1}
+    75%{transform:scale(1.06)}
+    100%{transform:scale(1);opacity:1}
+}
+@keyframes uiSlideFromLeft{
+    from{transform:translateX(-115%);opacity:0}
+    to{transform:translateX(0);opacity:1}
+}
+@keyframes uiSlideFromRight{
+    from{transform:translateX(115%);opacity:0}
+    to{transform:translateX(0);opacity:1}
+}
+@keyframes uiMicroShake{
+    0%,100%{transform:translate3d(0,0,0)}
+    20%{transform:translate3d(-3px,1px,0)}
+    40%{transform:translate3d(3px,-1px,0)}
+    60%{transform:translate3d(-2px,-1px,0)}
+    80%{transform:translate3d(2px,1px,0)}
+}
+@keyframes uiCountPop{
+    0%{transform:scale(1.85);opacity:0}
+    40%{transform:scale(1);opacity:1}
+    80%{opacity:1}
+    100%{transform:scale(1.35);opacity:0}
+}
+@keyframes uiSkillReady{
+    0%{transform:scale(1)}
+    38%{transform:scale(1.12)}
+    100%{transform:scale(1)}
+}
+@keyframes uiHpDanger{
+    0%,100%{box-shadow:0 0 0 0 rgba(244,63,94,0)}
+    50%{box-shadow:0 0 0 3px rgba(244,63,94,.55),0 0 14px rgba(244,63,94,.5)}
+}
+@keyframes uiParticleOut{
+    0%{transform:translate3d(0,0,0) scale(1);opacity:1}
+    100%{transform:translate3d(var(--ui-px,0px),var(--ui-py,0px),0) scale(.2);opacity:0}
+}
+@keyframes uiTrailIdle{
+    from{opacity:.85}
+    to{opacity:.85}
+}
+
+/* =====================================================================
+   2. TIỆN ÍCH DÙNG NGAY (utility classes)
+   ===================================================================== */
+.ui-pop{
+    animation: uiPopIn calc(260ms * var(--ui-anim-speed)) var(--ui-ease-pop) both;
+}
+.ui-fade{
+    animation: uiFadeIn calc(180ms * var(--ui-anim-speed)) var(--ui-ease-glide) both;
+}
+.ui-shake{
+    animation: uiShakeX calc(300ms * var(--ui-anim-speed)) var(--ui-ease-press) both;
+}
+.ui-deny{
+    animation: uiShakeX calc(300ms * var(--ui-anim-speed)) var(--ui-ease-press) both;
+    outline: 2px solid rgba(244,63,94,.85) !important;
+    outline-offset: 2px;
+}
+.ui-float{
+    animation: uiFloatY calc(3.4s * var(--ui-anim-speed)) ease-in-out infinite;
+    will-change: transform;
+}
+.ui-orbit{
+    animation: uiOrbitSpin calc(18s * var(--ui-anim-speed)) linear infinite;
+    will-change: transform;
+}
+
+/* ---- Stagger: con xuất hiện lần lượt, mỗi phần tử cách nhau 35ms ---- */
+.ui-stagger > *{
+    animation: uiRiseIn calc(320ms * var(--ui-anim-speed)) var(--ui-ease-glide) both;
+    animation-delay: calc(var(--ui-i, 0) * 35ms * var(--ui-anim-speed));
+    will-change: transform, opacity;
+}
+.ui-stagger > *:nth-child(1){--ui-i:0}
+.ui-stagger > *:nth-child(2){--ui-i:1}
+.ui-stagger > *:nth-child(3){--ui-i:2}
+.ui-stagger > *:nth-child(4){--ui-i:3}
+.ui-stagger > *:nth-child(5){--ui-i:4}
+.ui-stagger > *:nth-child(6){--ui-i:5}
+.ui-stagger > *:nth-child(7){--ui-i:6}
+.ui-stagger > *:nth-child(8){--ui-i:7}
+.ui-stagger > *:nth-child(9){--ui-i:8}
+.ui-stagger > *:nth-child(10){--ui-i:9}
+.ui-stagger > *:nth-child(11){--ui-i:10}
+.ui-stagger > *:nth-child(12){--ui-i:11}
+.ui-stagger > *:nth-child(13){--ui-i:12}
+.ui-stagger > *:nth-child(14){--ui-i:13}
+.ui-stagger > *:nth-child(15){--ui-i:14}
+.ui-stagger > *:nth-child(n+16){--ui-i:15}
+
+/* ---- Shimmer: vệt sáng chéo lướt qua bề mặt ---- */
+.ui-shimmer{
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+.ui-shimmer::after{
+    content: "";
+    position: absolute;
+    top: -30%;
+    left: -30%;
+    width: 60%;
+    height: 160%;
+    background: linear-gradient(90deg,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,.16) 42%,
+        rgba(255,255,255,.55) 50%,
+        rgba(255,255,255,.16) 58%,
+        rgba(255,255,255,0) 100%);
+    transform: translateX(-160%) skewX(-18deg);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 3;
+}
+.ui-shimmer:hover::after,
+.ui-shimmer.ui-shimmer-run::after{
+    opacity: 1;
+    animation: uiShimmerSweep calc(620ms * var(--ui-anim-speed)) var(--ui-ease-glide) 1;
+}
+@media (hover: none){
+    /* thiết bị cảm ứng: chạy shimmer khi chạm bằng class .ui-shimmer-run do JS gắn */
+    .ui-shimmer:hover::after{animation: none;opacity:0}
+}
+
+/* ---- Pulse glow theo cấp độ (Lv.4 / Lv.7) ---- */
+.ui-maxed{
+    position: relative;
+    isolation: isolate;
+}
+.ui-maxed::before{
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    box-shadow: 0 0 18px 3px var(--ui-glow, rgba(250,204,21,.75)),
+                inset 0 0 12px 1px var(--ui-glow-in, rgba(250,204,21,.35));
+    opacity: .35;
+    animation: uiPulseGlow calc(1.9s * var(--ui-anim-speed)) ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+.ui-maxed-gold{--ui-glow:rgba(250,204,21,.8);--ui-glow-in:rgba(250,204,21,.35)}
+.ui-maxed-violet{--ui-glow:rgba(168,85,247,.85);--ui-glow-in:rgba(168,85,247,.4)}
+
+/* ---- Hạt sáng bắn ra khi nâng cấp ---- */
+.ui-burst-host{
+    position: relative;
+    isolation: isolate;
+}
+.ui-particle{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 7px;
+    height: 7px;
+    margin: -3.5px 0 0 -3.5px;
+    border-radius: 9999px;
+    background: var(--ui-pc, #facc15);
+    box-shadow: 0 0 10px var(--ui-pc, #facc15);
+    pointer-events: none;
+    z-index: 6;
+    animation: uiParticleOut calc(620ms * var(--ui-anim-speed)) var(--ui-ease-glide) forwards;
+    will-change: transform, opacity;
+}
+
+/* =====================================================================
+   3. NÚT BẤM — TACTILE
+   Chỉ transform + box-shadow (box-shadow không gây layout, render ở compositor
+   cho phần lớn trường hợp; nếu máy yếu người chơi bật .reduce-motion)
+   ===================================================================== */
+.ui-btn,
+.lobby-btn,
+.htp-tab-btn,
+.close-modal-btn,
+.eqp-ball,
+.eqp-slot,
+#controlSkillBar .sk-slot{
+    transition:
+        transform calc(130ms * var(--ui-anim-speed)) var(--ui-ease-press),
+        box-shadow calc(160ms * var(--ui-anim-speed)) var(--ui-ease-press),
+        border-color calc(160ms * var(--ui-anim-speed)) var(--ui-ease-press),
+        opacity calc(160ms * var(--ui-anim-speed)) var(--ui-ease-press);
+    will-change: transform;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+.ui-btn:hover,
+.lobby-btn:hover,
+.htp-tab-btn:hover,
+.close-modal-btn:hover,
+.eqp-ball:hover,
+.eqp-slot:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -6px rgba(34,211,238,.45), 0 2px 6px rgba(0,0,0,.4);
+}
+.ui-btn:active,
+.ui-btn.ui-press,
+.lobby-btn:active,
+.lobby-btn.ui-press,
+.htp-tab-btn:active,
+.htp-tab-btn.ui-press,
+.close-modal-btn:active,
+.close-modal-btn.ui-press,
+.eqp-ball:active,
+.eqp-ball.ui-press,
+.eqp-slot:active,
+.eqp-slot.ui-press{
+    transform: scale(.95) translateY(2px);
+    box-shadow: 0 2px 6px rgba(0,0,0,.5), inset 0 2px 6px rgba(0,0,0,.45);
+}
+.ui-btn:disabled,
+.ui-btn[aria-disabled="true"]{
+    opacity: .5;
+    cursor: not-allowed;
+}
+.ui-btn:disabled:hover,
+.ui-btn[aria-disabled="true"]:hover{
+    transform: none;
+    box-shadow: none;
+}
+
+/* =====================================================================
+   4. MODAL — mở/đóng
+   ===================================================================== */
+.ui-modal-open{
+    animation: uiFadeIn calc(180ms * var(--ui-anim-speed)) var(--ui-ease-glide) both;
+}
+.ui-modal-open > :first-child{
+    animation: uiPopIn calc(280ms * var(--ui-anim-speed)) var(--ui-ease-pop) both;
+    transform-origin: 50% 42%;
+}
+.ui-modal-out{
+    animation: uiFadeOut calc(180ms * var(--ui-anim-speed)) var(--ui-ease-glide) both;
+    pointer-events: none;
+}
+.ui-modal-out > :first-child{
+    animation: uiPopOut calc(180ms * var(--ui-anim-speed)) var(--ui-ease-glide) both;
+    transform-origin: 50% 42%;
+}
+
+/* =====================================================================
+   5. SHOWCASE BÓNG — lơ lửng, vòng hào quang, thanh chỉ số
+   ===================================================================== */
+.ui-showcase{
+    animation: uiFloatY calc(3.4s * var(--ui-anim-speed)) ease-in-out infinite;
+    will-change: transform;
+}
+.ui-showcase-ring{
+    position: absolute;
+    left: 50%;
+    bottom: -10px;
+    width: 78%;
+    aspect-ratio: 1 / .32;
+    translate: -50% 0;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(34,211,238,.55);
+    box-shadow: 0 0 22px rgba(34,211,238,.35) inset;
+    animation: uiOrbitSpin calc(16s * var(--ui-anim-speed)) linear infinite;
+    pointer-events: none;
+    opacity: .8;
+}
+.ui-swap-pop{
+    animation: uiPopBig calc(380ms * var(--ui-anim-speed)) var(--ui-ease-pop) both;
+}
+
+/* Thanh chỉ số: animate bằng scaleX, số đếm do UIAnimator.animateNumber lo */
+.ui-statbar{
+    position: relative;
+    overflow: hidden;
+    border-radius: 9999px;
+}
+.ui-statbar > .ui-statbar-fill{
+    display: block;
+    height: 100%;
+    width: 100%;
+    transform-origin: left center;
+    transform: scaleX(var(--ui-v, 0));
+    transition: transform calc(520ms * var(--ui-anim-speed)) var(--ui-ease-glide);
+    will-change: transform;
+    background: linear-gradient(90deg, #22d3ee, #a855f7);
+}
+.ui-statbar.ui-statbar-hp > .ui-statbar-fill{background:linear-gradient(90deg,#f59e0b,#facc15)}
+.ui-statbar.ui-statbar-dmg > .ui-statbar-fill{background:linear-gradient(90deg,#f43f5e,#fb7185)}
+.ui-statbar.ui-statbar-spd > .ui-statbar-fill{background:linear-gradient(90deg,#22d3ee,#4ade80)}
+
+/* =====================================================================
+   6. THẺ TRANG BỊ / NÂNG CẤP
+   ===================================================================== */
+.eqp-ball.ui-card-hover,
+.eqp-slot.ui-card-hover{
+    transform: scale(1.04);
+    box-shadow: 0 10px 26px -8px rgba(34,211,238,.55);
+}
+.eqp-slot.lv4{
+    border-color: var(--ui-gold) !important;
+}
+.eqp-slot.lv4::before{
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    box-shadow: 0 0 16px 3px rgba(250,204,21,.75), inset 0 0 10px rgba(250,204,21,.3);
+    opacity: .35;
+    animation: uiPulseGlow calc(1.9s * var(--ui-anim-speed)) ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+.ui-upgrade-flash{
+    animation: uiBurstFlash calc(260ms * var(--ui-anim-speed)) var(--ui-ease-pop) both;
+}
+
+/* =====================================================================
+   7. MATCHMAKING — radar & VS
+   ===================================================================== */
+.ui-radar{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+}
+.ui-radar::before,
+.ui-radar::after{
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid rgba(168,85,247,.85);
+    animation: uiRadarRing calc(2.2s * var(--ui-anim-speed)) var(--ui-ease-glide) infinite;
+    pointer-events: none;
+}
+.ui-radar::after{
+    animation-delay: calc(1.1s * var(--ui-anim-speed));
+    border-color: rgba(34,211,238,.85);
+}
+.ui-radar > *{
+    position: relative;
+    z-index: 2;
+}
+
+/* Overlay VS do UIAnimator.playVsIntro() tạo ra */
+#uiVsIntro{
+    position: fixed;
+    inset: 0;
+    z-index: 94;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(8px, 2vw, 26px);
+    padding: 16px;
+    /* ⚡ PERFORMANCE: no full-screen backdrop-filter and no wide radial-gradient here.
+       Both force the compositor to re-rasterise every frame underneath, which starves the
+       canvas loop (measured: 3 sim steps/frame instead of 1). A flat tint is free. */
+    background: rgba(3, 4, 8, .93);
+    pointer-events: none;
+    animation: uiFadeIn calc(160ms * var(--ui-anim-speed)) ease-out both;
+}
+#uiVsIntro.ui-vs-out{animation: uiFadeOut calc(220ms * var(--ui-anim-speed)) ease-in both}
+#uiVsIntro .ui-vs-card{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: clamp(96px, 22vw, 190px);
+    padding: 14px 12px;
+    border-radius: 18px;
+    background: linear-gradient(160deg, rgba(7,12,24,.96), rgba(2,6,23,.96));
+    border: 1.5px solid var(--ui-line);
+}
+#uiVsIntro .ui-vs-card.left{
+    border-color: rgba(34,211,238,.7);
+    box-shadow: 0 0 24px -4px rgba(34,211,238,.55);
+    animation: uiSlideFromLeft calc(420ms * var(--ui-anim-speed)) var(--ui-ease-glide) both;
+}
+#uiVsIntro .ui-vs-card.right{
+    border-color: rgba(244,63,94,.7);
+    box-shadow: 0 0 24px -4px rgba(244,63,94,.55);
+    animation: uiSlideFromRight calc(420ms * var(--ui-anim-speed)) var(--ui-ease-glide) both;
+}
+#uiVsIntro .ui-vs-name{
+    font-size: clamp(11px, 1.6vw, 15px);
+    font-weight: 900;
+    color: #e2e8f0;
+    text-align: center;
+    max-width: 22ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#uiVsIntro .ui-vs-tag{
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+#uiVsIntro .ui-vs-orb{
+    width: clamp(38px, 7vw, 58px);
+    height: clamp(38px, 7vw, 58px);
+    border-radius: 9999px;
+    box-shadow: 0 0 22px currentColor;
+    animation: uiFloatY calc(2.2s * var(--ui-anim-speed)) ease-in-out infinite;
+}
+#uiVsIntro .ui-vs-mid{
+    font-size: clamp(34px, 8vw, 74px);
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -.03em;
+    color: #fff;
+    text-shadow: 0 0 22px rgba(250,204,21,.85);
+    animation: uiVsSlam calc(520ms * var(--ui-anim-speed)) var(--ui-ease-pop) both;
+    will-change: transform;
+}
+#uiVsIntro.ui-vs-shake{
+    animation: uiMicroShake calc(260ms * var(--ui-anim-speed)) var(--ui-ease-press) 1,
+               uiFadeIn calc(160ms * var(--ui-anim-speed)) ease-out both;
+}
+
+/* Đếm ngược READY / FIGHT trong introOverlay */
+#introText.ui-count-pop{
+    animation: uiCountPop calc(960ms * var(--ui-anim-speed)) var(--ui-ease-pop) both;
+    will-change: transform, opacity;
+}
+
+/* =====================================================================
+   8. HUD — thanh máu có vệt đuổi, cảnh báo máu thấp, ô kỹ năng
+   ===================================================================== */
+.ui-hp-track{
+    position: relative;
+}
+/* vệt trắng/cam tụt đuổi phía sau thanh máu chính */
+.ui-hp-trail{
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #fed7aa 0%, #fdba74 40%, #fff7ed 100%);
+    transform-origin: left center;
+    transform: scaleX(var(--ui-trail, 1));
+    transition: transform calc(350ms * var(--ui-anim-speed)) var(--ui-ease-glide)
+                calc(80ms * var(--ui-anim-speed));
+    opacity: .9;
+    pointer-events: none;
+    z-index: 0;
+    will-change: transform;
+}
+.ui-hp-bar{
+    position: relative;
+    transform-origin: left center;
+    transform: scaleX(var(--ui-v, 1));
+    transition: transform calc(90ms * var(--ui-anim-speed)) var(--ui-ease-press);
+    will-change: transform;
+    z-index: 1;
+}
+/* máu thấp < 25%: viền nhấp nháy đỏ */
+.ui-hp-danger{
+    animation: uiHpDanger calc(1.15s * var(--ui-anim-speed)) ease-in-out infinite;
+    border-color: rgba(244,63,94,.9) !important;
+}
+
+/* Ô kỹ năng: nảy khi vừa hồi xong */
+#controlSkillBar .sk-slot.ready{
+    animation: uiSkillReady calc(340ms * var(--ui-anim-speed)) var(--ui-ease-pop) both;
+}
+#controlSkillBar .sk-slot.ready::after{
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 9999px;
+    border: 1.5px solid rgba(253,224,71,.9);
+    box-shadow: 0 0 16px rgba(251,191,36,.85);
+    opacity: 0;
+    animation: uiPulseGlow calc(1.6s * var(--ui-anim-speed)) ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* =====================================================================
+   9. CHUYỂN MÀN HÌNH
+   ===================================================================== */
+.ui-screen-in{
+    animation: uiFadeIn calc(220ms * var(--ui-anim-speed)) var(--ui-ease-glide) both;
+}
+
+/* =====================================================================
+   10. CHẾ ĐỘ GIẢM CHUYỂN ĐỘNG  (body.reduce-motion)
+   Chỉ tắt hiệu ứng trang trí; giữ phản hồi bấm để không mất cảm giác
+   ===================================================================== */
+body.reduce-motion{
+    --ui-anim-speed: .001;
+}
+body.reduce-motion .ui-float,
+body.reduce-motion .ui-orbit,
+body.reduce-motion .ui-showcase,
+body.reduce-motion .ui-showcase-ring,
+body.reduce-motion .ui-maxed::before,
+body.reduce-motion .eqp-slot.lv4::before,
+body.reduce-motion .ui-radar::before,
+body.reduce-motion .ui-radar::after,
+body.reduce-motion #controlSkillBar .sk-slot.ready::after,
+body.reduce-motion .ui-hp-danger,
+body.reduce-motion #uiVsIntro .ui-vs-orb{
+    animation: none !important;
+}
+body.reduce-motion .ui-shimmer::after{
+    display: none;
+}
+body.reduce-motion .ui-stagger > *{
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+}
+
+/* =====================================================================
+   11. MÀN HÌNH HẸP — mobile portrait
+   ===================================================================== */
+@media (max-width: 480px){
+    #uiVsIntro{gap: 6px; padding: 10px}
+    #uiVsIntro .ui-vs-card{min-width: 84px; padding: 10px 8px; border-radius: 14px}
+    #uiVsIntro .ui-vs-name{font-size: 10px; max-width: 12ch}
+}
+
+/* Tôn trọng cài đặt hệ điều hành */
+@media (prefers-reduced-motion: reduce){
+    .ui-float,.ui-orbit,.ui-showcase,.ui-showcase-ring,
+    .ui-radar::before,.ui-radar::after,
+    .ui-maxed::before,.eqp-slot.lv4::before{
+        animation: none !important;
+    }
+}
+
+/* =====================================================================
+   12. BỔ SUNG TÍCH HỢP (id/class cụ thể trong game)
+   ===================================================================== */
+
+/* Ô kỹ năng: lớp pop khi vừa hồi xong (JS gắn .sk-ready-pop) */
+#controlSkillBar .sk-slot.sk-ready-pop{
+    animation: uiSkillReady calc(340ms * var(--ui-anim-speed)) var(--ui-ease-pop) both;
+    will-change: transform;
+}
+
+/* Radar tìm trận: bọc icon 🌀 trong #multiplayerQueueModal */
+#mpSearchRadar{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 2px;
+}
+#mpSearchRadar > .ui-radar-core{
+    position: relative;
+    z-index: 2;
+    font-size: 26px;
+    line-height: 1;
+    animation: uiOrbitSpin calc(2.4s * var(--ui-anim-speed)) linear infinite;
+    display: inline-block;
+}
+#mpSearchRadar::before,
+#mpSearchRadar::after{
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid rgba(168,85,247,.9);
+    animation: uiRadarRing calc(2.2s * var(--ui-anim-speed)) var(--ui-ease-glide) infinite;
+    pointer-events: none;
+}
+#mpSearchRadar::after{
+    border-color: rgba(34,211,238,.9);
+    animation-delay: calc(1.1s * var(--ui-anim-speed));
+}
+
+/* Thanh máu: bọc track để vệt đuổi nằm dưới thanh chính */
+.ui-hp-track{ position: relative; }
+.ui-hp-track > .ui-hp-trail{ border-radius: inherit; }
+
+/* Ô trang bị Lv.4 — cần position để ::before bám đúng */
+.eqp-slot{ position: relative; }
+
+/* Modal Trang Bị: KHÔNG thêm backdrop-filter khi mở — nó buộc rasterize lại toàn màn hình
+   mỗi frame và làm vòng lặp canvas tụt bước (đo được: 1 -> 3 step/frame). */
+#equipmentPanelModal.ui-modal-open{ }
+
+/* Nút bấm trong game: thêm phản hồi chạm cho mọi nút có id bắt đầu bằng btn */
+button.ui-btn{ -webkit-user-select: none; user-select: none; }
+
+/* =====================================================================
+   13. TRANG BỊ — bố cục slot thoáng, không dính nhau, không dồn 1 cột
+   Đo trước khi sửa: khe giữa 2 slot xếp dọc = 8px, hai bên stage = 12px,
+   và trên điện thoại dọc 4 slot bị ép thành 1 cột cao 354px đè lên ảnh.
+   ===================================================================== */
+
+/* --- khối slot: bọc lưới riêng để tự xếp lại theo chiều rộng --- */
+#eqPanelLeftCol,
+#eqPanelRightCol{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    align-content: start;
+}
+#eqPanelLeftCol > .eqp-slot,
+#eqPanelRightCol > .eqp-slot{
+    width: 100%;
+    min-width: 0;
+}
+
+/* --- 3 cột trên desktop: slot trái | stage | slot phải --- */
+#eqPanelBallWrap > .flex{
+    display: grid;
+    grid-template-columns: minmax(104px, 132px) minmax(0, 1fr) minmax(104px, 132px);
+    gap: 18px;
+    align-items: start;
+}
+/* hai cột slot xếp dọc trong ô của mình, không trải ngang nữa */
+#eqPanelBallWrap > .flex > .shrink-0{
+    display: block !important;
+    width: 100%;
+}
+#eqPanelLeftCol,
+#eqPanelRightCol{
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/* --- màn hẹp: ảnh ở trên, 4 slot thành lưới 2x2 bên dưới, không đè lên ảnh --- */
+@media (max-width: 720px){
+    #eqPanelBallWrap > .flex{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    #eqPanelStageWrap{
+        grid-column: 1 / -1;
+        grid-row: 1;
+        width: 100%;
+    }
+    #eqPanelBallWrap > .flex > .shrink-0{ width: 100%; }
+    #eqPanelBallWrap > .flex > .shrink-0:first-of-type{ grid-column: 1; grid-row: 2; }
+    #eqPanelBallWrap > .flex > .shrink-0:last-of-type { grid-column: 2; grid-row: 2; }
+    #eqPanelLeftCol,
+    #eqPanelRightCol{
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    #eqPanelBallWrap .eqp-slot{ min-height: 62px; }
+}
+
+/* --- điện thoại rất hẹp: 1 cột nhưng có khoảng thở rõ ràng --- */
+@media (max-width: 380px){
+    #eqPanelBallWrap > .flex > .shrink-0:first-of-type{ grid-column: 1; grid-row: 2; }
+    #eqPanelBallWrap > .flex > .shrink-0:last-of-type { grid-column: 1; grid-row: 3; }
+    #eqPanelStageWrap{ grid-row: 1; }
+}
+
+/* --- slot: khoảng đệm và nhãn dễ đọc hơn --- */
+#eqPanelBallWrap .eqp-slot{
+    gap: 5px;
+    padding: 9px 7px;
+    transition: transform calc(130ms * var(--ui-anim-speed)) var(--ui-ease-press),
+                border-color .16s ease, box-shadow .16s ease;
+}
+#eqPanelBallWrap .eqp-slot > span:last-child{
+    font-size: 9.5px;
+    letter-spacing: .01em;
+}
+
+/* --- panel Trang Bị: nội dung không dính sát mép --- */
+#equipmentPanelModal > div{
+    gap: 12px;
+}
+#eqPanelBallWrap{
+    gap: 10px;
+}
+#eqPanelBallStatus{
+    margin-left: auto;
+}
+
+/* =====================================================================
+   14. TRANG BỊ — view CHỌN MÓN (slot picker) không dính nhau
+   Ảnh người dùng: tiêu đề sát nút, các thẻ sát nhau, cửa sổ 913x386.
+   ===================================================================== */
+
+/* --- thanh điều hướng trên cùng: nút ⟷ tiêu đề có khoảng thở --- */
+#eqPanelPickerWrap{
+    gap: 12px;
+    padding-right: 2px;
+}
+#eqPanelPickerWrap > .flex{
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(30, 41, 59, .7);
+}
+#eqPanelPickerTitle{
+    margin-top: 2px;
+    line-height: 1.35;
+    letter-spacing: .02em;
+}
+
+/* --- lưới thẻ: khe rộng, thẻ có đệm trong --- */
+#eqPanelPickerGrid{
+    gap: 12px;
+    padding-bottom: 6px;
+}
+#eqPanelPickerGrid > div{
+    gap: 9px !important;
+    padding: 11px 11px 12px !important;
+    border-radius: 16px !important;
+    min-width: 0;
+    transition: border-color .16s ease, transform calc(120ms * var(--ui-anim-speed)) var(--ui-ease-press);
+}
+#eqPanelPickerGrid > div:hover{
+    border-color: rgba(34, 211, 238, .55) !important;
+}
+
+/* --- hàng tên món: art ⟷ tên ⟷ nút (i) tách rời --- */
+#eqPanelPickerGrid > div > div:first-child{
+    gap: 9px !important;
+    align-items: flex-start;
+}
+/* tên món được phép xuống dòng thay vì bị ép sát nút (i) */
+#eqPanelPickerGrid > div > div:first-child > span:nth-child(2){
+    line-height: 1.25;
+    padding-top: 1px;
+}
+#eqPanelPickerGrid > div > div:first-child > button{
+    margin-left: 2px;
+    flex: 0 0 auto;
+}
+
+/* --- hàng chip Lv.1–4 --- */
+#eqPanelPickerGrid > div > div:nth-child(2){
+    gap: 6px !important;
+    margin-top: 2px;
+}
+#eqPanelPickerGrid > div > div:nth-child(2) > button{
+    padding: 5px 3px !important;
+    line-height: 1.35;
+    border-radius: 9px !important;
+}
+
+/* --- cửa sổ thấp (như ảnh 913x386): chừa chỗ, cho cuộn mượt --- */
+@media (max-height: 520px){
+    #equipmentPanelModal > div{
+        max-height: 96vh;
+        padding: 12px 14px;
+        gap: 10px;
+    }
+    #eqPanelPickerWrap,
+    #eqPanelListWrap,
+    #eqPanelBallWrap{
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    #eqPanelPickerGrid{
+        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    }
+    #eqPanelPreview{
+        width: clamp(96px, 36vh, 210px) !important;
+        height: clamp(96px, 36vh, 210px) !important;
+    }
+}
+
+/* =====================================================================
+   15. TRANG BỊ — thanh công cụ trên cùng của màn trang bị
+   "← Danh sách bóng" và "✕ Bỏ hết" phải nằm 1 hàng, không gãy chữ.
+   ===================================================================== */
+#eqPanelBallWrap .eqp-toolbar{
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(30, 41, 59, .7);
+}
+#eqPanelBallWrap .eqp-toolbar > div{
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 10px;
+}
+#eqPanelBallWrap .eqp-toolbar button{
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+#eqPanelBallStatus{
+    white-space: nowrap;
+    margin-left: auto;
+    text-align: right;
+}
+#eqPanelClearBall{
+    transition: background-color .16s ease, border-color .16s ease,
+                transform calc(120ms * var(--ui-anim-speed)) var(--ui-ease-press);
+}
+#eqPanelClearBall:not(:disabled):hover{
+    background: #4c0519;
+    border-color: rgba(244, 63, 94, .85);
+}
+#eqPanelClearBall:not(:disabled):active{
+    transform: scale(.95);
+}
+/* màn hẹp: cho phép xuống hàng nhưng vẫn thoáng */
+@media (max-width: 520px){
+    #eqPanelBallWrap .eqp-toolbar{ flex-wrap: wrap; row-gap: 8px; }
+    #eqPanelBallStatus{ margin-left: 0; }
+}
+
+/* =====================================================================
+   16. MÀN SHOWCASE VS (Đấu Mạng) — 5s, thay dòng chữ reveal cũ
+   Mỗi bên: thẻ dọc (khung + hào quang), tên bóng, tên chủ, hàng trang bị.
+   ===================================================================== */
+#mpVersusShowcase{
+    position: fixed;
+    inset: 0;
+    z-index: 96;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, .16), transparent 62%),
+        radial-gradient(ellipse at 50% 110%, rgba(244, 63, 94, .16), transparent 62%),
+        rgba(2, 6, 23, .94);
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity .28s ease;
+}
+#mpVersusShowcase.hidden{ display: none !important; }
+#mpVersusShowcase.mvs-out{ opacity: 0; }
+
+#mpVersusShowcase .mvs-stage{
+    width: min(96vw, 1040px);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: clamp(10px, 2.4vw, 34px);
+    padding: clamp(10px, 2vh, 22px);
+}
+#mpVersusShowcase .mvs-side{ display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 0; }
+#mpVersusShowcase .mvs-card{
+    position: relative;
+    width: clamp(140px, 21vw, 232px);
+    border-radius: 18px;
+    padding: 10px 10px 12px;
+    background: linear-gradient(165deg, rgba(15,23,42,.96), rgba(2,6,23,.98));
+    border: 2px solid var(--mvs-edge, #22d3ee);
+    box-shadow: 0 0 0 1px rgba(2,6,23,.9), 0 0 26px var(--mvs-glow, rgba(34,211,238,.45)),
+                inset 0 0 40px rgba(8, 47, 73, .35);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    animation: mvsCardIn .62s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes mvsCardIn{
+    from{ transform: translateY(26px) scale(.82); opacity: 0; }
+    to  { transform: translateY(0) scale(1); opacity: 1; }
+}
+#mpVersusShowcase .mvs-side.mvs-right .mvs-card{ animation-delay: .12s; }
+
+/* cờ hiệu góc thẻ */
+#mpVersusShowcase .mvs-card::before{
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--mvs-edge, #22d3ee), transparent 42%, transparent 58%, var(--mvs-edge, #22d3ee));
+    opacity: .5;
+    z-index: -1;
+    filter: blur(6px);
+}
+
+#mpVersusShowcase .mvs-canvas{
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 13px;
+    background: radial-gradient(circle at 50% 45%, rgba(15,23,42,.9), rgba(2,6,23,1) 72%);
+    border: 1px solid rgba(51, 65, 85, .8);
+    display: block;
+}
+#mpVersusShowcase .mvs-ball{
+    font-size: clamp(11px, 1.5vw, 15px);
+    font-weight: 900;
+    letter-spacing: .02em;
+    text-align: center;
+    line-height: 1.15;
+    color: #f8fafc;
+    text-shadow: 0 0 14px var(--mvs-glow, rgba(34,211,238,.5));
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#mpVersusShowcase .mvs-owner{
+    font-size: clamp(9px, 1.15vw, 12px);
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: none;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#mpVersusShowcase .mvs-gear{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+}
+#mpVersusShowcase .mvs-gear-item{
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    border-radius: 7px;
+    border: 1px solid rgba(51, 65, 85, .95);
+    background: rgba(2, 6, 23, .85);
+    font-size: 9px;
+    font-weight: 900;
+    color: #cbd5e1;
+    white-space: nowrap;
+}
+#mpVersusShowcase .mvs-gear-item b{ color: #67e8f9; font-weight: 900; }
+#mpVersusShowcase .mvs-gear-item.lv4{ border-color: rgba(250, 204, 21, .8); }
+#mpVersusShowcase .mvs-gear-item.lv4 b{ color: #fde68a; }
+#mpVersusShowcase .mvs-gear-empty{
+    font-size: 9px;
+    font-weight: 800;
+    color: #64748b;
+}
+
+/* chữ VS ở giữa */
+#mpVersusShowcase .mvs-vs{
+    font-family: Orbitron, sans-serif;
+    font-size: clamp(30px, 6.2vw, 74px);
+    font-weight: 900;
+    font-style: italic;
+    line-height: 1;
+    background: linear-gradient(180deg, #f8fafc, #67e8f9 55%, #22d3ee);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 18px rgba(34, 211, 238, .65));
+    animation: mvsVsIn .7s cubic-bezier(.34,1.56,.64,1) both, mvsVsPulse 1.5s ease-in-out .7s infinite;
+}
+@keyframes mvsVsIn{
+    from{ transform: scale(2.6) rotate(-8deg); opacity: 0; }
+    to  { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes mvsVsPulse{
+    0%, 100%{ transform: scale(1); }
+    50%     { transform: scale(1.06); }
+}
+
+/* đếm ngược 5s */
+#mpVersusShowcase .mvs-timer{
+    position: absolute;
+    bottom: clamp(10px, 3vh, 30px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: Orbitron, sans-serif;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .18em;
+    color: #67e8f9;
+    background: rgba(2, 6, 23, .8);
+    border: 1px solid rgba(34, 211, 238, .45);
+    border-radius: 999px;
+    padding: 5px 16px;
+}
+#mpVersusShowcase .mvs-scan{
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent, rgba(34, 211, 238, .07), transparent);
+    animation: mvsScan 2.4s linear infinite;
+    pointer-events: none;
+}
+@keyframes mvsScan{
+    from{ transform: translateY(-100%); }
+    to  { transform: translateY(100%); }
+}
+
+@media (max-width: 560px){
+    #mpVersusShowcase .mvs-stage{ grid-template-columns: 1fr auto 1fr; gap: 8px; }
+    #mpVersusShowcase .mvs-card{ width: clamp(104px, 30vw, 150px); padding: 8px; }
+    #mpVersusShowcase .mvs-ball{ font-size: 10px; }
+    #mpVersusShowcase .mvs-gear-item{ font-size: 8px; padding: 1px 4px; }
+}
+@media (max-height: 430px){
+    #mpVersusShowcase .mvs-card{ width: clamp(96px, 15vw, 138px); padding: 7px; }
+    #mpVersusShowcase .mvs-canvas{ border-radius: 10px; }
+    #mpVersusShowcase .mvs-stage{ gap: 10px; padding: 6px; }
+    #mpVersusShowcase .mvs-vs{ font-size: clamp(26px, 4.6vw, 44px); }
+    #mpVersusShowcase .mvs-timer{ bottom: 6px; font-size: 10px; padding: 3px 12px; }
+}
+
+</style>
+
 </head>
 <body class="min-h-screen flex flex-col items-center justify-between p-3 md:p-5 bg-[#030408]">
 
@@ -264,15 +1355,16 @@
                 <button id="pauseMatchBtn" class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-600 hover:border-cyan-400 text-xs font-black text-white cursor-pointer">||</button>
             </div>
         </div>
-        <div id="mpPlayersBar" class="hidden flex items-center justify-between gap-2 bg-slate-950/90 border border-purple-500/40 rounded-xl px-3 py-1 text-[11px]">
-            <div class="flex items-center gap-1.5 truncate">
-                <span class="text-purple-300 font-black" id="mpLeftPlayerName">Left</span>
-                <span id="mpLeftDeckDots" class="text-[10px] tracking-widest text-purple-400">●●●</span>
+        <!-- [MP-HUD] compact: single pill, max-width clamped, no profile button, names truncate -->
+        <div id="mpPlayersBar" class="hidden flex items-center justify-between gap-1.5 bg-slate-950/80 border border-purple-500/30 rounded-full px-2.5 py-[3px] text-[10px] leading-none max-w-[min(94vw,420px)] mx-auto">
+            <div class="flex items-center gap-1 min-w-0">
+                <span class="text-purple-300 font-black truncate max-w-[28vw]" id="mpLeftPlayerName">Left</span>
+                <span id="mpLeftDeckDots" class="text-[9px] tracking-[2px] text-purple-400 shrink-0">●●●</span>
             </div>
-            <span class="text-[10px] font-black text-slate-500">VS</span>
-            <div class="flex items-center gap-1.5 truncate">
-                <span id="mpRightDeckDots" class="text-[10px] tracking-widest text-cyan-400">●●●</span>
-                <span class="text-cyan-300 font-black" id="mpRightPlayerName">Right</span>
+            <span class="text-[9px] font-black text-slate-500 shrink-0 px-0.5">VS</span>
+            <div class="flex items-center gap-1 min-w-0">
+                <span id="mpRightDeckDots" class="text-[9px] tracking-[2px] text-cyan-400 shrink-0">●●●</span>
+                <span class="text-cyan-300 font-black truncate max-w-[28vw]" id="mpRightPlayerName">Right</span>
             </div>
         </div>
     </div>
@@ -353,7 +1445,7 @@
                 </style>
                 <!-- skill bar is mounted at the end of <body> (fixed overlay) -->
                 <!-- 🎮 CONTROL BADGE -->
-                <div id="controlBadge" class="hidden absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-slate-950/85 border border-cyan-400/60 text-[10px] font-black text-cyan-300 z-20 pointer-events-none">🎮 <span id="controlBadgeName">—</span><span id="buildStamp" class="ml-1 opacity-60" style="font-weight:700;pointer-events:auto;cursor:pointer">v25.71-equipment-panel-mp-fix</span></div>
+                <div id="controlBadge" class="hidden absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-slate-950/85 border border-cyan-400/60 text-[10px] font-black text-cyan-300 z-20 pointer-events-none">🎮 <span id="controlBadgeName">—</span><span id="buildStamp" class="ml-1 opacity-60" style="font-weight:700;pointer-events:auto;cursor:pointer">v25.73-ui-motion</span></div>
 
                 <!-- Intro Countdown Overlay -->
                 <div id="introOverlay" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300 opacity-0 rounded-3xl">
@@ -645,7 +1737,7 @@
     <!-- MULTIPLAYER QUEUE & PICK/BAN MODALS -->
     <div id="multiplayerQueueModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
         <div class="w-full max-w-sm bg-slate-950 border border-purple-500/50 rounded-2xl p-6 text-center space-y-3">
-            <div class="text-3xl animate-spin inline-block">🌀</div>
+            <div id="mpSearchRadar"><span class="ui-radar-core">🌀</span></div>
             <h3 class="text-sm font-black text-purple-300" id="mpQueueStatus">Đang tìm đối thủ cùng Elo...</h3>
             <p class="text-xs text-slate-400" id="mpQueueSub">Elo của bạn: 1000</p>
             <button id="btnCancelQueue" data-i18n="cancelQueueBtn" class="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-300 cursor-pointer">Hủy Tìm Trận</button>
@@ -853,8 +1945,11 @@
                 <div id="equipmentPanelGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2"></div>
             </div>
             <div id="eqPanelBallWrap" class="hidden flex-col gap-2 min-h-0 overflow-y-auto pr-1">
-                <div class="flex items-center justify-between gap-2">
-                    <button id="eqPanelBackBalls" type="button" class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-[10px] font-black text-slate-300 cursor-pointer">← Balls</button>
+                <div class="flex items-center justify-between gap-2 flex-wrap eqp-toolbar">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <button id="eqPanelBackBalls" type="button" class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-[10px] font-black text-slate-300 cursor-pointer">← Balls</button>
+                        <button id="eqPanelClearBall" type="button" class="px-2.5 py-1 rounded-lg bg-rose-950 border border-rose-500/50 text-[10px] font-black text-rose-200 cursor-pointer">✕ Clear</button>
+                    </div>
                     <span id="eqPanelBallStatus" class="text-[10px] font-black text-cyan-200"></span>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 items-stretch">
@@ -1449,6 +2544,10 @@
                     <span data-i18n="shakeFxLabel">📳 Rung Màn Hình / Haptic</span>
                     <input id="toggleShakeFx" type="checkbox" checked class="accent-cyan-400 w-4 h-4">
                 </label>
+                <label class="flex items-center justify-between cursor-pointer">
+                    <span>🌙 Giảm Chuyển Động / Reduce Motion</span>
+                    <input id="toggleReduceMotion" type="checkbox" class="accent-violet-400 w-4 h-4">
+                </label>
                 <div class="flex items-center justify-between">
                     <span data-i18n="langLabel">🌐 Ngôn Ngữ (13)</span>
                     <select id="langSelect" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white">
@@ -1513,7 +2612,518 @@
     </div>
 
     <!-- Game Engine -->
-    <script>
+    <!-- UI MOTION ENGINE (loads before the game script) -->
+<script>
+/* =====================================================================
+   NEON PHYSICS ARENA — UIAnimator
+   Đối tượng điều khiển animation giao diện. Dán khối này vào thẻ script
+   chính (hoặc nhúng file ui-animator.js này trước script game).
+
+   Nguyên tắc: chỉ đụng tới transform / opacity / clip-path.
+   Không đọc/ghi layout property trong vòng lặp (tránh forced reflow).
+   ===================================================================== */
+(function () {
+    'use strict';
+
+    /* ------------------------------------------------------------------
+       0. TIỆN ÍCH NỘI BỘ
+       ------------------------------------------------------------------ */
+    var _raf = window.requestAnimationFrame ? window.requestAnimationFrame.bind(window)
+                                           : function (f) { return setTimeout(f, 16); };
+
+    function _speed() {
+        // đọc biến CSS --ui-anim-speed một lần mỗi lần gọi, không cache để người chơi
+        // đổi trong Cài đặt là ăn ngay
+        var v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui-anim-speed'));
+        if (!isFinite(v) || v <= 0.001) return 0.001;
+        return v;
+    }
+
+    function _reduced() {
+        return document.body.classList.contains('reduce-motion');
+    }
+
+    /* chạy một animation rồi tự gỡ class — không để class bám lại gây nháy */
+    function _runOnce(el, cls, ms) {
+        if (!el) return;
+        el.classList.remove(cls);
+        // ép reflow trong 1 microtask để animation chạy lại được
+        void el.offsetWidth;
+        el.classList.add(cls);
+        var dur = ms * _speed();
+        setTimeout(function () { el.classList.remove(cls); }, Math.max(40, dur));
+    }
+
+    /* ------------------------------------------------------------------
+       1. UIAnimator
+       ------------------------------------------------------------------ */
+    var UIAnimator = {
+
+        /* ==============================================================
+           A. NÚT BẤM & MODAL
+           ============================================================== */
+
+        /* Bấm bị khoá / không đủ vàng -> lắc ngang + nháy viền đỏ */
+        deny(el) {
+            _runOnce(el, 'ui-deny', 320);
+        },
+
+        /* Nhún xuống rồi bật lại — dùng cho nút được bấm bằng phím */
+        press(el) {
+            if (!el) return;
+            el.classList.add('ui-press');
+            setTimeout(function () { el.classList.remove('ui-press'); }, 120 * _speed() + 30);
+        },
+
+        /* ---------------------------------------------------------------
+           openModal(el)
+           el = phần tử overlay (ví dụ #settingsModal, #equipmentPanelModal)
+           Overlay fade-in, hộp thoại (con đầu tiên) nảy scale .88 -> 1
+           --------------------------------------------------------------- */
+        openModal(el) {
+            if (!el) return;
+            /* Nếu game còn để class .hidden thì bỏ đi — openModal coi như mở */
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                if (getComputedStyle(el).display === 'none') el.style.display = '';
+            }
+            el.classList.remove('ui-modal-out');
+            el.classList.add('ui-modal-open');
+            clearTimeout(el._uiModalTimer);
+            el._uiModalTimer = setTimeout(function () {
+                el.classList.remove('ui-modal-open');
+            }, 320 * _speed());
+            /* Stagger cho danh sách con nếu có khai báo */
+            var lists = el.querySelectorAll('.ui-stagger');
+            for (var i = 0; i < lists.length; i++) this.stagger(lists[i], true);
+        },
+
+        /* ---------------------------------------------------------------
+           closeModal(el)  —  thu nhỏ + mờ đi trong 180ms rồi mới .hidden
+           cb: hàm gọi sau khi animation xong (game thường cần ẩn hẳn)
+           --------------------------------------------------------------- */
+        closeModal(el, cb) {
+            if (!el) { if (cb) cb(); return; }
+            if (_reduced()) {
+                el.classList.add('hidden');
+                if (cb) cb();
+                return;
+            }
+            el.classList.remove('ui-modal-open');
+            el.classList.add('ui-modal-out');
+            clearTimeout(el._uiModalTimer);
+            el._uiModalTimer = setTimeout(function () {
+                el.classList.remove('ui-modal-out');
+                el.classList.add('hidden');
+                if (typeof cb === 'function') cb();
+            }, 195 * _speed());
+        },
+
+        /* ==============================================================
+           B. STAGGER — thẻ/danh sách hiện lần lượt 35ms
+           ============================================================== */
+        stagger(container, restart) {
+            if (!container) return;
+            if (restart) {
+                /* gỡ rồi gắn lại để animation chạy lại từ đầu */
+                container.classList.remove('ui-stagger');
+                void container.offsetWidth;
+            }
+            container.classList.add('ui-stagger');
+        },
+
+        /* ==============================================================
+           C. SỐ ĐẾM & THANH CHỈ SỐ
+           ============================================================== */
+
+        /* ---------------------------------------------------------------
+           animateNumber(el, from, to, duration)
+           Nhảy số mượt bằng rAF (không dùng setInterval -> không tranh CPU
+           với physics loop). duration tính bằng ms.
+           --------------------------------------------------------------- */
+        animateNumber(el, from, to, duration, forceDecimals) {
+            if (!el) return;
+            var isText = el.tagName !== 'INPUT';
+            var a = Number(from), b = Number(to);
+            if (!isFinite(a)) a = 0;
+            if (!isFinite(b)) b = 0;
+            var dur = Math.max(60, (duration || 480) * _speed());
+            var t0 = performance.now();
+            var decimals = (typeof forceDecimals === 'number')
+                ? Math.max(0, Math.min(2, forceDecimals))
+                : (String(b).split('.')[1] || '').length;
+
+            if (el._uiNumRaf) cancelAnimationFrame(el._uiNumRaf);
+
+            function frame(now) {
+                var p = Math.min(1, (now - t0) / dur);
+                /* easeOutCubic — tăng nhanh rồi chậm dần, đọc số dễ */
+                var e = 1 - Math.pow(1 - p, 3);
+                var v = a + (b - a) * e;
+                var txt = decimals ? v.toFixed(decimals) : String(Math.round(v));
+                if (isText) el.textContent = txt;
+                else el.value = txt;
+                if (p < 1) el._uiNumRaf = _raf(frame);
+                else { el._uiNumRaf = null; if (isText) el.textContent = decimals ? b.toFixed(decimals) : String(b); }
+            }
+            el._uiNumRaf = _raf(frame);
+        },
+
+        /* ---------------------------------------------------------------
+           setStatBar(fillEl, ratio 0..1)
+           Thanh chỉ số chạy bằng transform:scaleX -> 0 layout reflow
+           --------------------------------------------------------------- */
+        setStatBar(fillEl, ratio) {
+            if (!fillEl) return;
+            var v = Math.max(0, Math.min(1, Number(ratio) || 0));
+            fillEl.style.setProperty('--ui-v', String(v));
+        },
+
+        /* ==============================================================
+           D. HUD MÁU
+           ============================================================== */
+
+        /* ---------------------------------------------------------------
+           updateHealthBar(barId, currentHp, maxHp)
+           - thanh chính giảm NGAY (transform scaleX, 90ms)
+           - vệt trail trắng/cam tụt đuổi theo sau 0.35s
+           - dưới 25% -> viền nhấp nháy đỏ
+           barId: id phần tử thanh máu ("leftHpBar" | "rightHpBar")
+           --------------------------------------------------------------- */
+        updateHealthBar(barId, currentHp, maxHp) {
+            var bar = typeof barId === 'string' ? document.getElementById(barId) : barId;
+            if (!bar) return;
+            var max = Number(maxHp) || 1000;
+            var cur = Math.max(0, Number(currentHp) || 0);
+            var ratio = Math.max(0, Math.min(1, cur / max));
+
+            this._ensureHpLayers(bar);
+
+            /* thanh chính */
+            bar.classList.add('ui-hp-bar');
+            bar.style.setProperty('--ui-v', String(ratio));
+
+            /* vệt đuổi: chỉ hạ xuống, không bao giờ vượt thanh chính */
+            var track = bar.parentElement;
+            var trail = track ? track.querySelector('.ui-hp-trail') : null;
+            if (trail) {
+                var prevTrail = parseFloat(trail.style.getPropertyValue('--ui-trail'));
+                if (!isFinite(prevTrail)) prevTrail = ratio;
+                trail.style.setProperty('--ui-trail', String(ratio));
+            }
+
+            /* cảnh báo máu thấp */
+            var track2 = bar.parentElement;
+            if (track2) {
+                if (ratio <= 0.25) track2.classList.add('ui-hp-danger');
+                else track2.classList.remove('ui-hp-danger');
+            }
+
+            /* text số máu cũng nhảy số cho khớp cảm giác */
+            var textId = barId.indexOf('left') === 0 ? 'leftHpText'
+                       : barId.indexOf('right') === 0 ? 'rightHpText' : null;
+            var textEl = textId ? document.getElementById(textId) : null;
+            if (textEl && textEl._uiLastHp !== cur) {
+                var from = (typeof textEl._uiLastHp === 'number') ? textEl._uiLastHp : cur;
+                textEl._uiLastHp = cur;
+                /* giữ nguyên định dạng "x / y" nếu phần tử đang hiển thị như vậy */
+                if (/\d+\s*\/\s*\d+/.test(textEl.textContent || '')) {
+                    var self = this;
+                    var t0 = performance.now(), dur = 260 * _speed(), a = from, b = cur;
+                    if (textEl._uiNumRaf) cancelAnimationFrame(textEl._uiNumRaf);
+                    (function frame(now) {
+                        var p = Math.min(1, (now - t0) / dur);
+                        var e = 1 - Math.pow(1 - p, 3);
+                        textEl.textContent = Math.round(a + (b - a) * e) + ' / ' + Math.round(max);
+                        if (p < 1) textEl._uiNumRaf = _raf(frame);
+                        else textEl._uiNumRaf = null;
+                    })(performance.now());
+                }
+            }
+        },
+
+        /* tạo lớp trail + bọc track nếu chưa có (chạy 1 lần cho mỗi thanh) */
+        _ensureHpLayers(bar) {
+            var track = bar.parentElement;
+            if (!track) return;
+            if (!track.classList.contains('ui-hp-track')) track.classList.add('ui-hp-track');
+            if (!track.querySelector('.ui-hp-trail')) {
+                var trail = document.createElement('div');
+                trail.className = 'ui-hp-trail';
+                var base = parseFloat(bar.style.width) / 100;
+                if (!isFinite(base)) {
+                    var scaleX = bar.style.getPropertyValue('--ui-v');
+                    base = parseFloat(scaleX);
+                }
+                trail.style.setProperty('--ui-trail', String(isFinite(base) ? Math.max(0, Math.min(1, base)) : 1));
+                track.insertBefore(trail, bar);
+            }
+        },
+
+        /* ==============================================================
+           E. THẺ TRANG BỊ / NÂNG CẤP
+           ============================================================== */
+
+        /* ---------------------------------------------------------------
+           triggerUpgradeBurst(el, color)
+           Thẻ lóe trắng 0.15s + nảy 1.18 -> 1 + bắn 12 hạt sáng
+           --------------------------------------------------------------- */
+        triggerUpgradeBurst(el, color) {
+            if (!el) return;
+            var c = color || '#facc15';
+            if (_reduced()) {
+                _runOnce(el, 'ui-upgrade-flash', 260);
+                return;
+            }
+            el.classList.add('ui-burst-host');
+            _runOnce(el, 'ui-upgrade-flash', 260);
+
+            var N = 12;
+            for (var i = 0; i < N; i++) {
+                var p = document.createElement('span');
+                p.className = 'ui-particle';
+                var ang = (Math.PI * 2 * i) / N + (Math.random() * 0.5 - 0.25);
+                var dist = 26 + Math.random() * 34;
+                p.style.setProperty('--ui-px', (Math.cos(ang) * dist).toFixed(1) + 'px');
+                p.style.setProperty('--ui-py', (Math.sin(ang) * dist).toFixed(1) + 'px');
+                p.style.setProperty('--ui-pc', c);
+                p.style.animationDelay = (Math.random() * 40).toFixed(0) + 'ms';
+                el.appendChild(p);
+                /* dọn hạt sau khi bay xong — không để DOM phình ra */
+                (function (node) {
+                    setTimeout(function () {
+                        if (node && node.parentNode) node.parentNode.removeChild(node);
+                    }, 760 * _speed() + 60);
+                })(p);
+            }
+        },
+
+        /* Chạy vệt shimmer 1 lần (cho cảm ứng, nơi không có hover) */
+        shimmer(el) {
+            _runOnce(el, 'ui-shimmer-run', 640);
+        },
+
+        /* ==============================================================
+           F. MATCHMAKING & VS
+           ============================================================== */
+
+        /* ---------------------------------------------------------------
+           playVsIntro(opts) -> Promise
+           opts = { leftName, rightName, leftColor, rightColor, hold }
+           Trả về Promise resolve khi overlay tan hết (để game gọi startMatch)
+           --------------------------------------------------------------- */
+        playVsIntro(opts) {
+            var o = opts || {};
+            var self = this;
+            return new Promise(function (resolve) {
+                var old = document.getElementById('uiVsIntro');
+                if (old && old.parentNode) old.parentNode.removeChild(old);
+
+                var wrap = document.createElement('div');
+                wrap.id = 'uiVsIntro';
+
+                function card(side, name, color, tagTxt) {
+                    var d = document.createElement('div');
+                    d.className = 'ui-vs-card ' + side;
+                    var orb = document.createElement('div');
+                    orb.className = 'ui-vs-orb';
+                    orb.style.background = color || '#22d3ee';
+                    orb.style.color = color || '#22d3ee';
+                    var nm = document.createElement('div');
+                    nm.className = 'ui-vs-name';
+                    nm.textContent = name || '—';
+                    var tg = document.createElement('div');
+                    tg.className = 'ui-vs-tag';
+                    tg.textContent = tagTxt;
+                    d.appendChild(orb); d.appendChild(nm); d.appendChild(tg);
+                    return d;
+                }
+
+                wrap.appendChild(card('left', o.leftName, o.leftColor, o.leftTag || 'PLAYER'));
+                var mid = document.createElement('div');
+                mid.className = 'ui-vs-mid';
+                mid.textContent = 'VS';
+                wrap.appendChild(mid);
+                wrap.appendChild(card('right', o.rightName, o.rightColor, o.rightTag || 'OPPONENT'));
+                document.body.appendChild(wrap);
+
+                /* rung nhẹ toàn overlay đúng lúc VS chạm đất */
+                setTimeout(function () {
+                    wrap.classList.add('ui-vs-shake');
+                }, 470 * _speed());
+
+                var hold = (o.hold === undefined ? 1150 : o.hold) * _speed();
+                setTimeout(function () {
+                    wrap.classList.add('ui-vs-out');
+                    setTimeout(function () {
+                        if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+                        resolve();
+                    }, 240 * _speed());
+                }, hold + 520 * _speed());
+            });
+        },
+
+        /* Đếm ngược READY / FIGHT: phóng to + mờ dần */
+        popCountdown(el) {
+            _runOnce(el, 'ui-count-pop', 980);
+        },
+
+        /* ==============================================================
+           G. RADAR TÌM TRẬN
+           ============================================================== */
+        markSearching(el) {
+            if (!el) return;
+            el.classList.add('ui-radar');
+        },
+
+        /* ==============================================================
+           H. CẢI TIẾN TỰ ĐỘNG (auto-wire)
+           Gắn hành vi cho các phần tử CÓ SẴN trong game — chạy 1 lần.
+           ============================================================== */
+        enhance(root) {
+            var scope = root || document;
+
+            /* 1) Nút bấm: thêm class ui-btn cho các nút hành động chính */
+            var btns = scope.querySelectorAll(
+                'button.lobby-btn, button.htp-tab-btn, .close-modal-btn, ' +
+                'button[id^="btn"]:not(.sk-slot):not(.eqp-slot), ' +
+                'button.speed-btn, button#startBtn'
+            );
+            for (var i = 0; i < btns.length; i++) {
+                var b = btns[i];
+                if (b._uiEnhanced) continue;
+                b._uiEnhanced = true;
+                b.classList.add('ui-btn');
+                /* pointerdown/up để hỗ trợ cảm ứng, không chỉ :active */
+                b.addEventListener('pointerdown', function () { this.classList.add('ui-press'); });
+                b.addEventListener('pointerup', function () { this.classList.remove('ui-press'); });
+                b.addEventListener('pointercancel', function () { this.classList.remove('ui-press'); });
+                b.addEventListener('pointerleave', function () { this.classList.remove('ui-press'); });
+            }
+
+            /* 2) Thẻ bóng & ô trang bị: shimmer + scale khi hover */
+            var cards = scope.querySelectorAll('.eqp-ball, .eqp-slot');
+            for (var j = 0; j < cards.length; j++) {
+                var c = cards[j];
+                if (c._uiCardized) continue;
+                c._uiCardized = true;
+                c.classList.add('ui-shimmer');
+                (function (node) {
+                    node.addEventListener('pointerenter', function () { node.classList.add('ui-card-hover'); });
+                    node.addEventListener('pointerleave', function () { node.classList.remove('ui-card-hover'); });
+                    node.addEventListener('pointerdown', function () {
+                        node.classList.add('ui-card-hover');
+                        UIAnimator.shimmer(node);
+                    });
+                })(c);
+                /* ô Lv.4 -> hào quang vàng kim */
+                if (c.classList.contains('lv4')) c.classList.add('ui-maxed', 'ui-maxed-gold');
+            }
+
+            /* 3) Danh sách thẻ: stagger khi lần đầu hiện ra */
+            var grids = scope.querySelectorAll('#lobbyGrid, #equipmentPanelGrid, #eqPanelPickerGrid, #codexGrid, #pickBanGrid');
+            for (var k = 0; k < grids.length; k++) {
+                if (!grids[k]._uiStaggered) {
+                    grids[k]._uiStaggered = true;
+                    this.stagger(grids[k], true);
+                }
+            }
+
+            /* 4) HUD máu: tạo lớp trail ngay để lần trừ máu đầu tiên đã có vệt */
+            var hpBars = scope.querySelectorAll('#leftHpBar, #rightHpBar');
+            for (var m = 0; m < hpBars.length; m++) this._ensureHpLayers(hpBars[m]);
+
+            /* 5) Modal: tự động chạy animation khi .hidden bị gỡ (MutationObserver)
+                  -> không phải sửa 201 chỗ classList.add/remove('hidden') */
+            if (!window._uiModalObserver && window.MutationObserver) {
+                var obs = new MutationObserver(function (muts) {
+                    for (var i = 0; i < muts.length; i++) {
+                        var t = muts[i].target;
+                        if (!t.classList || !t.classList.contains('modal-backdrop')) continue;
+                        var wasHidden = muts[i].oldValue && muts[i].oldValue.indexOf('hidden') !== -1;
+                        var nowHidden = t.classList.contains('hidden');
+                        if (wasHidden && !nowHidden) {
+                            t.classList.remove('ui-modal-out');
+                            t.classList.add('ui-modal-open');
+                            (function (node) {
+                                clearTimeout(node._uiModalTimer);
+                                node._uiModalTimer = setTimeout(function () {
+                                    node.classList.remove('ui-modal-open');
+                                }, 320 * _speed());
+                            })(t);
+                        } else if (!wasHidden && nowHidden) {
+                            t.classList.remove('ui-modal-open');
+                        }
+                    }
+                });
+                var watch = document.querySelectorAll('.modal-backdrop');
+                for (var n = 0; n < watch.length; n++) {
+                    obs.observe(watch[n], { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
+                }
+                window._uiModalObserver = obs;
+            }
+        },
+
+        /* ==============================================================
+           I. TIỆN ÍCH CẤu HÌNH
+           ============================================================== */
+
+        /* bật/tắt giảm chuyển động */
+        setReduceMotion(on) {
+            document.body.classList.toggle('reduce-motion', !!on);
+        },
+
+        /* đổi tốc độ toàn cục: 1 = bình thường, 2 = chậm gấp đôi, .5 = nhanh gấp đôi */
+        setSpeed(mult) {
+            var v = Number(mult);
+            if (!isFinite(v) || v <= 0) v = 1;
+            document.documentElement.style.setProperty('--ui-anim-speed', String(v));
+        },
+
+        /* đọc tốc độ hiện tại */
+        getSpeed() { return _speed(); }
+    };
+
+    window.UIAnimator = UIAnimator;
+
+    /* ------------------------------------------------------------------
+       TỰ KHỞI ĐỘNG
+       ------------------------------------------------------------------ */
+    function boot() {
+        try { UIAnimator.enhance(document); } catch (e) { console.warn('[UIAnimator] enhance', e); }
+
+        /* Quan sát DOM để các thẻ được render động (codex, pick-ban, trang bị)
+           cũng nhận được hiệu ứng mà không phải sửa từng hàm render */
+        if (window.MutationObserver) {
+            var pending = null;
+            var domObs = new MutationObserver(function () {
+                if (pending) return;
+                pending = setTimeout(function () {
+                    pending = null;
+                    try { UIAnimator.enhance(document); } catch (e) {}
+                }, 120);
+            });
+            domObs.observe(document.body, { childList: true, subtree: true });
+        }
+
+        /* Khôi phục cài đặt người chơi nếu game có lưu */
+        try {
+            if (typeof playerData !== 'undefined' && playerData) {
+                if (playerData.reduceMotion) UIAnimator.setReduceMotion(true);
+                if (typeof playerData.uiAnimSpeed === 'number') UIAnimator.setSpeed(playerData.uiAnimSpeed);
+            }
+        } catch (e) {}
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot, { once: true });
+    } else {
+        boot();
+    }
+})();
+
+</script>
+<script>
         let sandboxUseSkinLeft = true, sandboxUseSkinRight = false;
         let sandboxSideSkins = { left: null, right: null };
         let mpDeckSkinsLeft = {}, mpDeckSkinsRight = {}, mpActiveSideSkins = { left: null, right: null };
@@ -1555,6 +3165,7 @@
         let _mpSimTick = 0;
         let _mpSimAccum = 0;
         let _mpTargetTick = 0;
+        let _mpLastDriftAt = 0;
         let _mpRngState = 0x12345678;
         let _mpUseDetSim = false;
         const _nativeMathRandom = Math.random.bind(Math);
@@ -1567,11 +3178,22 @@
             }
             return (h || 0x9e3779b9) >>> 0;
         }
+        // [DET] Deterministic seeding is usable outside multiplayer too (tests / replays).
+        //      Any caller that wants a reproducible match calls this with the same key twice.
+        function seedMatchRng(key, enableDetSim) {
+            _mpRngState = _mpHashStr(String(key || 'seed'));
+            _mpSimTick = 0; _mpSimAccum = 0; _mpTargetTick = 0; _mpLastDriftAt = 0;
+            // opt-in: make Math.random follow the seeded stream so a match is reproducible
+            if (enableDetSim !== false) { try { _mpUseDetSim = true; } catch (e) {} }
+        }
+        window.seedMatchRng = seedMatchRng;
+
         function _mpSeedForRound(roomId, roundNum, leftId, rightId) {
             _mpRngState = _mpHashStr(`${roomId || 'room'}|r${roundNum || 1}|${leftId || ''}|${rightId || ''}`);
             _mpSimTick = 0;
             _mpSimAccum = 0;
             _mpTargetTick = 0;
+            _mpLastDriftAt = 0;
         }
         Math.random = function() {
             if (_mpUseDetSim) {
@@ -1770,9 +3392,23 @@
                 if (side === mySide) return _controlInputVector();
                 const r = controlState.mpRemote;
                 const _mpAge = Date.now() - (r && r.t ? r.t : 0);
-                if (r && _mpAge < 2500 && (Math.abs(r.x) > 0.05 || Math.abs(r.y) > 0.05)) {
-                    const m = Math.hypot(r.x, r.y) || 1;
-                    return { x: r.x / m, y: r.y / m, active: true };
+                // ==== [MP-SMOOTH 2] remote input interpolation ====
+                // Packets only arrive every ~55ms (3-4 sim frames), so the incoming vector used to
+                // snap on arrival and then die between packets, making the OPPONENT stutter.
+                // We ease our steering vector toward the latest packet value instead.
+                if (r && _mpAge < 2500) {
+                    const _tx = Math.abs(r.x) > 0.05 || Math.abs(r.y) > 0.05 ? r.x : 0;
+                    const _ty = Math.abs(r.x) > 0.05 || Math.abs(r.y) > 0.05 ? r.y : 0;
+                    if (r._sx === undefined) { r._sx = _tx; r._sy = _ty; }
+                    // 0.45 per frame @60fps => ~90% of the way in 4 frames, still smooth
+                    r._sx += (_tx - r._sx) * 0.45;
+                    r._sy += (_ty - r._sy) * 0.45;
+                    if (Math.abs(r._sx) < 0.02) r._sx = 0;
+                    if (Math.abs(r._sy) < 0.02) r._sy = 0;
+                    if (r._sx !== 0 || r._sy !== 0 || _tx !== 0 || _ty !== 0) {
+                        const m = Math.hypot(r._sx, r._sy) || 1;
+                        return { x: r._sx / m, y: r._sy / m, active: true };
+                    }
                 }
                 // Match the local idle input exactly. An inactive vector still uses the
                 // human-control path, including the same initial glide/friction.
@@ -2836,6 +4472,12 @@
                             ? _chargeTxt
                             : ((cd > 0.05) ? (cd >= 10 ? Math.ceil(cd).toString() : cd.toFixed(1)) : ''));
                 }
+                // [UI-MOTION] pop the slot the exact frame it finishes recharging
+                if (ready && !el.classList.contains('ready') && window.UIAnimator) {
+                    el.classList.remove('sk-ready-pop');
+                    void el.offsetWidth;
+                    el.classList.add('sk-ready-pop');
+                }
                 el.classList.toggle('ready', ready);
                 el.classList.toggle('cooling', !ready && !locked && !_actTxt && !_waiting);
                 el.classList.toggle('locked', locked);
@@ -3392,13 +5034,19 @@
             //   1) intro ("sẵn sàng chiến") -> wide arena, zoom locked
             //   2) fighting                  -> smooth push-in on YOUR ball
             //   3) fight announced over      -> pull back to wide to watch the finisher
-            const zoom = (intro || ended) ? 1 : Math.max(0.80, controlZoomValue());
+            // [MP-CAM] fighting is pulled back a touch (0.80 -> 0.72) so more of the arena is visible;
+            // the finisher phase zooms WAY out and then leans toward whoever is being finished.
+            const finisher = (typeof gameState !== 'undefined' && gameState === 'FINISHER');
+            let zoom = (intro || ended) ? 1 : Math.max(0.72, controlZoomValue());
+            if (finisher) zoom = 0.62;
             const aspect = (typeof canvas !== 'undefined' && canvas.height > 0)
                 ? (canvas.width / canvas.height) : (16 / 9);
             const viewW = ARENA_SIZE / zoom;
             const viewH = viewW / aspect;                // same world scale on both axes
 
-            const focus = controlFocusBall();   // at the end the camera pushes in on YOUR ball
+            // [MP-CAM] during the finisher the camera looks at the victim, otherwise at your ball
+            let focus = controlFocusBall();
+            if (finisher && typeof loserBall !== 'undefined' && loserBall) focus = loserBall;
             const alive = focus && !focus.isDead;
             const fx = (focus && focus.x) ? focus.x : ARENA_SIZE / 2;
             const fy = (focus && focus.y) ? focus.y : ARENA_SIZE / 2;
@@ -3423,7 +5071,7 @@
                 controlCam.x = cx; controlCam.y = cy;
                 controlCam.init = true;
             } else {
-                const k = ended ? 0.07 : 0.22;   // slow cinematic push-in
+                const k = finisher ? 0.10 : (ended ? 0.07 : 0.22);   // slow cinematic drift on the finisher
                 controlCam.x += (cx - controlCam.x) * k;
                 controlCam.y += (cy - controlCam.y) * k;
             }
@@ -3972,8 +5620,6 @@
                 const fox = (foe.x - (cam.x || 0)) * ps;
                 const foy = (foe.y - (cam.y || 0)) * ps;
                 const ang = Math.atan2(foy - myy, fox - myx);
-                const dist = Math.round(Math.hypot(foe.x - me.x, foe.y - me.y));
-                const rad = (me.radius || 34) * ps;
 
                 // 1b) edge marker: enemy outside the visible window -> arrow pinned on the screen border
                 const margin = S * 0.075;
@@ -3997,64 +5643,8 @@
                     c.restore();
                 }
 
-                // 2) compass pill at the top centre: arrow + distance
-                //    the label is localised and the pill auto-fits / clips, so the number can never spill out
-                const _cmpTxt = `${(typeof tUI === 'function') ? tUI('ĐỊCH', 'ENEMY') : 'ENEMY'} · ${dist}`;
-                const pillH = S * 0.062;
-                const _cmpTxtOff = pillH * 1.05;
-                const _cmpPadR = pillH * 0.55;
-                const _cmpMaxW = S * 0.40;
-                let _cmpFs = Math.round(S * 0.030);
-                let pillW = Math.max(S * 0.235, _cmpTxtOff + _cmpPadR + 10);
-                try {
-                    c.save();
-                    c.font = `900 ${_cmpFs}px Orbitron, sans-serif`;
-                    let _tw = c.measureText(_cmpTxt).width || 0;
-                    pillW = Math.max(S * 0.235, _tw + _cmpTxtOff + _cmpPadR);
-                    if (pillW > _cmpMaxW) {
-                        const _avail = Math.max(24, _cmpMaxW - _cmpTxtOff - _cmpPadR);
-                        _cmpFs = Math.max(9, Math.floor(_cmpFs * (_avail / Math.max(1, _tw))));
-                        pillW = _cmpMaxW;
-                    }
-                    c.restore();
-                } catch (e) { c.restore && c.restore(); }
-                const pillX = W / 2 - pillW / 2;
-                const pillY = S * 0.022;
-                c.save();
-                c.shadowBlur = 0;
-                c.fillStyle = 'rgba(2, 6, 23, 0.82)';
-                rrect(pillX, pillY, pillW, pillH, pillH * 0.5);
-                c.fill();
-                c.strokeStyle = 'rgba(251, 113, 133, 0.55)';
-                c.lineWidth = Math.max(1.4, S * 0.004);
-                rrect(pillX, pillY, pillW, pillH, pillH * 0.5);
-                c.stroke();
-
-                // rotating arrow
-                const acx = pillX + pillH * 0.62;
-                const acy = pillY + pillH / 2;
-                c.translate(acx, acy);
-                c.rotate(ang);
-                c.beginPath();
-                c.moveTo(pillH * 0.30, 0);
-                c.lineTo(-pillH * 0.16, -pillH * 0.20);
-                c.lineTo(-pillH * 0.16, pillH * 0.20);
-                c.closePath();
-                c.fillStyle = '#fb7185';
-                c.fill();
-                c.restore();
-
-                // text is clipped inside the pill: long distances shrink instead of overflowing
-                c.save();
-                rrect(pillX + pillH * 0.92, pillY, Math.max(4, pillW - pillH * 0.92), pillH, pillH * 0.5);
-                c.clip();
-                c.shadowBlur = 0;
-                c.font = `900 ${_cmpFs}px Orbitron, sans-serif`;
-                c.textAlign = 'left';
-                c.textBaseline = 'middle';
-                c.fillStyle = '#fecdd3';
-                c.fillText(_cmpTxt, pillX + _cmpTxtOff, pillY + pillH / 2 + 1);
-                c.restore();
+                // [REMOVED] top-centre compass pill ("ĐỊCH · <distance>") — the user asked for it to be
+                // gone from the in-match HUD. The off-screen edge arrow above is kept.
             }
 
             c.restore();
@@ -15076,16 +16666,26 @@
             if (ballLeft) {
                 const hpLeft = Math.max(0, ballLeft.hp || 0);
                 const maxHpLeft = ballLeft.maxHp || 1000;
-                document.getElementById('leftHpText').textContent = `${Math.round(hpLeft)} / ${maxHpLeft}`;
-                document.getElementById('leftHpBar').style.width = `${Math.min(100, (hpLeft / maxHpLeft) * 100)}%`;
                 applySideHpTheme(ballLeft, 'leftHpBar', 'leftHpText', 'leftBallDot');
+                // [UI-MOTION] animate via transform:scaleX -> no layout reflow during the fight.
+                // updateHealthBar also drives the delayed damage trail + the <25% red warning.
+                if (window.UIAnimator) {
+                    UIAnimator.updateHealthBar('leftHpBar', hpLeft, maxHpLeft);
+                } else {
+                    document.getElementById('leftHpText').textContent = `${Math.round(hpLeft)} / ${maxHpLeft}`;
+                    document.getElementById('leftHpBar').style.width = `${Math.min(100, (hpLeft / maxHpLeft) * 100)}%`;
+                }
             }
             if (ballRight) {
                 const hpRight = Math.max(0, ballRight.hp || 0);
                 const maxHpRight = ballRight.maxHp || 1000;
-                document.getElementById('rightHpText').textContent = `${Math.round(hpRight)} / ${maxHpRight}`;
-                document.getElementById('rightHpBar').style.width = `${Math.min(100, (hpRight / maxHpRight) * 100)}%`;
                 applySideHpTheme(ballRight, 'rightHpBar', 'rightHpText', 'rightBallDot');
+                if (window.UIAnimator) {
+                    UIAnimator.updateHealthBar('rightHpBar', hpRight, maxHpRight);
+                } else {
+                    document.getElementById('rightHpText').textContent = `${Math.round(hpRight)} / ${maxHpRight}`;
+                    document.getElementById('rightHpBar').style.width = `${Math.min(100, (hpRight / maxHpRight) * 100)}%`;
+                }
             }
         }
 
@@ -29054,6 +30654,8 @@
 
         function startMatch() {
             const _inMpMatch = (typeof activeMatchContext !== 'undefined' && activeMatchContext === 'multiplayer');
+            // a plain sandbox match goes back to real randomness (only seeded matches stay deterministic)
+            if (!_inMpMatch && !window.__keepSeededMatch) { try { _mpUseDetSim = false; } catch (e) {} }
             if (_inMpMatch) {
                 // [MP-EXTRA 14] Missing gear is not a reason to drop a match: both sides fall back to
                 // an empty loadout and the fight plays out on the shared deterministic simulation.
@@ -29063,9 +30665,12 @@
                 const _rIdSeed = document.getElementById('rightBallSelect').value;
                 _mpSeedForRound(typeof mpRoomId !== 'undefined' ? mpRoomId : 'mp', typeof mpRoundNumber !== 'undefined' ? mpRoundNumber : 1, _lIdSeed, _rIdSeed);
             }
-            _mpUseDetSim = _inMpMatch;
+            // [DET] seeded mode (window.__keepSeededMatch) keeps the deterministic RNG alive for the
+            // whole match, not just during construction — that is what makes a replay reproducible.
+            const _seeded = !!window.__keepSeededMatch;
+            _mpUseDetSim = _inMpMatch || _seeded;
             let _startRes;
-            try { _startRes = _startMatchCore(); } finally { _mpUseDetSim = false; }
+            try { _startRes = _startMatchCore(); } finally { _mpUseDetSim = _inMpMatch || _seeded; }
             // [MP-EXTRA 14] Re-seed AFTER creation so both clients enter the round on an identical
             // RNG stream no matter how many random draws ball/deck/skin creation consumed.
             if (_inMpMatch) {
@@ -29177,6 +30782,21 @@
                     }
                 }
             }
+            // [UI-MOTION] VS slam-card intro for online round 1 (never delays the simulation:
+            // the overlay is purely visual and the existing READY/FIGHT countdown still runs)
+            try {
+                if (window.UIAnimator && typeof activeMatchContext !== 'undefined' && activeMatchContext === 'multiplayer'
+                    && typeof mpRoundNumber !== 'undefined' && mpRoundNumber <= 1 && !window._uiVsShown) {
+                    window._uiVsShown = true;
+                    UIAnimator.playVsIntro({
+                        leftName: (typeof myPlayerName === 'function' ? myPlayerName() : null) || (ballLeft && ballLeft.name) || 'YOU',
+                        rightName: (typeof opponentPlayerName === 'function' ? opponentPlayerName() : null) || (ballRight && ballRight.name) || 'RIVAL',
+                        leftColor: (ballLeft && ballLeft.color) || '#22d3ee',
+                        rightColor: (ballRight && ballRight.color) || '#f43f5e',
+                        leftTag: 'YOU', rightTag: 'OPPONENT'
+                    });
+                }
+            } catch (e) {}
             gameState = 'SPAWN_INTRO';
             introTimer = 0;
             window._enemyIntroSpokeInMatch = false;
@@ -32870,9 +34490,19 @@
             if (gameState === 'SPAWN_INTRO') {
                 introTimer += effectiveDt;
                 if (introTimer < 1.0) {
-                    document.getElementById('introText').textContent = tWord('READY', 'READY');
+                    const _itReady = tWord('READY', 'READY');
+                    const _itEl = document.getElementById('introText');
+                    if (_itEl.textContent !== _itReady) {
+                        _itEl.textContent = _itReady;
+                        if (window.UIAnimator) UIAnimator.popCountdown(_itEl);
+                    }
                 } else if (introTimer < 2.0) {
-                    document.getElementById('introText').textContent = tWord('FIGHT', 'FIGHT!');
+                    const _itFight = tWord('FIGHT', 'FIGHT!');
+                    const _itEl2 = document.getElementById('introText');
+                    if (_itEl2.textContent !== _itFight) {
+                        _itEl2.textContent = _itFight;
+                        if (window.UIAnimator) UIAnimator.popCountdown(_itEl2);
+                    }
                 } else {
                     document.getElementById('introOverlay').style.opacity = '0';
                     gameState = 'PLAYING';
@@ -33453,6 +35083,33 @@
             }
         }
 
+        function _mpApplyHermiteRender() {
+            // [MP-SMOOTH 6] see the note next to _mpRenderMemoTick. No-op unless the sim advanced
+            // this frame AND the previous frame already drew this exact tick (120Hz+ display).
+            if (typeof activeMatchContext === 'undefined' || activeMatchContext !== 'multiplayer') return;
+            if (!ballLeft || !ballRight) return;
+            if (_mpRenderMemoApply !== 0) return;
+            if (_mpRenderMemoTick !== _mpSimTick) return;
+            const _fs = 1 / 60;
+            const _wB = 0.5, _wC = 2 / 3, _wD = 1 / 6;
+            ballRight.x = Math.min(ARENA_SIZE - ballRight.radius, Math.max(ballRight.radius,
+                _mpRenderMemoX + (_mpRenderMemoVX * _wB) * _fs));
+            ballRight.y = Math.min(ARENA_SIZE - ballRight.radius, Math.max(ballRight.radius,
+                _mpRenderMemoY + (_mpRenderMemoVY * _wB) * _fs));
+            ballLeft.x = Math.min(ARENA_SIZE - ballLeft.radius, Math.max(ballLeft.radius,
+                _mpRenderMemoX + (_mpRenderMemoVX * _wC) * _fs));
+            ballLeft.y = Math.min(ARENA_SIZE - ballLeft.radius, Math.max(ballLeft.radius,
+                _mpRenderMemoY + (_mpRenderMemoVY * _wC) * _fs));
+        }
+        function _mpRememberRenderTick() {
+            if (typeof activeMatchContext === 'undefined' || activeMatchContext !== 'multiplayer') return;
+            if (_mpRenderMemoApply === 0) return;
+            _mpRenderMemoTick = _mpSimTick;
+            _mpRenderMemoX = ballRight.x;
+            _mpRenderMemoY = ballRight.y;
+            _mpRenderMemoVX = ballRight.vx || 0;
+            _mpRenderMemoVY = ballRight.vy || 0;
+        }
         function render() {
             const _cw = canvas.width || ARENA_SIZE;
             const _ch = canvas.height || ARENA_SIZE;
@@ -33805,21 +35462,54 @@
             }
         }
 
+        // ==== [MP-SMOOTH 6] hermite render clock for 120Hz+ displays ====
+        // On a 60Hz screen the fixed step IS the frame, so this is pure 1:1 and costs nothing.
+        // On 120Hz+ a 60Hz sim would show the ball held for one frame then double-stepped; memoising
+        // the hermite position emitted for a tick makes the 2nd frame repeat the *same* position at
+        // half weight, i.e. true linear motion, with ZERO extra updateGame() calls.
+        let _mpRenderMemoTick = -1;
+        let _mpRenderMemoX = 0, _mpRenderMemoY = 0;
+        let _mpRenderMemoVX = 0, _mpRenderMemoVY = 0;
+        let _mpRenderMemoApply = 0;
         let lastTime = performance.now();
-        let lastWallMs = Date.now();
+        // ==== [MP-SMOOTH 5] high-resolution clock ====
+        // This used to be Date.now(): integer milliseconds. Against a 16.667ms fixed step that produces
+        // a 16/17/18ms sawtooth, so the accumulator emitted a 0-step frame then a 2-step frame —
+        // the ball freezes for one frame then jumps double. It looked exactly like network lag but
+        // happened with NO network at all. performance.now() (same time origin as the rAF timestamp)
+        // has sub-millisecond resolution, so frame time tracks the fixed step cleanly.
+        let lastWallMs = performance.now();
         function _stepMpFixedSimulation(dtSec, muteAudio = false) {
             const fixedStep = 1 / 60;
+            // ==== [MP-SMOOTH 5b] snap a 60Hz frame to exactly one fixed step ====
+            // Even a high-resolution clock lands a hair either side of 16.667ms. Snapping frames that
+            // are already within 4ms of one step removes the last +/- residue, so a 60Hz display runs
+            // exactly 1 simulate-step per refresh: constant speed, no freeze, no double-step.
+            let _dt = Math.max(0, dtSec);
+            if (Math.abs(_dt - fixedStep) < 0.004) _dt = fixedStep;
             // ⏱ clamp the backlog to 0.25s: a hitch may cost one smooth catch-up, never a freeze+teleport
-            _mpSimAccum += Math.min(0.25, Math.max(0, dtSec));
+            _mpSimAccum += Math.min(0.25, _dt);
             if (_mpSimAccum > 0.5) _mpSimAccum = 0.5;
-            // Gentle tick alignment if peer tick ahead/behind due to start offset
-            if (_mpTargetTick > 0) {
-                const tickDiff = _mpTargetTick - _mpSimTick;
-                if (tickDiff > 2 && tickDiff < 300) {
-                    _mpSimAccum += Math.min(fixedStep, tickDiff * fixedStep * 0.20);
-                } else if (tickDiff < -3) {
-                    _mpSimAccum = Math.max(0, _mpSimAccum - fixedStep * 0.35);
-                }
+            // ==== [MP-SMOOTH 1] drift correction WITHOUT changing the local frame rate ====
+            // The old code added `tickDiff * fixedStep * 0.20` to the accumulator on EVERY frame while
+            // the peer stayed ahead. A steady 6-tick lead therefore ran 2 sim steps per frame forever
+            // (double-speed animation) and then stalled — the "lag/jitter" players felt.
+            // Now we remember the peer lead ONCE and only nudge the accumulator on a *new* sample.
+            const _tickDiff = (_mpTargetTick > 0) ? (_mpTargetTick - _mpSimTick) : 0;
+            const _nowDrift = Date.now();
+            if (_mpTargetTick > 0 && _tickDiff >= 90) {
+                // way out of sync (tab frozen / long stall): jump the clock, never fast-forward frames
+                _mpSimTick = _mpTargetTick - 1;
+                _mpSimAccum = fixedStep * 0.5;
+                _mpLastDriftAt = _nowDrift;
+            } else if (_mpTargetTick > 0 && Math.abs(_tickDiff) > 3 &&
+                       (_nowDrift - (_mpLastDriftAt || 0)) > 900) {
+                // ==== [MP-SMOOTH 1b] at most ONE extra/missing tick per 0.9s ====
+                // A steady peer lead must never turn into a permanent 2x step rate. Catching up is
+                // rate-limited so motion stays visually constant; the lead itself is harmless.
+                _mpLastDriftAt = _nowDrift;
+                if (_tickDiff > 0) _mpSimAccum += fixedStep;
+                else _mpSimAccum = Math.max(0, _mpSimAccum - fixedStep);
             }
             const prevSound = soundEnabled;
             if (muteAudio) soundEnabled = false;
@@ -33835,6 +35525,8 @@
                 }
             }
             if (muteAudio) soundEnabled = prevSound;
+            // remember what this frame actually advanced, for the hermite render clock
+            _mpRenderMemoApply = steps;
         }
         function stepSimulationRealTime(elapsedSec, muteAudio = false) {
             if (typeof activeMatchContext !== 'undefined' && activeMatchContext === 'multiplayer') {
@@ -33863,19 +35555,20 @@
             }
             const mpActiveStates = (activeMatchContext === 'multiplayer' && (gameState === 'SPAWN_INTRO' || gameState === 'PLAYING' || gameState === 'FINISHER' || gameState === 'DOUBLE_KO'));
             if (mpActiveStates || (gameState === 'PLAYING' && !isMatchPaused)) {
-                const nowMs = Date.now();
+                const nowMs = performance.now();
                 const wallDt = (nowMs - lastWallMs) / 1000;
                 lastWallMs = nowMs;
                 if (wallDt > 0.015) stepSimulationRealTime(wallDt, true);
             } else {
-                lastWallMs = Date.now();
+                lastWallMs = performance.now();
             }
         }, 100);
         function gameLoop(now) {
             try {
-                const nowMs = Date.now();
-                const wallDt = Math.max(0, (nowMs - lastWallMs) / 1000);
-                lastWallMs = nowMs;
+                // [MP-SMOOTH 5] rAF timestamp is high-resolution and vsync-aligned — use it for the
+                // simulation clock too, so sim time and render time come from the SAME source.
+                const wallDt = Math.max(0, (now - lastWallMs) / 1000);
+                lastWallMs = now;
                 const rafDt = Math.min(0.05, Math.max(0, (now - lastTime) / 1000));
                 lastTime = now;
 
@@ -36291,19 +37984,19 @@
         //  No chest / no currency here: this screen only edits loadouts.
         // =====================================================================
         const EQ_PANEL_I18N = {
-            vi: { label: 'Trang Bị', title: '⚔️ TRANG BỊ', sub: 'Chọn một bóng kỹ năng để thay đổi trang bị', back: 'Quay lại', hint: 'Bấm vào một bóng để mở túi trang bị của bóng đó', balls: 'Bóng kỹ năng', empty: 'Bạn chưa sở hữu bóng kỹ năng nào.', slotsFilled: 'ô đã gắn', openBag: 'Mở túi', notOwned: 'Chưa sở hữu', full: 'Đã đủ 4 ô', partialEmpty: 'Còn ô trống', detailTitle: 'Trang bị cho', clearAll: 'Bỏ hết', editHint: 'Chạm vào từng ô để chọn món cho bóng này', backBalls: 'Danh sách bóng', slotEmpty: 'Ô trống', tapSlot: 'Chạm vào ô để chọn trang bị', pickFor: 'Chọn món cho ô', noItems: 'Chưa có món nào cho ô này — mở rương ở Chợ Đen hoặc ghép cấp ở Lò Rèn.', equippedTag: 'Đang gắn', lvLocked: 'Chưa có', copiesShort: 'bản', slotsTitle: 'TRANG BỊ CỦA BÓNG' },
-            en: { label: 'Equipment', title: '⚔️ EQUIPMENT', sub: 'Pick a skill ball to change its loadout', back: 'Back', hint: 'Tap a ball to open its equipment bag', balls: 'Skill balls', empty: 'You do not own any skill ball yet.', slotsFilled: 'slots filled', openBag: 'Open bag', notOwned: 'Not owned', full: 'All 4 slots ready', partialEmpty: 'Empty slots left', detailTitle: 'Equipment for', clearAll: 'Clear all', editHint: 'Tap a slot to choose the item for this ball', backBalls: 'Ball list', slotEmpty: 'Empty slot', tapSlot: 'Tap a slot to pick gear', pickFor: 'Pick an item for', noItems: 'No item for this slot yet — open chests in the Black Market or forge levels at the Smithy.', equippedTag: 'Equipped', lvLocked: 'None', copiesShort: 'copies', slotsTitle: 'THIS BALL\u2019S GEAR' },
-            ja: { label: '装備', title: '⚔️ 装備', sub: 'スキルボールを選んで装備を変更', back: '戻る', hint: 'ボールをタップして装備バッグを開きます', balls: 'スキルボール', empty: 'スキルボールをまだ所持していません。', slotsFilled: 'スロット装備済み', openBag: 'バッグを開く', notOwned: '未所持', full: '4スロット完成', partialEmpty: '空きスロットあり', detailTitle: '装備対象', clearAll: 'すべて外す', editHint: 'スロットをタップして装備を選択', backBalls: 'ボール一覧', slotEmpty: '空きスロット', tapSlot: 'スロットをタップして装備を選択', pickFor: 'このスロットの装備を選択', noItems: 'このスロットの装備がありません — 闇市場で箱を開けるか鍛冶場で強化してください。', equippedTag: '装備中', lvLocked: 'なし', copiesShort: '個', slotsTitle: 'このボールの装備' },
-            ko: { label: '장비', title: '⚔️ 장비', sub: '스킬 볼을 선택해 장비를 변경하세요', back: '뒤로', hint: '볼을 탭하면 장비 가방이 열립니다', balls: '스킬 볼', empty: '아직 보유한 스킬 볼이 없습니다.', slotsFilled: '슬롯 장착됨', openBag: '가방 열기', notOwned: '미보유', full: '4슬롯 완료', partialEmpty: '빈 슬롯 있음', detailTitle: '장비 대상', clearAll: '모두 해제', editHint: '슬롯을 탭해 장비를 선택하세요', backBalls: '볼 목록', slotEmpty: '빈 슬롯', tapSlot: '슬롯을 탭해 장비를 선택', pickFor: '이 슬롯 장비 선택', noItems: '이 슬롯에 장비가 없습니다 — 암시장에서 상자를 열거나 대장간에서 강화하세요.', equippedTag: '장착됨', lvLocked: '없음', copiesShort: '개', slotsTitle: '이 볼의 장비' },
-            zh: { label: '装备', title: '⚔️ 装备', sub: '选择技能球以更换装备', back: '返回', hint: '点击球体打开它的装备背包', balls: '技能球', empty: '你还没有任何技能球。', slotsFilled: '个槽位已装备', openBag: '打开背包', notOwned: '未拥有', full: '四槽已满', partialEmpty: '仍有空槽', detailTitle: '装备对象', clearAll: '全部卸下', editHint: '点击槽位为该球选择装备', backBalls: '球体列表', slotEmpty: '空槽位', tapSlot: '点击槽位选择装备', pickFor: '为该槽位选择装备', noItems: '该槽位还没有装备 — 去黑市开箱或在铁匠铺合成等级。', equippedTag: '已装备', lvLocked: '无', copiesShort: '份', slotsTitle: '该球的装备' },
-            es: { label: 'Equipo', title: '⚔️ EQUIPO', sub: 'Elige una bola de habilidad para cambiar su equipo', back: 'Volver', hint: 'Toca una bola para abrir su bolsa de equipo', balls: 'Bolas de habilidad', empty: 'Todavía no tienes ninguna bola de habilidad.', slotsFilled: 'ranuras equipadas', openBag: 'Abrir bolsa', notOwned: 'No obtenida', full: '4 ranuras listas', partialEmpty: 'Quedan ranuras vacías', detailTitle: 'Equipo de', clearAll: 'Quitar todo', editHint: 'Toca una ranura para elegir el objeto de esta bola', backBalls: 'Lista de bolas', slotEmpty: 'Ranura vacía', tapSlot: 'Toca una ranura para elegir equipo', pickFor: 'Elige un objeto para', noItems: 'Aún no hay objetos para esta ranura — abre cofres en el Mercado Negro o mejora en la Forja.', equippedTag: 'Equipado', lvLocked: 'Ninguna', copiesShort: 'copias', slotsTitle: 'EQUIPO DE ESTA BOLA' },
-            fr: { label: 'Équipement', title: '⚔️ ÉQUIPEMENT', sub: "Choisissez une boule de compétence pour changer son équipement", back: 'Retour', hint: 'Touchez une boule pour ouvrir son sac', balls: 'Boules de compétence', empty: "Vous ne possédez encore aucune boule de compétence.", slotsFilled: 'emplacements équipés', openBag: 'Ouvrir le sac', notOwned: 'Non possédée', full: '4 emplacements prêts', partialEmpty: 'Emplacements vides', detailTitle: 'Équipement de', clearAll: 'Tout retirer', editHint: "Touchez un emplacement pour choisir l'objet", backBalls: 'Liste des boules', slotEmpty: 'Emplacement vide', tapSlot: 'Touchez un emplacement pour choisir', pickFor: 'Choisir un objet pour', noItems: "Aucun objet pour cet emplacement — ouvrez des coffres au Marché Noir ou forgez à la Forge.", equippedTag: 'Équipé', lvLocked: 'Aucun', copiesShort: 'ex.', slotsTitle: 'ÉQUIPEMENT DE CETTE BOULE' },
-            de: { label: 'Ausrüstung', title: '⚔️ AUSRÜSTUNG', sub: 'Wähle eine Fähigkeitskugel, um ihre Ausrüstung zu ändern', back: 'Zurück', hint: 'Tippe eine Kugel an, um ihre Ausrüstungstasche zu öffnen', balls: 'Fähigkeitskugeln', empty: 'Du besitzt noch keine Fähigkeitskugel.', slotsFilled: 'Slots belegt', openBag: 'Tasche öffnen', notOwned: 'Nicht erhalten', full: 'Alle 4 Slots bereit', partialEmpty: 'Leere Slots übrig', detailTitle: 'Ausrüstung für', clearAll: 'Alles abnehmen', editHint: 'Tippe einen Slot an, um den Gegenstand zu wählen', backBalls: 'Kugelliste', slotEmpty: 'Leerer Slot', tapSlot: 'Slot antippen, um Ausrüstung zu wählen', pickFor: 'Gegenstand wählen für', noItems: 'Noch kein Gegenstand für diesen Slot — öffne Truhen im Schwarzmarkt oder schmiede in der Schmiede.', equippedTag: 'Angelegt', lvLocked: 'Keine', copiesShort: 'Stk.', slotsTitle: 'AUSRÜSTUNG DIESER KUGEL' },
-            pt: { label: 'Equipamento', title: '⚔️ EQUIPAMENTO', sub: 'Escolha uma bola de habilidade para trocar o equipamento', back: 'Voltar', hint: 'Toque numa bola para abrir a bolsa de equipamento', balls: 'Bolas de habilidade', empty: 'Ainda não possui nenhuma bola de habilidade.', slotsFilled: 'espaços equipados', openBag: 'Abrir bolsa', notOwned: 'Não obtida', full: '4 espaços prontos', partialEmpty: 'Espaços vazios', detailTitle: 'Equipamento de', clearAll: 'Retirar tudo', editHint: 'Toque num espaço para escolher o item desta bola', backBalls: 'Lista de bolas', slotEmpty: 'Espaço vazio', tapSlot: 'Toque num espaço para escolher equipamento', pickFor: 'Escolher um item para', noItems: 'Ainda não há itens para este espaço — abra baús no Mercado Negro ou melhore na Forja.', equippedTag: 'Equipado', lvLocked: 'Nenhum', copiesShort: 'cópias', slotsTitle: 'EQUIPAMENTO DESTA BOLA' },
-            ru: { label: 'Снаряжение', title: '⚔️ СНАРЯЖЕНИЕ', sub: 'Выберите шар навыка, чтобы изменить снаряжение', back: 'Назад', hint: 'Нажмите на шар, чтобы открыть его сумку снаряжения', balls: 'Шары навыков', empty: 'У вас пока нет ни одного шара навыков.', slotsFilled: 'слотов занято', openBag: 'Открыть сумку', notOwned: 'Не получен', full: 'Все 4 слота готовы', partialEmpty: 'Остались пустые слоты', detailTitle: 'Снаряжение для', clearAll: 'Снять всё', editHint: 'Нажмите на слот, чтобы выбрать предмет', backBalls: 'Список шаров', slotEmpty: 'Пустой слот', tapSlot: 'Нажмите на слот, чтобы выбрать снаряжение', pickFor: 'Выбрать предмет для', noItems: 'Для этого слота пока нет предметов — открывайте сундуки на Чёрном рынке или улучшайте в Кузнице.', equippedTag: 'Надето', lvLocked: 'Нет', copiesShort: 'шт.', slotsTitle: 'СНАРЯЖЕНИЕ ЭТОГО ШАРА' },
-            th: { label: 'อุปกรณ์', title: '⚔️ อุปกรณ์', sub: 'เลือกบอลสกิลเพื่อเปลี่ยนอุปกรณ์', back: 'ย้อนกลับ', hint: 'แตะบอลเพื่อเปิดกระเป๋าอุปกรณ์ของบอลนั้น', balls: 'บอลสกิล', empty: 'คุณยังไม่มีบอลสกิล', slotsFilled: 'ช่องที่ใส่อุปกรณ์แล้ว', openBag: 'เปิดกระเป๋า', notOwned: 'ยังไม่มี', full: 'ครบ 4 ช่อง', partialEmpty: 'ยังมีช่องว่าง', detailTitle: 'อุปกรณ์ของ', clearAll: 'ถอดทั้งหมด', editHint: 'แตะช่องเพื่อเลือกไอเทมให้บอลนี้', backBalls: 'รายการบอล', slotEmpty: 'ช่องว่าง', tapSlot: 'แตะช่องเพื่อเลือกอุปกรณ์', pickFor: 'เลือกไอเทมสำหรับ', noItems: 'ยังไม่มีไอเทมสำหรับช่องนี้ — เปิดหีบที่ตลาดมืดหรือหลอมระดับที่โรงตีเหล็ก', equippedTag: 'ใส่อยู่', lvLocked: 'ไม่มี', copiesShort: 'ชิ้น', slotsTitle: 'อุปกรณ์ของบอลนี้' },
-            id: { label: 'Perlengkapan', title: '⚔️ PERLENGKAPAN', sub: 'Pilih bola skill untuk mengubah perlengkapannya', back: 'Kembali', hint: 'Ketuk bola untuk membuka tas perlengkapannya', balls: 'Bola skill', empty: 'Kamu belum memiliki bola skill.', slotsFilled: 'slot terisi', openBag: 'Buka tas', notOwned: 'Belum dimiliki', full: '4 slot siap', partialEmpty: 'Masih ada slot kosong', detailTitle: 'Perlengkapan untuk', clearAll: 'Lepas semua', editHint: 'Ketuk slot untuk memilih barang bola ini', backBalls: 'Daftar bola', slotEmpty: 'Slot kosong', tapSlot: 'Ketuk slot untuk memilih perlengkapan', pickFor: 'Pilih barang untuk', noItems: 'Belum ada barang untuk slot ini — buka peti di Pasar Gelap atau tempa level di Pandai Besi.', equippedTag: 'Terpasang', lvLocked: 'Tidak ada', copiesShort: 'salinan', slotsTitle: 'PERLENGKAPAN BOLA INI' },
-            ar: { label: 'المعدات', title: '⚔️ المعدات', sub: 'اختر كرة مهارة لتغيير معداتها', back: 'رجوع', hint: 'اضغط على الكرة لفتح حقيبة معداتها', balls: 'كرات المهارات', empty: 'لا تملك أي كرة مهارة بعد.', slotsFilled: 'خانات مجهزة', openBag: 'فتح الحقيبة', notOwned: 'غير مملوكة', full: 'الخانات الأربع جاهزة', partialEmpty: 'ما زالت هناك خانات فارغة', detailTitle: 'معدات', clearAll: 'إزالة الكل', editHint: 'اضغط على خانة لاختيار قطعة لهذه الكرة', backBalls: 'قائمة الكرات', slotEmpty: 'خانة فارغة', tapSlot: 'اضغط على خانة لاختيار المعدات', pickFor: 'اختر قطعة لـ', noItems: 'لا توجد قطع لهذه الخانة بعد — افتح الصناديق في السوق السوداء أو طوّر المستوى في الحدادة.', equippedTag: 'مجهزة', lvLocked: 'لا يوجد', copiesShort: 'نسخة', slotsTitle: 'معدات هذه الكرة' }
+            vi: { label: 'Trang Bị', title: '⚔️ TRANG BỊ', sub: 'Chọn một bóng kỹ năng để thay đổi trang bị', back: 'Quay lại', hint: 'Bấm vào một bóng để mở túi trang bị của bóng đó', balls: 'Bóng kỹ năng', empty: 'Bạn chưa sở hữu bóng kỹ năng nào.', slotsFilled: 'ô đã gắn', openBag: 'Mở túi', notOwned: 'Chưa sở hữu', full: 'Đã đủ 4 ô', partialEmpty: 'Còn ô trống', detailTitle: 'Trang bị cho', clearAll: 'Bỏ hết', clearBall: 'Bỏ hết', clearSlot: 'Bỏ ô này', editHint: 'Chạm vào từng ô để chọn món cho bóng này', backBalls: 'Danh sách bóng', slotEmpty: 'Ô trống', tapSlot: 'Chạm vào ô để chọn trang bị', pickFor: 'Chọn món cho ô', noItems: 'Chưa có món nào cho ô này — mở rương ở Chợ Đen hoặc ghép cấp ở Lò Rèn.', equippedTag: 'Đang gắn', lvLocked: 'Chưa có', copiesShort: 'bản', slotsTitle: 'TRANG BỊ CỦA BÓNG' },
+            en: { label: 'Equipment', title: '⚔️ EQUIPMENT', sub: 'Pick a skill ball to change its loadout', back: 'Back', hint: 'Tap a ball to open its equipment bag', balls: 'Skill balls', empty: 'You do not own any skill ball yet.', slotsFilled: 'slots filled', openBag: 'Open bag', notOwned: 'Not owned', full: 'All 4 slots ready', partialEmpty: 'Empty slots left', detailTitle: 'Equipment for', clearAll: 'Clear all', clearBall: 'Remove all', clearSlot: 'Clear slot', editHint: 'Tap a slot to choose the item for this ball', backBalls: 'Ball list', slotEmpty: 'Empty slot', tapSlot: 'Tap a slot to pick gear', pickFor: 'Pick an item for', noItems: 'No item for this slot yet — open chests in the Black Market or forge levels at the Smithy.', equippedTag: 'Equipped', lvLocked: 'None', copiesShort: 'copies', slotsTitle: 'THIS BALL\u2019S GEAR' },
+            ja: { label: '装備', title: '⚔️ 装備', sub: 'スキルボールを選んで装備を変更', back: '戻る', hint: 'ボールをタップして装備バッグを開きます', balls: 'スキルボール', empty: 'スキルボールをまだ所持していません。', slotsFilled: 'スロット装備済み', openBag: 'バッグを開く', notOwned: '未所持', full: '4スロット完成', partialEmpty: '空きスロットあり', detailTitle: '装備対象', clearAll: 'すべて外す', clearBall: 'すべて外す', clearSlot: 'このスロットを外す', editHint: 'スロットをタップして装備を選択', backBalls: 'ボール一覧', slotEmpty: '空きスロット', tapSlot: 'スロットをタップして装備を選択', pickFor: 'このスロットの装備を選択', noItems: 'このスロットの装備がありません — 闇市場で箱を開けるか鍛冶場で強化してください。', equippedTag: '装備中', lvLocked: 'なし', copiesShort: '個', slotsTitle: 'このボールの装備' },
+            ko: { label: '장비', title: '⚔️ 장비', sub: '스킬 볼을 선택해 장비를 변경하세요', back: '뒤로', hint: '볼을 탭하면 장비 가방이 열립니다', balls: '스킬 볼', empty: '아직 보유한 스킬 볼이 없습니다.', slotsFilled: '슬롯 장착됨', openBag: '가방 열기', notOwned: '미보유', full: '4슬롯 완료', partialEmpty: '빈 슬롯 있음', detailTitle: '장비 대상', clearAll: '모두 해제', clearBall: '모두 해제', clearSlot: '이 슬롯 해제', editHint: '슬롯을 탭해 장비를 선택하세요', backBalls: '볼 목록', slotEmpty: '빈 슬롯', tapSlot: '슬롯을 탭해 장비를 선택', pickFor: '이 슬롯 장비 선택', noItems: '이 슬롯에 장비가 없습니다 — 암시장에서 상자를 열거나 대장간에서 강화하세요.', equippedTag: '장착됨', lvLocked: '없음', copiesShort: '개', slotsTitle: '이 볼의 장비' },
+            zh: { label: '装备', title: '⚔️ 装备', sub: '选择技能球以更换装备', back: '返回', hint: '点击球体打开它的装备背包', balls: '技能球', empty: '你还没有任何技能球。', slotsFilled: '个槽位已装备', openBag: '打开背包', notOwned: '未拥有', full: '四槽已满', partialEmpty: '仍有空槽', detailTitle: '装备对象', clearAll: '全部卸下', clearBall: '全部卸下', clearSlot: '卸下此槽', editHint: '点击槽位为该球选择装备', backBalls: '球体列表', slotEmpty: '空槽位', tapSlot: '点击槽位选择装备', pickFor: '为该槽位选择装备', noItems: '该槽位还没有装备 — 去黑市开箱或在铁匠铺合成等级。', equippedTag: '已装备', lvLocked: '无', copiesShort: '份', slotsTitle: '该球的装备' },
+            es: { label: 'Equipo', title: '⚔️ EQUIPO', sub: 'Elige una bola de habilidad para cambiar su equipo', back: 'Volver', hint: 'Toca una bola para abrir su bolsa de equipo', balls: 'Bolas de habilidad', empty: 'Todavía no tienes ninguna bola de habilidad.', slotsFilled: 'ranuras equipadas', openBag: 'Abrir bolsa', notOwned: 'No obtenida', full: '4 ranuras listas', partialEmpty: 'Quedan ranuras vacías', detailTitle: 'Equipo de', clearAll: 'Quitar todo', clearBall: 'Quitar todo', clearSlot: 'Vaciar ranura', editHint: 'Toca una ranura para elegir el objeto de esta bola', backBalls: 'Lista de bolas', slotEmpty: 'Ranura vacía', tapSlot: 'Toca una ranura para elegir equipo', pickFor: 'Elige un objeto para', noItems: 'Aún no hay objetos para esta ranura — abre cofres en el Mercado Negro o mejora en la Forja.', equippedTag: 'Equipado', lvLocked: 'Ninguna', copiesShort: 'copias', slotsTitle: 'EQUIPO DE ESTA BOLA' },
+            fr: { label: 'Équipement', title: '⚔️ ÉQUIPEMENT', sub: "Choisissez une boule de compétence pour changer son équipement", back: 'Retour', hint: 'Touchez une boule pour ouvrir son sac', balls: 'Boules de compétence', empty: "Vous ne possédez encore aucune boule de compétence.", slotsFilled: 'emplacements équipés', openBag: 'Ouvrir le sac', notOwned: 'Non possédée', full: '4 emplacements prêts', partialEmpty: 'Emplacements vides', detailTitle: 'Équipement de', clearAll: 'Tout retirer', clearBall: 'Tout retirer', clearSlot: "Vider l'emplacement", editHint: "Touchez un emplacement pour choisir l'objet", backBalls: 'Liste des boules', slotEmpty: 'Emplacement vide', tapSlot: 'Touchez un emplacement pour choisir', pickFor: 'Choisir un objet pour', noItems: "Aucun objet pour cet emplacement — ouvrez des coffres au Marché Noir ou forgez à la Forge.", equippedTag: 'Équipé', lvLocked: 'Aucun', copiesShort: 'ex.', slotsTitle: 'ÉQUIPEMENT DE CETTE BOULE' },
+            de: { label: 'Ausrüstung', title: '⚔️ AUSRÜSTUNG', sub: 'Wähle eine Fähigkeitskugel, um ihre Ausrüstung zu ändern', back: 'Zurück', hint: 'Tippe eine Kugel an, um ihre Ausrüstungstasche zu öffnen', balls: 'Fähigkeitskugeln', empty: 'Du besitzt noch keine Fähigkeitskugel.', slotsFilled: 'Slots belegt', openBag: 'Tasche öffnen', notOwned: 'Nicht erhalten', full: 'Alle 4 Slots bereit', partialEmpty: 'Leere Slots übrig', detailTitle: 'Ausrüstung für', clearAll: 'Alles abnehmen', clearBall: 'Alles abnehmen', clearSlot: 'Slot leeren', editHint: 'Tippe einen Slot an, um den Gegenstand zu wählen', backBalls: 'Kugelliste', slotEmpty: 'Leerer Slot', tapSlot: 'Slot antippen, um Ausrüstung zu wählen', pickFor: 'Gegenstand wählen für', noItems: 'Noch kein Gegenstand für diesen Slot — öffne Truhen im Schwarzmarkt oder schmiede in der Schmiede.', equippedTag: 'Angelegt', lvLocked: 'Keine', copiesShort: 'Stk.', slotsTitle: 'AUSRÜSTUNG DIESER KUGEL' },
+            pt: { label: 'Equipamento', title: '⚔️ EQUIPAMENTO', sub: 'Escolha uma bola de habilidade para trocar o equipamento', back: 'Voltar', hint: 'Toque numa bola para abrir a bolsa de equipamento', balls: 'Bolas de habilidade', empty: 'Ainda não possui nenhuma bola de habilidade.', slotsFilled: 'espaços equipados', openBag: 'Abrir bolsa', notOwned: 'Não obtida', full: '4 espaços prontos', partialEmpty: 'Espaços vazios', detailTitle: 'Equipamento de', clearAll: 'Retirar tudo', clearBall: 'Retirar tudo', clearSlot: 'Esvaziar espaço', editHint: 'Toque num espaço para escolher o item desta bola', backBalls: 'Lista de bolas', slotEmpty: 'Espaço vazio', tapSlot: 'Toque num espaço para escolher equipamento', pickFor: 'Escolher um item para', noItems: 'Ainda não há itens para este espaço — abra baús no Mercado Negro ou melhore na Forja.', equippedTag: 'Equipado', lvLocked: 'Nenhum', copiesShort: 'cópias', slotsTitle: 'EQUIPAMENTO DESTA BOLA' },
+            ru: { label: 'Снаряжение', title: '⚔️ СНАРЯЖЕНИЕ', sub: 'Выберите шар навыка, чтобы изменить снаряжение', back: 'Назад', hint: 'Нажмите на шар, чтобы открыть его сумку снаряжения', balls: 'Шары навыков', empty: 'У вас пока нет ни одного шара навыков.', slotsFilled: 'слотов занято', openBag: 'Открыть сумку', notOwned: 'Не получен', full: 'Все 4 слота готовы', partialEmpty: 'Остались пустые слоты', detailTitle: 'Снаряжение для', clearAll: 'Снять всё', clearBall: 'Снять всё', clearSlot: 'Очистить слот', editHint: 'Нажмите на слот, чтобы выбрать предмет', backBalls: 'Список шаров', slotEmpty: 'Пустой слот', tapSlot: 'Нажмите на слот, чтобы выбрать снаряжение', pickFor: 'Выбрать предмет для', noItems: 'Для этого слота пока нет предметов — открывайте сундуки на Чёрном рынке или улучшайте в Кузнице.', equippedTag: 'Надето', lvLocked: 'Нет', copiesShort: 'шт.', slotsTitle: 'СНАРЯЖЕНИЕ ЭТОГО ШАРА' },
+            th: { label: 'อุปกรณ์', title: '⚔️ อุปกรณ์', sub: 'เลือกบอลสกิลเพื่อเปลี่ยนอุปกรณ์', back: 'ย้อนกลับ', hint: 'แตะบอลเพื่อเปิดกระเป๋าอุปกรณ์ของบอลนั้น', balls: 'บอลสกิล', empty: 'คุณยังไม่มีบอลสกิล', slotsFilled: 'ช่องที่ใส่อุปกรณ์แล้ว', openBag: 'เปิดกระเป๋า', notOwned: 'ยังไม่มี', full: 'ครบ 4 ช่อง', partialEmpty: 'ยังมีช่องว่าง', detailTitle: 'อุปกรณ์ของ', clearAll: 'ถอดทั้งหมด', clearBall: 'ถอดทั้งหมด', clearSlot: 'ล้างช่องนี้', editHint: 'แตะช่องเพื่อเลือกไอเทมให้บอลนี้', backBalls: 'รายการบอล', slotEmpty: 'ช่องว่าง', tapSlot: 'แตะช่องเพื่อเลือกอุปกรณ์', pickFor: 'เลือกไอเทมสำหรับ', noItems: 'ยังไม่มีไอเทมสำหรับช่องนี้ — เปิดหีบที่ตลาดมืดหรือหลอมระดับที่โรงตีเหล็ก', equippedTag: 'ใส่อยู่', lvLocked: 'ไม่มี', copiesShort: 'ชิ้น', slotsTitle: 'อุปกรณ์ของบอลนี้' },
+            id: { label: 'Perlengkapan', title: '⚔️ PERLENGKAPAN', sub: 'Pilih bola skill untuk mengubah perlengkapannya', back: 'Kembali', hint: 'Ketuk bola untuk membuka tas perlengkapannya', balls: 'Bola skill', empty: 'Kamu belum memiliki bola skill.', slotsFilled: 'slot terisi', openBag: 'Buka tas', notOwned: 'Belum dimiliki', full: '4 slot siap', partialEmpty: 'Masih ada slot kosong', detailTitle: 'Perlengkapan untuk', clearAll: 'Lepas semua', clearBall: 'Lepas semua', clearSlot: 'Kosongkan slot', editHint: 'Ketuk slot untuk memilih barang bola ini', backBalls: 'Daftar bola', slotEmpty: 'Slot kosong', tapSlot: 'Ketuk slot untuk memilih perlengkapan', pickFor: 'Pilih barang untuk', noItems: 'Belum ada barang untuk slot ini — buka peti di Pasar Gelap atau tempa level di Pandai Besi.', equippedTag: 'Terpasang', lvLocked: 'Tidak ada', copiesShort: 'salinan', slotsTitle: 'PERLENGKAPAN BOLA INI' },
+            ar: { label: 'المعدات', title: '⚔️ المعدات', sub: 'اختر كرة مهارة لتغيير معداتها', back: 'رجوع', hint: 'اضغط على الكرة لفتح حقيبة معداتها', balls: 'كرات المهارات', empty: 'لا تملك أي كرة مهارة بعد.', slotsFilled: 'خانات مجهزة', openBag: 'فتح الحقيبة', notOwned: 'غير مملوكة', full: 'الخانات الأربع جاهزة', partialEmpty: 'ما زالت هناك خانات فارغة', detailTitle: 'معدات', clearAll: 'إزالة الكل', clearBall: 'إزالة الكل', clearSlot: 'إفراغ الخانة', editHint: 'اضغط على خانة لاختيار قطعة لهذه الكرة', backBalls: 'قائمة الكرات', slotEmpty: 'خانة فارغة', tapSlot: 'اضغط على خانة لاختيار المعدات', pickFor: 'اختر قطعة لـ', noItems: 'لا توجد قطع لهذه الخانة بعد — افتح الصناديق في السوق السوداء أو طوّر المستوى في الحدادة.', equippedTag: 'مجهزة', lvLocked: 'لا يوجد', copiesShort: 'نسخة', slotsTitle: 'معدات هذه الكرة' }
         };
         function eqp(key) {
             const pack = EQ_PANEL_I18N[eqLocale()] || EQ_PANEL_I18N.en;
@@ -36357,14 +38050,26 @@
         let _eqPanelPreviewRaf = null;
         let _eqPanelPreviewBall = null;
 
+        // [UI-LAYOUT] The panel has exactly three views (list / ball / slot-picker) and only ONE
+        // may ever be visible. Every entry point goes through this, otherwise a stale picker could
+        // stay on screen underneath the ball list and look like a dead second panel.
+        const EQ_PANEL_VIEWS = ['eqPanelListWrap', 'eqPanelBallWrap', 'eqPanelPickerWrap'];
+        function eqPanelShowView(which) {
+            EQ_PANEL_VIEWS.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const on = (id === which);
+                el.classList.toggle('hidden', !on);
+                el.style.display = on ? '' : 'none';   // beats the flex/flex-col rules and !important
+                if (!on) el.setAttribute('aria-hidden', 'true');
+                else el.removeAttribute('aria-hidden');
+            });
+        }
         function eqPanelShowList() {
             _eqPanelBallId = null;
             _eqPanelSlot = null;
             stopEqPanelPreview();
-            const list = document.getElementById('eqPanelListWrap');
-            const ball = document.getElementById('eqPanelBallWrap');
-            if (list) list.classList.remove('hidden');
-            if (ball) ball.classList.add('hidden');
+            eqPanelShowView('eqPanelListWrap');
             renderEquipmentPanel();
         }
 
@@ -36443,7 +38148,9 @@
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'eqp-slot' + (item ? ' eqp-slot-on lv' + load.lv : '');
-            btn.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:92px;padding:8px 6px;border-radius:14px;' +
+            // [UI-LAYOUT] width is owned by CSS (.eqp-slot) so it can shrink on phones instead of
+            // being pinned at 92px, which used to push the 4 slots into one tall column.
+            btn.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 6px;border-radius:14px;' +
                 'border:1px solid ' + (item ? (load.lv === 4 ? '#facc15' : '#22d3ee') : '#334155') + ';' +
                 'background:' + (item ? 'rgba(8,47,73,.75)' : 'rgba(2,6,23,.85)') + ';cursor:pointer;color:#e2e8f0';
             const art = document.createElement('span');
@@ -36486,16 +38193,34 @@
             const status = document.getElementById('eqPanelBallStatus');
             status.textContent = `${filled}/4 · ${filled === 4 ? eqp('full') : eqp('partialEmpty')}`;
             status.style.color = filled === 4 ? '#67e8f9' : '#fbbf24';
+            // [CLEAR-ALL] "Bỏ hết" — unequip every slot of this ball at once (items go back to the bag)
+            const clrBall = document.getElementById('eqPanelClearBall');
+            if (clrBall) {
+                clrBall.textContent = '\u2715 ' + eqp('clearBall');
+                clrBall.disabled = filled === 0;
+                clrBall.style.opacity = filled === 0 ? '0.4' : '1';
+                clrBall.style.cursor = filled === 0 ? 'not-allowed' : 'pointer';
+                clrBall.title = eqp('clearBall');
+                clrBall.onclick = () => {
+                    if (equipmentPanelLoadoutCount(ballId) === 0) return;
+                    try { audio.playClick(); } catch (e) {}
+                    const id = _eqPanelBallId || ballId;
+                    const load = playerData.equipmentLoadouts[id];
+                    if (load) {
+                        ['weapon', 'armor', 'helmet', 'boots'].forEach(k => { delete load[k]; });
+                    }
+                    savePlayerData();
+                    try { renderEquipmentPanel(); } catch (e) {}
+                    try { if (typeof refreshLobbyEquipmentUI === 'function') refreshLobbyEquipmentUI(); } catch (e) {}
+                    renderEqPanelBallView();
+                    if (_eqPanelSlot) renderEqPanelPicker();
+                };
+            }
         }
         function openEqPanelBall(ballId) {
             _eqPanelBallId = ballId;
             _eqPanelSlot = null;
-            const list = document.getElementById('eqPanelListWrap');
-            const wrap = document.getElementById('eqPanelBallWrap');
-            if (list) list.classList.add('hidden');
-            if (wrap) wrap.classList.remove('hidden');
-            document.getElementById('eqPanelPickerWrap').classList.add('hidden');
-            document.getElementById('eqPanelBallWrap').classList.remove('hidden');
+            eqPanelShowView('eqPanelBallWrap');
             renderEqPanelBallView();
             startEqPanelPreview(ballId);
         }
@@ -36504,9 +38229,7 @@
         function openEqPanelPicker(slot) {
             if (!_eqPanelBallId) return;
             _eqPanelSlot = slot;
-            document.getElementById('eqPanelBallWrap').classList.add('hidden');
-            const wrap = document.getElementById('eqPanelPickerWrap');
-            wrap.classList.remove('hidden');
+            eqPanelShowView('eqPanelPickerWrap');
             document.getElementById('eqPanelPickerTitle').textContent = eqp('pickFor') + ' ' + EQ_SYMBOLS[slot] + ' ' + eqSlotName(slot);
             document.getElementById('eqPanelPickerBack').textContent = '← ' + eqSlotName(slot);
             stopEqPanelPreview();
@@ -36603,7 +38326,7 @@
             }
             const clr = document.getElementById('eqPanelPickerClear');
             if (clr) {
-                clr.textContent = '✕ ' + eqp('clearAll');
+                clr.textContent = '✕ ' + eqp('clearSlot');   // this only clears the open slot
                 clr.style.display = cur ? '' : 'none';
                 clr.onclick = () => {
                     try { audio.playClick(); } catch (e) {}
@@ -36710,6 +38433,22 @@
             ensureEquipmentData();
             const modal = document.getElementById('equipmentPanelModal');
             if (!modal) return;
+            // [UI-LAYOUT] never stack the bag on top of another panel: the higher z-index would
+            // cover its buttons and make the screen behind look like a dead second panel.
+            try {
+                ['codexModal', 'codexDetailModal', 'settingsModal', 'battlePassModal', 'battleModeModal', 'forgeModal'].forEach(id => {
+                    const m = document.getElementById(id);
+                    if (!m) return;
+                    if (m.classList.contains('hidden') || m.hasAttribute('hidden')) return;
+                    m.classList.add('hidden');
+                    if (id === 'forgeModal') m.hidden = true;
+                    if (id === 'codexModal' || id === 'codexDetailModal') {
+                        m.classList.remove('ui-modal-open');
+                        if (typeof stopCodexPreview === 'function') { try { stopCodexPreview(); } catch (e) {} }
+                    }
+                });
+            } catch (e) {}
+            window._eqPanelPrevFocusWasCodex = false;
             const lb = document.getElementById('mainLobbyScreen');
             // If the panel is opened from inside a match screen we snap back to the lobby first,
             // otherwise closing the panel would leave the player on a half-hidden screen.
@@ -36718,19 +38457,43 @@
             }
             _eqPanelBallId = null;
             _eqPanelSlot = null;
-            document.getElementById('eqPanelBallWrap').classList.add('hidden');
-            document.getElementById('eqPanelListWrap').classList.remove('hidden');
+            eqPanelShowView('eqPanelListWrap');   // [BUGFIX] also hides a stale slot-picker
             renderEquipmentPanel();
             modal.classList.remove('hidden');
             modal.hidden = false;
             if (lb) lb.classList.add('eqp-hidden');
         }
+        // [UI-LAYOUT] If any other panel is opened externally while the bag is up, drop the bag
+        // (and restore the lobby) so two full-screen panels can never sit on top of each other.
+        window._eqPanelGuard = function () {
+            const modal = document.getElementById('equipmentPanelModal');
+            if (!modal || modal.classList.contains('hidden')) return;
+            const others = ['codexModal', 'codexDetailModal', 'settingsModal', 'battlePassModal', 'battleModeModal', 'forgeModal', 'equipmentDialog'];
+            for (let i = 0; i < others.length; i++) {
+                const m = document.getElementById(others[i]);
+                if (!m) continue;
+                if (m.classList.contains('hidden') || m.hasAttribute('hidden')) continue;
+                closeEquipmentPanel();
+                return;
+            }
+        };
         function closeEquipmentPanel() {
             const modal = document.getElementById('equipmentPanelModal');
-            if (modal) { modal.classList.add('hidden'); modal.hidden = true; }
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.hidden = true;
+                modal.classList.remove('ui-modal-open', 'ui-modal-out');
+            }
             stopEqPanelPreview();
+            _eqPanelBallId = null;
+            _eqPanelSlot = null;
             const lb = document.getElementById('mainLobbyScreen');
             if (lb) lb.classList.remove('eqp-hidden');
+            // [UI-LAYOUT] make sure nothing is left floating above the lobby
+            try {
+                const stray = document.getElementById('equipmentDialog');
+                if (stray && !stray.classList.contains('hidden')) stray.classList.add('hidden');
+            } catch (e) {}
             try { if (typeof updateLobbyUI === 'function') updateLobbyUI(); } catch (e) {}
         }
 
@@ -37292,143 +39055,19 @@
         // and a compact summary line above the "find match" button.
         function refreshLobbyEquipmentUI() {
             try { renderLobbyEquipmentLoadouts(); } catch (e) {}
+            // [REMOVED] "⚔️ Trang bị đội hình: x/y" line — same feature, removed with the card.
             const sum = document.getElementById('mpEquipSummary');
-            if (!sum) return;
-            const deck = (typeof getMpLobbyPreviewDeck === 'function') ? getMpLobbyPreviewDeck() : (playerData.mpDefaultDeck || []);
-            let filled = 0, total = 0;
-            (deck || []).forEach(id => {
-                if (!isControllableBallId(id)) return;
-                total += 4;
-                const load = playerData.equipmentLoadouts[id] || {};
-                filled += EQ_SLOTS.filter(s => load[s]).length;
-            });
-            if (!isControllableBallId((deck || [])[0])) { sum.classList.add('hidden'); return; }
-            sum.classList.remove('hidden');
-            sum.innerHTML = `⚔️ ${tUI('Trang bị đội hình', 'Squad equipment')}: <b>${filled}/${total}</b> — ${filled === total
-                ? tUI('sẵn sàng vào trận', 'ready to fight')
-                : tUI('còn ô trống, bấm ⚡ TỰ TRANG BỊ', 'empty slots — use ⚡ AUTO-EQUIP')}`;
+            if (sum) { sum.classList.add('hidden'); sum.innerHTML = ''; }
         }
         // After the pick phase resolves we can show the frozen snapshot both peers will use.
         function updateMpEquipSummaryBox() {
+            // [REMOVED] "equipment frozen — you / opponent" line, part of the removed squad-equipment block.
             const sum = document.getElementById('mpEquipSummary');
-            if (!sum) return;
-            const mine = mpMySide === 'left' ? mpEquipmentLeft : mpEquipmentRight;
-            const theirs = mpMySide === 'left' ? mpEquipmentRight : mpEquipmentLeft;
-            if (!mine || !theirs) { refreshLobbyEquipmentUI(); return; }
-            const count = (snap) => Object.values(snap.loadouts || {}).reduce((n, load) => n + Object.keys(load || {}).length, 0);
-            sum.classList.remove('hidden');
-            sum.innerHTML = `🔒 ${tUI('Trang bị đã chốt', 'Equipment frozen')} — ${tUI('bạn', 'you')}: <b>${count(mine)}</b> · ${tUI('đối thủ', 'opponent')}: <b>${count(theirs)}</b>`;
+            if (sum) { sum.classList.add('hidden'); sum.innerHTML = ''; }
         }
 
-        // ==== [MP-EXTRA 8] LOBBY EQUIPMENT CARD ==============================
-        function equipmentLoadoutSummary(load, tiny = false) {
-            const parts = [];
-            for (const slot of EQ_SLOTS) {
-                const v = load && load[slot];
-                if (!v) continue;
-                const it = ITEMS_DATABASE.find(x => x.id === v.id && x.slot === slot);
-                if (!it) continue;
-                parts.push(`<span style="display:inline-flex;align-items:center;gap:3px;padding:1px 5px;border-radius:6px;border:1px solid #334155;background:#020617cc;font-size:${tiny ? 9 : 10}px;color:#e2e8f0" title="${eqItemName(it)} Lv.${v.lv}">${EQ_SYMBOLS[slot]}<b style="color:#67e8f9">${v.lv}</b></span>`);
-            }
-            if (!parts.length) return `<span style="color:#64748b;font-size:10px">${tUI('Không trang bị', 'No equipment')}</span>`;
-            return parts.join('');
-        }
-        function equipmentFirstDeckBallId() {
-            const deck = (typeof getMpLobbyPreviewDeck === 'function') ? getMpLobbyPreviewDeck() : STARTER_BALLS;
-            const hit = (deck || []).find(id => isControllableBallId(id));
-            if (hit) return hit;
-            const own = (playerData.mpDefaultDeck || []).find(id => isControllableBallId(id));
-            return own || 'phantomfan';
-        }
-        function renderLobbyEquipmentLoadouts() {
-            ensureEquipmentData();
-            const stack = document.getElementById('lobbyEquipmentStack');
-            if (!stack) return;
-            const deck = (typeof getMpLobbyPreviewDeck === 'function') ? getMpLobbyPreviewDeck() : (Array.isArray(playerData.mpDefaultDeck) && playerData.mpDefaultDeck.length === 3 ? playerData.mpDefaultDeck : STARTER_BALLS);
-            stack.replaceChildren();
-            const holder = document.createElement('div');
-            holder.style.cssText = 'padding:7px 9px;border-radius:12px;border:1px solid #164e63;background:linear-gradient(135deg,#0b1220cc,#020617cc);display:flex;flex-direction:column;gap:5px';
-            const head = document.createElement('div');
-            head.style.cssText = 'display:flex;justify-content:space-between;align-items:center;font-size:10px;font-weight:900;color:#a5f3fc;letter-spacing:.4px';
-            head.innerHTML = `<span>⚔️ ${tUI('TRANG BỊ ĐỘI HÌNH', 'SQUAD EQUIPMENT')}</span><span style="color:#67e8f9">💎 ${(playerData.equipmentRays || 0).toLocaleString()}</span>`;
-            holder.appendChild(head);
-            const list = document.createElement('div');
-            list.style.cssText = 'display:flex;flex-direction:column;gap:3px';
-            const seen = new Set();
-            (deck || []).forEach(id => {
-                if (!id || seen.has(id)) return;
-                seen.add(id);
-                const meta = CODEX_DATA.find(b => b.id === id);
-                const row = document.createElement('div');
-                row.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:10px';
-                row.innerHTML = `<span style="min-width:86px;max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${meta ? meta.color : '#67e8f9'};font-weight:800">${meta ? meta.name : id}</span><span style="display:flex;flex-wrap:wrap;gap:3px">${equipmentLoadoutSummary(playerData.equipmentLoadouts[id] || {}, true)}</span>`;
-                list.appendChild(row);
-            });
-            holder.appendChild(list);
-            const btns = document.createElement('div');
-            btns.style.cssText = 'display:flex;gap:5px;flex-wrap:wrap';
-            const openBtn = document.createElement('button');
-            openBtn.type = 'button';
-            openBtn.style.cssText = 'flex:1;min-width:110px;padding:5px 8px;border-radius:9px;border:1px solid #22d3ee;background:#082f49;color:#a5f3fc;font-weight:900;font-size:10px;cursor:pointer';
-            openBtn.textContent = '⚔️ ' + tUI('TRANG BỊ', 'EQUIPMENT');
-            openBtn.onclick = () => {
-                try { audio.playClick(); } catch (e) {}
-                if (typeof openEquipmentPanel === 'function') openEquipmentPanel();
-                else openEquipmentDialog(equipmentFirstDeckBallId(), 'weapon');
-            };
-            btns.appendChild(openBtn);
-            const autoBtn = document.createElement('button');
-            autoBtn.type = 'button';
-            autoBtn.style.cssText = 'flex:1;min-width:110px;padding:5px 8px;border-radius:9px;border:1px solid #fbbf24;background:#3b2215;color:#fde68a;font-weight:900;font-size:10px;cursor:pointer';
-            autoBtn.textContent = '⚡ ' + tUI('TỰ TRANG BỊ', 'AUTO-EQUIP');
-            autoBtn.onclick = () => { try { audio.playClick(); } catch (e) {} equipmentAutoEquipDeck(); };
-            btns.appendChild(autoBtn);
-            holder.appendChild(btns);
-            stack.appendChild(holder);
-        }
-        // Greedy best-first auto equip: fills every empty slot of the three squad balls
-        // with the highest-level free copy, never stealing a copy another ball already uses.
-        function equipmentItemScore(it, lv) {
-            if (!it) return 0;
-            const v = it.statsByLevel[Math.max(0, Math.min(3, (lv || 1) - 1))] || 0;
-            const weight = { chrono_scythe: 900, vampiric_blade: 850, armor_breaker: 800, storm_lance: 820, prism_bow: 760, thornmail: 820, titan_core: 1, aegis_barrier: 1.4, kinetic_absorber: 780, magma_carapace: 7, chrono_crown: 1500, assassin_hood: 900, spartan_helm: 800, echo_circlet: 1200, astral_diadem: 900, hermes_boots: 900, phantom_treads: 850, ricochet_greaves: 700, zephyr_dashers: 800, gravity_stompers: 600 };
-            return (weight[it.id] || 500) * v + (lv || 1) * 3;
-        }
-        function equipmentAutoEquipDeck() {
-            ensureEquipmentData();
-            if (!playerData.equipmentLoadouts || typeof playerData.equipmentLoadouts !== 'object') playerData.equipmentLoadouts = {};
-            reconcileEquipmentAllocations();
-            const deck = (typeof getMpLobbyPreviewDeck === 'function') ? getMpLobbyPreviewDeck() : (playerData.mpDefaultDeck || []);
-            let equipped = 0;
-            (deck || []).forEach(id => {
-                if (!isControllableBallId(id)) return;
-                if (!playerData.equipmentLoadouts[id] || typeof playerData.equipmentLoadouts[id] !== 'object') playerData.equipmentLoadouts[id] = {};
-                const target = playerData.equipmentLoadouts[id];
-                for (const slot of EQ_SLOTS) {
-                    if (target[slot]) continue;
-                    let best = null;
-                    for (const it of ITEMS_DATABASE) {
-                        if (it.slot !== slot) continue;
-                        for (let lv = 4; lv >= 1; lv--) {
-                            const free = eqCopies(it.id, lv) - eqAllocated(it.id, lv);
-                            if (free <= 0) continue;
-                            const score = equipmentItemScore(it, lv);
-                            if (!best || score > best.score) best = { id: it.id, lv, score };
-                            break;
-                        }
-                    }
-                    if (best) { target[slot] = { id: best.id, lv: best.lv }; equipped++; }
-                }
-            });
-            savePlayerData();
-            try { renderLobbyEquipmentLoadouts(); } catch (e) {}
-            try { refreshLobbyEquipmentUI(); } catch (e) {}
-            try { renderEquipmentDeckPanel(); } catch (e) {}
-            showGameToast(equipped
-                ? tUI(`⚡ Đã tự trang bị ${equipped} món cho đội hình.`, `⚡ Auto-equipped ${equipped} item(s) for your squad.`)
-                : tUI('Không còn món trống nào để trang bị — hãy mở Rương Trang Bị!', 'No free items left to equip — open Equipment Chests!'), equipped ? 'success' : 'info');
-            return equipped;
-        }
+        // [REMOVED §13] The multiplayer squad-equipment card block lived here (helpers for the
+        // per-ball gear rows and the auto-equip shortcut). Removed together with the card itself.
 
         // ==== [MP-EXTRA 7] SQUAD LOADOUT PANEL ===============================
         // Written inline (not via a template helper) so the item list always follows
@@ -38154,7 +39793,23 @@
                 reconcileEquipmentAllocations();const available=eqCopies(item.id,lv)-eqAllocated(item.id,lv);
                 if(forgeCount!==need||available<need){document.getElementById('smithMessage').textContent=t.short;renderForge();return;}
                 const a=playerData.equipmentInventory[item.id];a[lv-1]-=need;a[lv]=(a[lv]||0)+1;
-                savePlayerData();forgeSelection=null;forgeCount=0;document.getElementById('smithMessage').textContent=t.done+' '+eqItemName(item)+' Lv.'+(lv+1);renderForge();
+                savePlayerData();
+                // [UI-MOTION] capture the forged card before the re-render, then burst it
+                const _forgedEl = doForge.closest ? doForge.closest('.forge-choice') : null;
+                forgeSelection=null;forgeCount=0;document.getElementById('smithMessage').textContent=t.done+' '+eqItemName(item)+' Lv.'+(lv+1);renderForge();
+                if (window.UIAnimator) {
+                    try {
+                        const _newLv = lv + 1;
+                        const _color = _newLv >= 4 ? '#facc15' : (_newLv === 3 ? '#a855f7' : '#22d3ee');
+                        const _panel = document.getElementById('forgeModal');
+                        const _cards = _panel ? _panel.querySelectorAll('.forge-choice') : [];
+                        let _target = null;
+                        for (let _i = 0; _i < _cards.length; _i++) {
+                            if ((_cards[_i].textContent || '').indexOf(eqItemName(item)) !== -1) { _target = _cards[_i]; break; }
+                        }
+                        UIAnimator.triggerUpgradeBurst(_target || _forgedEl || _panel, _color);
+                    } catch (e) {}
+                }
             };row.appendChild(doForge);panel.appendChild(row);
         }
         function eqItemName(it){const i=ITEMS_DATABASE.indexOf(it), lg=playerData.lang;return lg==='vi'?it.name:lg==='ko'?(EQ_KO_NAMES[i]||it.name):(EQ_NAMES_I18N[lg]&&EQ_NAMES_I18N[lg][i])||(EQ_INFO[it.id]&&EQ_INFO[it.id][0])||it.name;}
@@ -39109,11 +40764,24 @@
                         _mpTargetTick = msg.tk;
                     }
                     // Only apply authoritative correction if extreme desync ever occurs (e.g. tab frozen > 5s)
-                    if (typeof msg.tk === 'number' && Math.abs(msg.tk - _mpSimTick) <= 4 && ballLeft && ballRight && msg.lx !== undefined) {
-                        const errL = Math.hypot(ballLeft.x - msg.lx, ballLeft.y - msg.ly);
-                        const errR = Math.hypot(ballRight.x - msg.rx, ballRight.y - msg.ry);
-                        if (errL > 85) { ballLeft.x = msg.lx; ballLeft.y = msg.ly; ballLeft.vx = msg.lvx || ballLeft.vx; ballLeft.vy = msg.lvy || ballLeft.vy; }
-                        if (errR > 85) { ballRight.x = msg.rx; ballRight.y = msg.ry; ballRight.vx = msg.rvx || ballRight.vx; ballRight.vy = msg.rvy || ballRight.vy; }
+                    if (typeof msg.tk === 'number' && Math.abs(msg.tk - _mpSimTick) <= 6 && ballLeft && ballRight && msg.lx !== undefined) {
+                        // ==== [MP-SMOOTH 3] soft drift correction instead of an 85px teleport ====
+                        // Small errors are eased out over several frames; only a real desync snaps.
+                        const _ease = (b, tx, ty, tvx, tvy) => {
+                            if (!b || typeof tx !== 'number' || typeof ty !== 'number') return;
+                            const d = Math.hypot(b.x - tx, b.y - ty);
+                            if (d > 90) {
+                                b.x = tx; b.y = ty;
+                                if (typeof tvx === 'number') b.vx = tvx;
+                                if (typeof tvy === 'number') b.vy = tvy;
+                            } else if (d > 6) {
+                                const k = d > 40 ? 0.35 : 0.16;   // gentle, frame-rate independent pull
+                                b.x += (tx - b.x) * k;
+                                b.y += (ty - b.y) * k;
+                            }
+                        };
+                        _ease(ballLeft, msg.lx, msg.ly, msg.lvx, msg.lvy);
+                        _ease(ballRight, msg.rx, msg.ry, msg.rvx, msg.rvy);
                         if (typeof msg.lhp === 'number' && Math.abs(ballLeft.hp - msg.lhp) > 40 && msg.gs === 'PLAYING' && gameState === 'PLAYING') ballLeft.hp = msg.lhp;
                         if (typeof msg.rhp === 'number' && Math.abs(ballRight.hp - msg.rhp) > 40 && msg.gs === 'PLAYING' && gameState === 'PLAYING') ballRight.hp = msg.rhp;
                     }
@@ -39162,6 +40830,11 @@
                 controlState.mpRemote.x = msg.x;
                 controlState.mpRemote.y = typeof msg.y === 'number' ? msg.y : 0;
                 controlState.mpRemote.t = Date.now();
+                // a brand-new stream (first packet / reconnect) starts exactly on the packet value
+                if (typeof controlState.mpRemote._sx !== 'number') {
+                    controlState.mpRemote._sx = msg.x;
+                    controlState.mpRemote._sy = (typeof msg.y === 'number' ? msg.y : 0);
+                }
             };
             try { RelayNet.onMessage(_mpInpTopic, applyRemote); } catch (e) {}
             if (typeof CloudMP !== 'undefined' && CloudMP.bc && !CloudMP._ctrlInpBound) {
@@ -39182,22 +40855,25 @@
                 const key = v.x.toFixed(2) + ',' + v.y.toFixed(2);
                 const casts = _mpPendingCasts;
                 const _nowMs2 = Date.now();
-                // keep-alive every 400ms, otherwise only when something changed
-                if (key === _mpLastSentKeyGlobal && !casts.length && (_nowMs2 - _mpLastSentAt) < 400) return;
+                // keep-alive every 250ms, otherwise only when the steering vector actually changed
+                if (key === _mpLastSentKeyGlobal && !casts.length && (_nowMs2 - _mpLastSentAt) < 250) return;
                 _mpLastSentKeyGlobal = key;
                 _mpLastSentAt = _nowMs2;
-                const pkt = { r: mpRoundNumber, side: mpMySide, x: Math.round(v.x * 100) / 100, y: Math.round(v.y * 100) / 100, t: Date.now() };
+                const pkt = { r: mpRoundNumber, side: mpMySide, x: Math.round(v.x * 1000) / 1000, y: Math.round(v.y * 1000) / 1000, t: Date.now() };
                 if (casts.length) { pkt.sk = casts.slice(0, 4); _mpPendingCasts = []; }
                 if (typeof CloudMP !== 'undefined' && CloudMP.bc) {
                     try { CloudMP.bc.postMessage({ type: 'MP_INPUT', topic: _mpInpTopic, pkt }); } catch (e) {}
                 }
                 try { RelayNet.pub(_mpInpTopic, pkt, false, true); } catch (e) {}
             };
+            // ==== [MP-SMOOTH 4] steer packets every frame instead of every 55ms ====
+            // 55ms = 3.3 frames of stale direction at 60fps, which is exactly what made the opponent
+            // look jittery. One tiny packet per frame over the same channel is cheap and removes it.
             _mpInpTimer = setInterval(() => {
                 if (activeMatchContext !== 'multiplayer' || !mpRoomId || !_mpInpTopic) return;
                 if (!controlState.active) return;
                 mpFlushInputNow();
-            }, 55);
+            }, 16);
         }
         function mpStopInputSync() {
             if (_mpInpTimer) { clearInterval(_mpInpTimer); _mpInpTimer = null; }
@@ -39209,6 +40885,8 @@
             controlState.mpRemote.x = 0;
             controlState.mpRemote.y = 0;
             controlState.mpRemote.t = 0;
+            controlState.mpRemote._sx = undefined;
+            controlState.mpRemote._sy = undefined;
         }
         function stopMpStateSync() {
             if (typeof mpStopInputSync === 'function') mpStopInputSync();
@@ -39781,7 +41459,9 @@
             const profBtn = document.getElementById('btnInMatchViewProfile');
             if (profBtn) {
                 profBtn.textContent = tUI('👤 Hồ sơ đối thủ', '👤 Opponent profile');
-                profBtn.classList.toggle('hidden', !mpCurrentOpponent);
+                // [MP-HUD] the user wants a compact in-match header with NO profile button while
+                // fighting — it only comes back on the result screen (btnResultViewProfile).
+                profBtn.classList.add('hidden');
             }
             const leftName = mpMySide === 'left' ? playerData.name : (mpCurrentOpponent || 'Opponent');
             const rightName = mpMySide === 'right' ? playerData.name : (mpCurrentOpponent || 'Opponent');
@@ -40423,7 +42103,25 @@
             updateSandboxPickerButtons();
 
             // Modal close buttons
-            document.querySelectorAll('.close-modal-btn').forEach(btn => {
+            // watch for any panel being revealed; the guard only fires when the bag is also open
+        (function () {
+            if (!window.MutationObserver) return;
+            const ids = ['codexModal', 'codexDetailModal', 'settingsModal', 'battlePassModal', 'battleModeModal', 'forgeModal', 'equipmentDialog'];
+            const obs = new MutationObserver(() => {
+                if (typeof window._eqPanelGuard === 'function') window._eqPanelGuard();
+            });
+            const attach = () => ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && !el._eqGuardWatched) {
+                    el._eqGuardWatched = true;
+                    obs.observe(el, { attributes: true, attributeFilter: ['class', 'hidden'] });
+                }
+            });
+            attach();
+            document.addEventListener('DOMContentLoaded', attach, { once: true });
+        })();
+
+        document.querySelectorAll('.close-modal-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     audio.playClick();
                     document.getElementById(btn.dataset.target).classList.add('hidden');
@@ -41679,6 +43377,182 @@
                 document.getElementById('multiplayerQueueModal').classList.add('hidden');
             };
 
+            // ==== [MP-VS] 5-second versus showcase between the draft and the fight ============
+            // Replaces the old plain-text reveal line: real cards with the ball art, the ball name,
+            // the owner name and BOTH sides' frozen gear (icon + name + level) for all to see.
+            let mpVsRaf = null;
+            let mpVsTimer = null;
+            function _mpVsCard(side, ballId, skinId, ownerName, snap) {
+                const meta = (typeof CODEX_DATA !== 'undefined') ? CODEX_DATA.find(b => b.id === ballId) : null;
+                const col = (meta && meta.color) ? meta.color : (side === 'left' ? '#22d3ee' : '#fb7185');
+                const card = document.createElement('div');
+                card.className = 'mvs-card ' + (side === 'right' ? 'mvs-right' : '');
+                card.style.setProperty('--mvs-edge', col);
+                card.style.setProperty('--mvs-glow', col.replace(')', ', .45)').replace('rgb', 'rgba'));
+
+                const cv = document.createElement('canvas');
+                cv.className = 'mvs-canvas';
+                cv.width = 240; cv.height = 240;
+                card.appendChild(cv);
+
+                const nameEl = document.createElement('div');
+                nameEl.className = 'mvs-ball';
+                nameEl.textContent = meta ? meta.name : ballId;
+                const skLbl = (skinId && skinId !== 'default' && typeof getShowcaseSkinLabel === 'function')
+                    ? ' · ' + getShowcaseSkinLabel(ballId, skinId) : '';
+                if (skLbl) {
+                    const sk = document.createElement('span');
+                    sk.style.cssText = 'display:block;font-size:8px;color:#94a3b8;font-weight:800;margin-top:2px';
+                    sk.textContent = skLbl.replace(' · ', '');
+                    nameEl.appendChild(sk);
+                }
+                card.appendChild(nameEl);
+
+                const own = document.createElement('div');
+                own.className = 'mvs-owner';
+                own.textContent = ownerName;
+                card.appendChild(own);
+
+                const gear = document.createElement('div');
+                gear.className = 'mvs-gear';
+                const load = (snap && snap.loadouts) ? (snap.loadouts[ballId] || {}) : ((typeof playerData !== 'undefined' && playerData.equipmentLoadouts) ? (playerData.equipmentLoadouts[ballId] || {}) : {});
+                const slots = ['weapon', 'armor', 'helmet', 'boots'];
+                let shown = 0;
+                slots.forEach(slot => {
+                    const it = load[slot];
+                    if (!it) return;
+                    const dbItem = (typeof ITEMS_DATABASE !== 'undefined') ? ITEMS_DATABASE.find(x => x.id === it.id && x.slot === slot) : null;
+                    const nm = dbItem
+                        ? (typeof eqItemName === 'function' ? eqItemName(dbItem) : dbItem.name)
+                        : it.id;
+                    const sym = (typeof EQ_SYMBOLS !== 'undefined' && EQ_SYMBOLS[slot]) ? EQ_SYMBOLS[slot] : '•';
+                    const chip = document.createElement('span');
+                    chip.className = 'mvs-gear-item' + (it.lv === 4 ? ' lv4' : '');
+                    chip.innerHTML = `${sym} ${nm} <b>Lv.${it.lv}</b>`;
+                    gear.appendChild(chip);
+                    shown++;
+                });
+                if (!shown) {
+                    const none = document.createElement('span');
+                    none.className = 'mvs-gear-empty';
+                    none.textContent = tUI('không trang bị', 'no gear');
+                    gear.appendChild(none);
+                }
+                card.appendChild(gear);
+                return { card, canvas: cv, meta, col, ballId, skinId };
+            }
+
+            function showMpVersusShowcase(opts, done) {
+                const o = opts || {};
+                const leftId = o.leftId, rightId = o.rightId;
+                const leftName = o.leftName || tUI('Bạn', 'You');
+                const rightName = o.rightName || tUI('Đối thủ', 'Opponent');
+                let old = document.getElementById('mpVersusShowcase');
+                if (old) old.remove();
+                if (mpVsRaf) { cancelAnimationFrame(mpVsRaf); mpVsRaf = null; }
+                if (mpVsTimer) { clearInterval(mpVsTimer); mpVsTimer = null; }
+
+                const wrap = document.createElement('div');
+                wrap.id = 'mpVersusShowcase';
+                const stage = document.createElement('div');
+                stage.className = 'mvs-stage';
+                const scan = document.createElement('div');
+                scan.className = 'mvs-scan';
+                wrap.appendChild(scan);
+
+                const mkSide = (cls) => { const d = document.createElement('div'); d.className = 'mvs-side ' + cls; return d; };
+                const lSide = mkSide('mvs-left');
+                const rSide = mkSide('mvs-right');
+                const vs = document.createElement('div');
+                vs.className = 'mvs-vs';
+                vs.textContent = 'VS';
+
+                const L = _mpVsCard('left', leftId, o.leftSkin, leftName, o.leftSnap);
+                const R = _mpVsCard('right', rightId, o.rightSkin, rightName, o.rightSnap);
+                L.card.style.setProperty('--mvs-glow', 'rgba(34,211,238,.45)');
+                R.card.style.setProperty('--mvs-glow', 'rgba(251,113,133,.45)');
+                lSide.appendChild(L.card);
+                rSide.appendChild(R.card);
+                stage.appendChild(lSide);
+                stage.appendChild(vs);
+                stage.appendChild(rSide);
+                wrap.appendChild(stage);
+
+                const timerEl = document.createElement('div');
+                timerEl.className = 'mvs-timer';
+                let left = 5;
+                timerEl.textContent = `${left}s`;
+                wrap.appendChild(timerEl);
+                document.body.appendChild(wrap);
+
+                // ---- live ball art on both cards (same renderer the codex preview uses) ----
+                let t0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+                const paint = (entry, phase) => {
+                    const cv = entry.canvas, ctx = cv.getContext('2d');
+                    if (!ctx) return;
+                    const W = cv.width, H = cv.height;
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    ctx.clearRect(0, 0, W, H);
+                    const cx = W / 2, cy = H / 2 + Math.sin(phase * 1.7) * 5;
+                    const bob = 1 + Math.sin(phase * 1.35) * 0.035;
+                    const rad = W * 0.26 * bob;
+                    const col = entry.col || '#22d3ee';
+                    // halo
+                    const g = ctx.createRadialGradient(cx, cy, rad * 0.4, cx, cy, rad * 2.1);
+                    g.addColorStop(0, col + '55');
+                    g.addColorStop(1, 'transparent');
+                    ctx.fillStyle = g;
+                    ctx.beginPath(); ctx.arc(cx, cy, rad * 2.1, 0, Math.PI * 2); ctx.fill();
+                    // body
+                    const body = ctx.createRadialGradient(cx - rad * 0.3, cy - rad * 0.35, rad * 0.15, cx, cy, rad);
+                    body.addColorStop(0, '#f8fafc');
+                    body.addColorStop(0.45, col);
+                    body.addColorStop(1, '#0b1220');
+                    ctx.fillStyle = body;
+                    ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.fill();
+                    // ring
+                    ctx.strokeStyle = '#e2e8f0';
+                    ctx.lineWidth = Math.max(2, W * 0.014);
+                    ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
+                    // rotating highlight
+                    ctx.save();
+                    ctx.translate(cx, cy); ctx.rotate(phase * 0.9);
+                    ctx.strokeStyle = col; ctx.globalAlpha = 0.85;
+                    ctx.lineWidth = Math.max(2, W * 0.018);
+                    ctx.beginPath(); ctx.arc(0, 0, rad * 0.78, -0.6, 0.9); ctx.stroke();
+                    ctx.restore();
+                };
+                const frame = () => {
+                    if (!document.getElementById('mpVersusShowcase')) { mpVsRaf = null; return; }
+                    const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+                    const ph = (now - t0) / 1000;
+                    paint(L, ph);
+                    paint(R, ph + 0.9);
+                    mpVsRaf = requestAnimationFrame(frame);
+                };
+                frame();
+
+                mpVsTimer = setInterval(() => {
+                    left--;
+                    if (left > 0) timerEl.textContent = `${left}s`;
+                }, 1000);
+
+                const finish = () => {
+                    if (mpVsTimer) { clearInterval(mpVsTimer); mpVsTimer = null; }
+                    if (mpVsRaf) { cancelAnimationFrame(mpVsRaf); mpVsRaf = null; }
+                    wrap.classList.add('mvs-out');
+                    setTimeout(() => {
+                        const el = document.getElementById('mpVersusShowcase');
+                        if (el) el.remove();
+                        if (typeof done === 'function') { try { done(); } catch (e) {} }
+                    }, 280);
+                };
+                // 5 s of showcase, then hand over to the fight
+                const guard = setTimeout(finish, 5000);
+                wrap.addEventListener('click', () => { clearTimeout(guard); finish(); }, { once: true });
+            }
+            window.showMpVersusShowcase = showMpVersusShowcase;
+
             function openMultiplayerPickBan() {
                 mpInPickPhase = true;
                 startPickHb();
@@ -42028,6 +43902,20 @@
                         mpRevealTimeout = null;
                         if (revSess !== mpSessionSeq || mpMatchEnded || !mpRoomId) return;
                         modal.classList.add('hidden');
+                        // [MP-VS] 5-second versus showcase (cards + gear) before the arena loads
+                        try {
+                            if (typeof showMpVersusShowcase === 'function' && !document.getElementById('mpVersusShowcase')) {
+                                const _lname = mpMySide === 'left' ? (playerData.name || tUI('Bạn', 'You')) : (mpCurrentOpponent || tUI('Đối thủ', 'Opponent'));
+                                const _rname = mpMySide === 'right' ? (playerData.name || tUI('Bạn', 'You')) : (mpCurrentOpponent || tUI('Đối thủ', 'Opponent'));
+                                showMpVersusShowcase({
+                                    leftId, rightId,
+                                    leftName: _lname, rightName: _rname,
+                                    leftSkin: lSkin, rightSkin: rSkin,
+                                    leftSnap: mpEquipmentLeft, rightSnap: mpEquipmentRight
+                                }, null);
+                                setTimeout(() => mpRevealTimeout = null, 0);
+                            }
+                        } catch (e) {}
                         activeMatchContext = 'multiplayer';
                         activeGameMode = 'classic';
                         gameSpeed = 1;
@@ -42799,7 +44687,15 @@
                 try {
                     const pane = document.getElementById('codexPreviewPane');
                     let note = document.getElementById('codexEqMovedNote');
-                    if (pane && !note) {
+                    // [UI-LAYOUT] only playable balls own a loadout, so only they get the bag link
+                    const _eqHasLoadout = (typeof isControllableBallId === 'function') && isControllableBallId(item.id);
+                    if (pane && note && !_eqHasLoadout) {
+                        note.style.display = 'none';
+                        note = null;
+                    }
+                    if (pane && !note && !_eqHasLoadout) {
+                        // nothing to add for this ball
+                    } else if (pane && !note) {
                         note = document.createElement('p');
                         note.id = 'codexEqMovedNote';
                         note.style = 'margin:6px 0 0;font-size:10px;font-weight:800;color:#67e8f9;text-align:center';
@@ -42815,6 +44711,7 @@
                         pane.appendChild(note);
                     }
                     if (note) {
+                        note.style.display = '';
                         const lbl = (typeof eqp === 'function') ? eqp('label') : 'Equipment';
                         let lead = note.querySelector('#codexEqMovedLead');
                         if (!lead) { lead = document.createElement('span'); lead.id = 'codexEqMovedLead'; note.insertBefore(lead, note.firstChild); }
@@ -45950,6 +47847,17 @@
             }
             document.getElementById('toggleBloodFx').onchange = (e) => { fxSettings.bloodEnabled = e.target.checked; };
             document.getElementById('toggleShakeFx').onchange = (e) => { fxSettings.shakeEnabled = e.target.checked; };
+            // [UI-MOTION] Reduce Motion: tắt hiệu ứng trang trí cho máy yếu, lưu vào playerData
+            const _uiRmEl = document.getElementById('toggleReduceMotion');
+            if (_uiRmEl) {
+                _uiRmEl.checked = !!(playerData && playerData.reduceMotion);
+                if (_uiRmEl.checked && window.UIAnimator) UIAnimator.setReduceMotion(true);
+                _uiRmEl.onchange = (e) => {
+                    playerData.reduceMotion = !!e.target.checked;
+                    savePlayerData();
+                    if (window.UIAnimator) UIAnimator.setReduceMotion(!!e.target.checked);
+                };
+            }
             const langSelEl = document.getElementById('langSelect');
             if (langSelEl) {
                 langSelEl.value = playerData.langManual ? playerData.lang : 'auto';
@@ -46742,9 +48650,8 @@
                 const pickerBack = document.getElementById('eqPanelPickerBack');
                 if (pickerBack) pickerBack.onclick = () => {
                     try { audio.playClick(); } catch (e) {}
-                    document.getElementById('eqPanelPickerWrap').classList.add('hidden');
-                    document.getElementById('eqPanelBallWrap').classList.remove('hidden');
                     _eqPanelSlot = null;
+                    eqPanelShowView('eqPanelBallWrap');
                     renderEqPanelBallView();
                     startEqPanelPreview(_eqPanelBallId);
                 };
@@ -46935,5 +48842,5 @@
         <button type="button" class="sk-slot" data-slot="3" aria-label="skill 4"><span class="sk-icon">✨</span><span class="sk-sweep"></span><span class="sk-cd"></span><span class="sk-key">F</span></button>
         <button type="button" class="sk-slot" data-slot="4" aria-label="skill 5"><span class="sk-icon">🌟</span><span class="sk-sweep"></span><span class="sk-cd"></span><span class="sk-key">G</span></button>
     </div>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5efdaba5af78515',t:'MTc5NTQzMzU1OA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5efdaba5af78515',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5f0ed6e189d0717',t:'MTc5NTQ0NDgwOQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5f0ed6e189d0717',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5efdaba5af78515',t:'MTc5NTQzMzU1OA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5efdaba5af78515',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5f3c21a9d6b8b89',t:'MTc5NTQ3NDQ5Mg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5f3c21a9d6b8b89',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
